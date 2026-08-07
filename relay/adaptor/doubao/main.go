@@ -12,6 +12,8 @@ func GetRequestURL(meta *meta.Meta) (string, error) {
 		return fmt.Sprintf("%s/api/v3/chat/completions", meta.BaseURL), nil
 	case relaymode.Embeddings:
 		return fmt.Sprintf("%s/api/v3/embeddings", meta.BaseURL), nil
+	case relaymode.ImagesGenerations:
+		return fmt.Sprintf("%s/api/v3/images/generations", meta.BaseURL), nil
 	default:
 	}
 	return "", fmt.Errorf("unsupported relay mode %d for doubao", meta.Mode)

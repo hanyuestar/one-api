@@ -38,6 +38,31 @@ var ImageSizeRatios = map[string]map[string]float64{
 		"1280x800":  1,
 		"800x1280":  1,
 	},
+	// Doubao Seedream
+	"doubao-seedream-5-0-pro-250828": {
+		"1024x1024": 1,
+		"2048x2048": 1,
+		"1K":        1,
+		"1.5K":      1,
+		"2K":        1,
+	},
+	"doubao-seedream-5-0-lite-260128": {
+		"2048x2048": 1,
+		"2K":        1,
+		"3K":        1,
+		"4K":        1,
+	},
+	"doubao-seedream-4-5-251128": {
+		"2048x2048": 1,
+		"2K":        1,
+		"4K":        1,
+	},
+	"doubao-seedream-4-0": {
+		"2048x2048": 1,
+		"1K":        1,
+		"2K":        1,
+		"4K":        1,
+	},
 }
 
 var ImageGenerationAmounts = map[string][2]int{
@@ -48,6 +73,11 @@ var ImageGenerationAmounts = map[string][2]int{
 	"wanx-v1":                   {1, 4}, // Ali
 	"cogview-3":                 {1, 1},
 	"step-1x-medium":            {1, 1},
+	// Doubao Seedream
+	"doubao-seedream-5-0-pro-250828":  {1, 1},
+	"doubao-seedream-5-0-lite-260128": {1, 1},
+	"doubao-seedream-4-5-251128":      {1, 1},
+	"doubao-seedream-4-0":             {1, 1},
 }
 
 var ImagePromptLengthLimitations = map[string]int{
@@ -58,6 +88,11 @@ var ImagePromptLengthLimitations = map[string]int{
 	"wanx-v1":                   4000,
 	"cogview-3":                 833,
 	"step-1x-medium":            4000,
+	// Doubao Seedream
+	"doubao-seedream-5-0-pro-250828":  1200,
+	"doubao-seedream-5-0-lite-260128": 1200,
+	"doubao-seedream-4-5-251128":      1200,
+	"doubao-seedream-4-0":             1200,
 }
 
 var ImageOriginModelName = map[string]string{

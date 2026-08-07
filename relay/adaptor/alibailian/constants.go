@@ -17,4 +17,9 @@ var ModelList = []string{
 
 	"deepseek-r1",
 	"deepseek-v3",
+
+	// Image generation models
+	"wanx-v1",
+	"ali-stable-diffusion-xl",
+	"ali-stable-diffusion-v1.5",
 }

@@ -44,7 +44,36 @@ export const CHANNEL_OPTIONS = [
   { key: 6, text: '代理：OpenAI Max', value: 6, color: 'violet' },
   { key: 9, text: '代理：AI.LS', value: 9, color: 'yellow' },
   { key: 12, text: '代理：API2GPT', value: 12, color: 'blue' },
-  { key: 13, text: '代理：AIGC2D', value: 13, color: 'purple' }
+  { key: 13, text: '代理：AIGC2D', value: 13, color: 'purple' },
+  {
+    key: 47,
+    text: '百度文心千帆 V2',
+    value: 47,
+    color: 'blue',
+    tip: '请前往<a href="https://console.bce.baidu.com/iam/#/iam/apikey/list" target="_blank">此处</a>获取 API Key，注意本渠道仅支持<a target="_blank" href="https://cloud.baidu.com/doc/WENXINWORKSHOP/s/em4tsqo3v">推理服务 V2</a>相关模型',
+  },
+  {
+    key: 48,
+    text: '讯飞星火认知 V2',
+    value: 48,
+    color: 'blue',
+    tip: 'HTTP 版本的讯飞接口，前往<a href="https://console.xfyun.cn/services/cbm" target="_blank">此处</a>获取 HTTP 服务接口认证密钥',
+  },
+  { key: 49, text: '阿里云百炼', value: 49, color: 'orange' },
+  {
+    key: 50,
+    text: 'OpenAI 兼容',
+    value: 50,
+    color: 'olive',
+    description: 'OpenAI 兼容渠道，支持设置 Base URL',
+  },
+  {
+    key: 51,
+    text: 'Gemini (OpenAI)',
+    value: 51,
+    color: 'orange',
+    description: 'Gemini OpenAI 兼容格式',
+  },
 ];
 
 for (let i = 0; i < CHANNEL_OPTIONS.length; i++) {

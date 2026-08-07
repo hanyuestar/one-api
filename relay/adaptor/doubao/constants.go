@@ -10,4 +10,10 @@ var ModelList = []string{
 	"Doubao-lite-32k",
 	"Doubao-lite-4k",
 	"Doubao-embedding",
+
+	// Seedream image generation models
+	"doubao-seedream-5-0-pro-250828",
+	"doubao-seedream-5-0-lite-260128",
+	"doubao-seedream-4-5-251128",
+	"doubao-seedream-4-0",
 }

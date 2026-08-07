@@ -155,6 +155,7 @@ func RelayImageHelper(c *gin.Context, relayMode int) *relaymodel.ErrorWithStatus
 	switch meta.ChannelType {
 	case channeltype.Zhipu,
 		channeltype.Ali,
+		channeltype.AliBailian,
 		channeltype.Replicate,
 		channeltype.Baidu:
 		finalRequest, err := adaptor.ConvertImageRequest(imageRequest)
