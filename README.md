@@ -4,29 +4,28 @@
 
 
 <p align="center">
-  <a href="https://github.com/songquanpeng/one-api"><img src="https://raw.githubusercontent.com/songquanpeng/one-api/main/web/default/public/logo.png" width="150" height="150" alt="one-api logo"></a>
+  <a href="https://github.com/hanyuestar/one-api"><img src="https://raw.githubusercontent.com/songquanpeng/one-api/main/web/default/public/logo.png" width="150" height="150" alt="one-api logo"></a>
 </p>
 
 <div align="center">
 
 # One API
 
-_✨ 通过标准的 OpenAI API 格式访问所有的大模型，开箱即用 ✨_
+_✨ 开源 OpenAI 接口管理 & 分发系统，支持生图接口 ✨_
+
+> 本仓库基于 [songquanpeng/one-api](https://github.com/songquanpeng/one-api) 维护，新增阿里百炼 & 火山引擎生图支持，同步推送到 ghcr.io 和 Docker Hub。
 
 </div>
 
 <p align="center">
   <a href="https://raw.githubusercontent.com/songquanpeng/one-api/main/LICENSE">
-    <img src="https://img.shields.io/github/license/songquanpeng/one-api?color=brightgreen" alt="license">
+    <img src="https://img.shields.io/github/license/hanyuestar/one-api?color=brightgreen" alt="license">
   </a>
-  <a href="https://github.com/songquanpeng/one-api/releases/latest">
-    <img src="https://img.shields.io/github/v/release/songquanpeng/one-api?color=brightgreen&include_prereleases" alt="release">
+  <a href="https://github.com/hanyuestar/one-api/pkgs/container/one-api">
+    <img src="https://img.shields.io/badge/ghcr.io-hanyuestar%2Fone--api-blue" alt="ghcr">
   </a>
-  <a href="https://hub.docker.com/repository/docker/justsong/one-api">
-    <img src="https://img.shields.io/docker/pulls/justsong/one-api?color=brightgreen" alt="docker pull">
-  </a>
-  <a href="https://github.com/songquanpeng/one-api/releases/latest">
-    <img src="https://img.shields.io/github/downloads/songquanpeng/one-api/total?color=brightgreen&include_prereleases" alt="release">
+  <a href="https://hub.docker.com/r/kyson666/one-api">
+    <img src="https://img.shields.io/docker/pulls/kyson666/one-api?color=brightgreen" alt="docker pull">
   </a>
   <a href="https://goreportcard.com/report/github.com/songquanpeng/one-api">
     <img src="https://goreportcard.com/badge/github.com/songquanpeng/one-api" alt="GoReportCard">
@@ -34,21 +33,15 @@ _✨ 通过标准的 OpenAI API 格式访问所有的大模型，开箱即用 �
 </p>
 
 <p align="center">
-  <a href="https://github.com/songquanpeng/one-api#部署">部署教程</a>
+  <a href="https://github.com/hanyuestar/one-api#部署">部署教程</a>
   ·
-  <a href="https://github.com/songquanpeng/one-api#使用方法">使用方法</a>
+  <a href="https://github.com/hanyuestar/one-api#使用方法">使用方法</a>
   ·
-  <a href="https://github.com/songquanpeng/one-api/issues">意见反馈</a>
+  <a href="https://github.com/hanyuestar/one-api/issues">意见反馈</a>
   ·
-  <a href="https://github.com/songquanpeng/one-api#截图展示">截图展示</a>
+  <a href="https://github.com/hanyuestar/one-api/wiki">Wiki 文档</a>
   ·
-  <a href="https://openai.justsong.cn/">在线演示</a>
-  ·
-  <a href="https://github.com/songquanpeng/one-api#常见问题">常见问题</a>
-  ·
-  <a href="https://github.com/songquanpeng/one-api#相关项目">相关项目</a>
-  ·
-  <a href="https://iamazing.cn/page/reward">赞赏支持</a>
+  <a href="https://github.com/hanyuestar/one-api#常见问题">常见问题</a>
 </p>
 
 > [!NOTE]
@@ -57,11 +50,11 @@ _✨ 通过标准的 OpenAI API 格式访问所有的大模型，开箱即用 �
 > 根据[《生成式人工智能服务管理暂行办法》](http://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm)的要求，请勿对中国地区公众提供一切未经备案的生成式人工智能服务。
 
 > [!NOTE]
-> 稳定版 / 预览版镜像地址：[justsong/one-api](https://hub.docker.com/repository/docker/justsong/one-api)
-> 或者 [ghcr.io/songquanpeng/one-api](https://github.com/songquanpeng/one-api/pkgs/container/one-api)
+> 本仓库 Docker 镜像：
+> - GitHub Container Registry: `ghcr.io/hanyuestar/one-api:latest`
+> - Docker Hub: `kyson666/one-api:latest`
 >
-> alpha 版镜像地址：[justsong/one-api-alpha](https://hub.docker.com/repository/docker/justsong/one-api-alpha)
-> 或者 [ghcr.io/songquanpeng/one-api-alpha](https://github.com/songquanpeng/one-api/pkgs/container/one-api-alpha)
+> 上游原版镜像：[justsong/one-api](https://hub.docker.com/repository/docker/justsong/one-api) 或 [ghcr.io/songquanpeng/one-api](https://github.com/songquanpeng/one-api/pkgs/container/one-api)
 
 > [!WARNING]
 > 使用 root 用户初次登录系统后，务必修改默认密码 `123456`！
@@ -110,7 +103,7 @@ _✨ 通过标准的 OpenAI API 格式访问所有的大模型，开箱即用 �
 14. 支持发布公告，设置充值链接，设置新用户初始额度。
 15. 支持模型映射，重定向用户的请求模型，如无必要请不要设置，设置之后会导致请求体被重新构造而非直接透传，会导致部分还未正式支持的字段无法传递成功。
 16. 支持失败自动重试。
-17. 支持绘图接口。
+17. 支持绘图接口（DALL-E / 通义万相 / 火山 Seedream / CogView / Replicate），详见 [[Image-Generation]]。
 18. 支持 [Cloudflare AI Gateway](https://developers.cloudflare.com/ai-gateway/providers/openai/)，渠道设置的代理部分填写 `https://gateway.ai.cloudflare.com/v1/ACCOUNT_TAG/GATEWAY/openai` 即可。
 19. 支持丰富的**自定义**设置，
     1. 支持自定义系统名称，logo 以及页脚。
@@ -124,15 +117,19 @@ _✨ 通过标准的 OpenAI API 格式访问所有的大模型，开箱即用 �
     + 微信公众号授权（需要额外部署 [WeChat Server](https://github.com/songquanpeng/wechat-server)）。
 23. 支持主题切换，设置环境变量 `THEME` 即可，默认为 `default`，欢迎 PR 更多主题，具体参考[此处](./web/README.md)。
 24. 配合 [Message Pusher](https://github.com/songquanpeng/message-pusher) 可将报警信息推送到多种 App 上。
+25. 🆕 **阿里百炼（通义万相）生图** — 渠道类型 49，支持 wanx-v1 / stable-diffusion 系列。
+26. 🆕 **火山引擎（Seedream）生图** — 渠道类型 40，支持 Seedream 4.0/4.5/5.0 系列。
+27. 🆕 **Air 主题渠道类型补全** — 新增百度V2、讯飞V2、阿里百炼、OpenAI兼容、Gemini OpenAI 五种类型。
 
 ## 部署
 ### 基于 Docker 进行部署
 ```shell
-# 使用 SQLite 的部署命令：
-docker run --name one-api -d --restart always -p 3000:3000 -e TZ=Asia/Shanghai -v /home/ubuntu/data/one-api:/data justsong/one-api
-# 使用 MySQL 的部署命令，在上面的基础上添加 `-e SQL_DSN="root:123456@tcp(localhost:3306)/oneapi"`，请自行修改数据库连接参数，不清楚如何修改请参见下面环境变量一节。
-# 例如：
-docker run --name one-api -d --restart always -p 3000:3000 -e SQL_DSN="root:123456@tcp(localhost:3306)/oneapi" -e TZ=Asia/Shanghai -v /home/ubuntu/data/one-api:/data justsong/one-api
+# 使用 ghcr.io 镜像（推荐）：
+docker run --name one-api -d --restart always -p 3000:3000 -e TZ=Asia/Shanghai -v /home/ubuntu/data/one-api:/data ghcr.io/hanyuestar/one-api:latest
+# Docker Hub 镜像：
+docker run --name one-api -d --restart always -p 3000:3000 -e TZ=Asia/Shanghai -v /home/ubuntu/data/one-api:/data kyson666/one-api:latest
+# 使用 MySQL：
+docker run --name one-api -d --restart always -p 3000:3000 -e SQL_DSN="root:123456@tcp(localhost:3306)/oneapi" -e TZ=Asia/Shanghai -v /home/ubuntu/data/one-api:/data ghcr.io/hanyuestar/one-api:latest
 ```
 
 其中，`-p 3000:3000` 中的第一个 `3000` 是宿主机的端口，可以根据需要进行修改。
@@ -141,7 +138,7 @@ docker run --name one-api -d --restart always -p 3000:3000 -e SQL_DSN="root:1234
 
 如果启动失败，请添加 `--privileged=true`，具体参考 https://github.com/songquanpeng/one-api/issues/482 。
 
-如果上面的镜像无法拉取，可以尝试使用 GitHub 的 Docker 镜像，将上面的 `justsong/one-api` 替换为 `ghcr.io/songquanpeng/one-api` 即可。
+如果上面的镜像无法拉取，可以尝试使用 Docker Compose 部署（见下方）或使用上游原版镜像。
 
 如果你的并发量较大，**务必**设置 `SQL_DSN`，详见下面[环境变量](#环境变量)一节。
 
@@ -186,20 +183,20 @@ sudo service nginx restart
 
 ### 基于 Docker Compose 进行部署
 
-> 仅启动方式不同，参数设置不变，请参考基于 Docker 部署部分
+项目自带 `docker-compose.yml`，一键部署（MySQL + Redis + One API）：
 
 ```shell
-# 目前支持 MySQL 启动，数据存储在 ./data/mysql 文件夹内
-docker-compose up -d
+# 使用 ghcr.io 镜像（默认）
+docker compose up -d
 
-# 查看部署状态
-docker-compose ps
+# 使用 Docker Hub 镜像
+IMAGE=kyson666/one-api docker compose up -d
 ```
 
 ### 手动部署
-1. 从 [GitHub Releases](https://github.com/songquanpeng/one-api/releases/latest) 下载可执行文件或者从源码编译：
+1. 从 [本仓库 Releases](https://github.com/hanyuestar/one-api) 下载可执行文件或者从源码编译：
    ```shell
-   git clone https://github.com/songquanpeng/one-api.git
+   git clone https://github.com/hanyuestar/one-api.git
 
    # 构建前端
    cd one-api/web/default
