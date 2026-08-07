@@ -62,6 +62,9 @@ func TestDecode(t *testing.T) {
 			resp, err := http.Get(c.url)
 			assert.NoError(t, err)
 			defer resp.Body.Close()
+			if resp.StatusCode != http.StatusOK {
+				t.Skipf("skipping: HTTP %d from %s", resp.StatusCode, c.url)
+			}
 			reader := &CountingReader{reader: resp.Body}
 			img, format, err := image.Decode(reader)
 			assert.NoError(t, err)
@@ -84,6 +87,9 @@ func TestDecode(t *testing.T) {
 			resp, err := http.Get(c.url)
 			assert.NoError(t, err)
 			defer resp.Body.Close()
+			if resp.StatusCode != http.StatusOK {
+				t.Skipf("skipping: HTTP %d from %s", resp.StatusCode, c.url)
+			}
 			reader := &CountingReader{reader: resp.Body}
 			config, format, err := image.DecodeConfig(reader)
 			assert.NoError(t, err)
@@ -107,6 +113,9 @@ func TestBase64(t *testing.T) {
 			resp, err := http.Get(c.url)
 			assert.NoError(t, err)
 			defer resp.Body.Close()
+			if resp.StatusCode != http.StatusOK {
+				t.Skipf("skipping: HTTP %d from %s", resp.StatusCode, c.url)
+			}
 			data, err := io.ReadAll(resp.Body)
 			assert.NoError(t, err)
 			encoded := base64.StdEncoding.EncodeToString(data)
@@ -133,6 +142,9 @@ func TestBase64(t *testing.T) {
 			resp, err := http.Get(c.url)
 			assert.NoError(t, err)
 			defer resp.Body.Close()
+			if resp.StatusCode != http.StatusOK {
+				t.Skipf("skipping: HTTP %d from %s", resp.StatusCode, c.url)
+			}
 			data, err := io.ReadAll(resp.Body)
 			assert.NoError(t, err)
 			encoded := base64.StdEncoding.EncodeToString(data)
@@ -151,6 +163,15 @@ func TestBase64(t *testing.T) {
 func TestGetImageSize(t *testing.T) {
 	for i, c := range cases {
 		t.Run("Decode:"+strconv.Itoa(i), func(t *testing.T) {
+			resp, err := http.Get(c.url)
+			if err != nil {
+				t.Skipf("skipping: %v", err)
+			}
+			if resp.StatusCode != http.StatusOK {
+				resp.Body.Close()
+				t.Skipf("skipping: HTTP %d from %s", resp.StatusCode, c.url)
+			}
+			resp.Body.Close()
 			width, height, err := img.GetImageSize(c.url)
 			assert.NoError(t, err)
 			assert.Equal(t, c.width, width)
@@ -165,6 +186,9 @@ func TestGetImageSizeFromBase64(t *testing.T) {
 			resp, err := http.Get(c.url)
 			assert.NoError(t, err)
 			defer resp.Body.Close()
+			if resp.StatusCode != http.StatusOK {
+				t.Skipf("skipping: HTTP %d from %s", resp.StatusCode, c.url)
+			}
 			data, err := io.ReadAll(resp.Body)
 			assert.NoError(t, err)
 			encoded := base64.StdEncoding.EncodeToString(data)
