@@ -1,5 +1,10 @@
 version: '3.4'
 
+# 镜像源配置:
+#   默认: ghcr.io/hanyuestar/one-api
+#   切换到 Docker Hub: IMAGE=hanyuestar/one-api docker compose up -d
+#   指定版本: TAG=v0.1.0 docker compose up -d
+
 services:
   one-api:
     image: "${IMAGE:-ghcr.io/hanyuestar/one-api}:${TAG:-latest}"
