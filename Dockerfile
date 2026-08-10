@@ -7,20 +7,15 @@ FROM node:20-alpine AS frontend-builder
 
 WORKDIR /web
 
-# 先复制 package.json 利用缓存
+# 三步串行安装（每层独立 Docker 缓存，避免并行 & 在 Alpine ash 中不稳定）
 COPY web/default/package*.json ./default/
-COPY web/berry/package*.json ./berry/
-COPY web/air/package*.json ./air/
+RUN npm install --prefix /web/default --no-audit --no-fund
 
-# 并行安装依赖 + BuildKit 缓存
-RUN --mount=type=cache,target=/root/.npm \
-    --mount=type=cache,target=/web/default/node_modules \
-    --mount=type=cache,target=/web/berry/node_modules \
-    --mount=type=cache,target=/web/air/node_modules \
-    npm install --prefix /web/default & \
-    npm install --prefix /web/berry & \
-    npm install --prefix /web/air & \
-    wait
+COPY web/berry/package*.json ./berry/
+RUN npm install --prefix /web/berry --no-audit --no-fund
+
+COPY web/air/package*.json ./air/
+RUN npm install --prefix /web/air --no-audit --no-fund
 
 # 复制源码并构建
 COPY web/default ./default
@@ -28,16 +23,12 @@ COPY web/berry ./berry
 COPY web/air ./air
 COPY VERSION .
 
-# 读取版本，若 VERSION 为空则用 git describe 兜底，再兜底用 v0.0.0
-RUN VERSION_CONTENT=$(cat VERSION 2>/dev/null | tr -d '\n') && \
-    if [ -z "$VERSION_CONTENT" ]; then \
-        VERSION_CONTENT=$(git describe --tags --always --dirty 2>/dev/null || echo "v0.0.0"); \
-    fi && \
+# 串行构建（读版本 → 三个主题分别构建）
+RUN if [ -s VERSION ]; then VERSION_CONTENT=$(cat VERSION | tr -d '\n'); else VERSION_CONTENT=$(git describe --tags --always --dirty 2>/dev/null || echo "v0.0.0"); fi && \
     echo "$VERSION_CONTENT" > VERSION && \
-    DISABLE_ESLINT_PLUGIN=true REACT_APP_VERSION="$VERSION_CONTENT" npm run build --prefix /web/default & \
-    DISABLE_ESLINT_PLUGIN=true REACT_APP_VERSION="$VERSION_CONTENT" npm run build --prefix /web/berry & \
-    DISABLE_ESLINT_PLUGIN=true REACT_APP_VERSION="$VERSION_CONTENT" npm run build --prefix /web/air & \
-    wait
+    DISABLE_ESLINT_PLUGIN=true REACT_APP_VERSION="$VERSION_CONTENT" npm run build --prefix /web/default && \
+    DISABLE_ESLINT_PLUGIN=true REACT_APP_VERSION="$VERSION_CONTENT" npm run build --prefix /web/berry && \
+    DISABLE_ESLINT_PLUGIN=true REACT_APP_VERSION="$VERSION_CONTENT" npm run build --prefix /web/air
 
 
 # ============================================================
