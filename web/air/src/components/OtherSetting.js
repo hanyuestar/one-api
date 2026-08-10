@@ -90,12 +90,12 @@ const OtherSetting = () => {
 
   const openGitHubRelease = () => {
     window.location =
-      'https://github.com/songquanpeng/one-api/releases/latest';
+      'https://github.com/hanyuestar/one-api/releases/latest';
   };
 
   const checkUpdate = async () => {
     const res = await API.get(
-      'https://api.github.com/repos/songquanpeng/one-api/releases/latest'
+      'https://api.github.com/repos/hanyuestar/one-api/releases/latest'
     );
     const { tag_name, body } = res.data;
     if (tag_name === process.env.REACT_APP_VERSION) {
@@ -141,7 +141,7 @@ const OtherSetting = () => {
           <Form.Group widths='equal'>
             <Form.Input
               label={<label>主题名称（<Link
-                to='https://github.com/songquanpeng/one-api/blob/main/web/README.md'>当前可用主题</Link>）</label>}
+                to='https://github.com/hanyuestar/one-api/blob/main/web/README.md'>当前可用主题</Link>）</label>}
               placeholder='请输入主题名称'
               value={inputs.Theme}
               name='Theme'

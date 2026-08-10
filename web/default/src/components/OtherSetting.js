@@ -95,12 +95,12 @@ const OtherSetting = () => {
   };
 
   const openGitHubRelease = () => {
-    window.location = 'https://github.com/songquanpeng/one-api/releases/latest';
+    window.location = 'https://github.com/hanyuestar/one-api/releases/latest';
   };
 
   const checkUpdate = async () => {
     const res = await API.get(
-      'https://api.github.com/repos/songquanpeng/one-api/releases/latest'
+      'https://api.github.com/repos/hanyuestar/one-api/releases/latest'
     );
     const { tag_name, body } = res.data;
     if (tag_name === process.env.REACT_APP_VERSION) {
@@ -152,7 +152,7 @@ const OtherSetting = () => {
               label={
                 <label>
                   {t('setting.other.system.theme.title')}（
-                  <Link to='https://github.com/songquanpeng/one-api/blob/main/web/README.md'>
+                  <Link to='https://github.com/hanyuestar/one-api/blob/main/web/README.md'>
                     {t('setting.other.system.theme.link')}
                   </Link>
                   ）

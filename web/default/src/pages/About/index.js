@@ -40,8 +40,8 @@ const About = () => {
               <Card.Header className='header'>{t('about.title')}</Card.Header>
               <p>{t('about.description')}</p>
               {t('about.repository')}
-              <a href='https://github.com/songquanpeng/one-api'>
-                https://github.com/songquanpeng/one-api
+              <a href='https://github.com/hanyuestar/one-api'>
+                https://github.com/hanyuestar/one-api
               </a>
             </Card.Content>
           </Card>

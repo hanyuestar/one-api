@@ -38,14 +38,14 @@ const Footer = () => {
         ) : (
           <div className='custom-footer'>
             <a
-              href='https://github.com/songquanpeng/one-api'
+              href='https://github.com/hanyuestar/one-api'
               target='_blank'
             >
               {systemName} {process.env.REACT_APP_VERSION}{' '}
             </a>
             由{' '}
-            <a href='https://github.com/songquanpeng' target='_blank'>
-              JustSong
+            <a href='https://github.com/hanyuestar' target='_blank'>
+              hanyuestar
             </a>{' '}
             构建，主题 air 来自{' '}
             <a href='https://github.com/Calcium-Ion' target='_blank'>

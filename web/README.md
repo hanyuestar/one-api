@@ -44,4 +44,4 @@
 
 #### 开发说明
 
-请查看 [web/berry/README.md](https://github.com/songquanpeng/one-api/tree/main/web/berry/README.md)
+请查看 [web/berry/README.md](https://github.com/hanyuestar/one-api/tree/main/web/berry/README.md)

@@ -38,11 +38,11 @@ const Footer = () => {
           ></div>
         ) : (
           <div className='custom-footer'>
-            <a href='https://github.com/songquanpeng/one-api' target='_blank'>
+            <a href='https://github.com/hanyuestar/one-api' target='_blank'>
               {systemName} {process.env.REACT_APP_VERSION}{' '}
             </a>
             {t('footer.built_by')}{' '}
-            <a href='https://github.com/songquanpeng' target='_blank'>
+            <a href='https://github.com/hanyuestar' target='_blank'>
               {t('footer.built_by_name')}
             </a>{' '}
             {t('footer.license')}{' '}
