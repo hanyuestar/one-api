@@ -1,9 +1,10 @@
-version: '3.4'
+version: '3.8'
 
-# 镜像源配置:
-#   默认: ghcr.io/hanyuestar/one-api
-#   切换到 Docker Hub: IMAGE=hanyuestar/one-api docker compose up -d
-#   指定版本: TAG=v0.1.0 docker compose up -d
+# ============================================================
+# one-api 部署配置
+# 单文件即可启动：docker compose up -d
+# 生产环境建议：cp .env.example .env 并修改敏感值
+# ============================================================
 
 services:
   one-api:
@@ -14,41 +15,150 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./data/oneapi:/data
-      - ./logs:/app/logs
+      - ./data/oneapi:/data          # 持久化数据目录（SQLite、上传文件等）
+      - ./logs:/app/logs             # 日志目录
     environment:
-      - SQL_DSN=oneapi:123456@tcp(db:3306)/one-api  # 修改此行，或注释掉以使用 SQLite 作为数据库
-      - REDIS_CONN_STRING=redis://redis
-      - SESSION_SECRET=random_string  # 修改为随机字符串
+      # ------------------------------------------------------------------
+      # 【必改】生产环境必须修改的核心参数
+      # ------------------------------------------------------------------
+      # 数据库连接串 (DSN)
+      #   格式: 用户名:密码@tcp(主机:端口)/数据库名?参数
+      #   来源: 由你创建的 MySQL 数据库决定
+      #   示例: oneapi:StrongP@ssw0rd@tcp(db:3306)/one-api?charset=utf8mb4&parseTime=True&loc=Local
+      #   说明: 使用 SQLite 时请注释掉此行（容器会自动在 /data/one-api.db 创建文件数据库）
+      - SQL_DSN=oneapi:123456@tcp(db:3306)/one-api?charset=utf8mb4&parseTime=True&loc=Local
+
+      # Redis 连接串
+      #   格式: redis://[:密码@]主机:端口[/数据库编号]
+      #   来源: Redis 服务地址（本 compose 内用服务名 redis）
+      #   示例: redis://redis:6379/0          (无密码)
+      #   示例: redis://:mypassword@redis:6379/0  (有密码)
+      - REDIS_CONN_STRING=redis://redis:6379/0
+
+      # Session 加密密钥（必须修改！）
+      #   格式: 32+ 字节的随机 Base64 字符串
+      #   生成方式:
+      #     Linux/Mac:  openssl rand -base64 32
+      #     Windows:    powershell -c "[Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Maximum 256 }))"
+      #   示例: k8s9fJ3nL2pQ7vX1zA4bC6dE8fG0hI2jK4lM6nO8pQ=
+      #   说明: 泄露会导致用户会话被伪造，生产环境必须换成强随机值
+      - SESSION_SECRET=change_me_in_production_use_openssl_rand_base64_32
+
+      # 时区
+      #   格式: IANA 时区标识符
+      #   常用: Asia/Shanghai, America/New_York, UTC, Europe/London
       - TZ=Asia/Shanghai
-#      - NODE_TYPE=slave  # 多机部署时从节点取消注释该行
-#      - SYNC_FREQUENCY=60  # 需要定期从数据库加载数据时取消注释该行
-#      - FRONTEND_BASE_URL=https://openai.justsong.cn  # 多机部署时从节点取消注释该行
+
+      # ------------------------------------------------------------------
+      # 【可选】多机集群部署参数（单机部署忽略）
+      # ------------------------------------------------------------------
+      # 节点角色: master(默认) / slave
+      # 来源: 集群架构设计决定
+      # 示例: slave
+      # - NODE_TYPE=slave
+
+      # 从节点同步频率(秒)
+      # 格式: 正整数，建议 30-300
+      # 示例: 60
+      # - SYNC_FREQUENCY=60
+
+      # 前端访问基础 URL（从节点必填）
+      # 格式: 完整 URL，含协议、域名、端口，无尾斜杠
+      # 来源: 你的反向代理/域名配置
+      # 示例: https://api.yourdomain.com
+      # 示例: http://192.168.1.100:3000
+      # - FRONTEND_BASE_URL=https://api.yourdomain.com
+
+      # ------------------------------------------------------------------
+      # 【可选】其他常用参数（按需取消注释）
+      # ------------------------------------------------------------------
+      # 日志级别: debug / info / warn / error
+      # - LOG_LEVEL=info
+
+      # 启用 pprof 性能分析端口 (默认 6060，仅内网调试用)
+      # - ENABLE_PPROF=true
+
+      # 自定义上传文件大小限制 (MB)
+      # - MAX_UPLOAD_SIZE=20
+
     depends_on:
-      - redis
-      - db
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
     healthcheck:
-      test: [ "CMD-SHELL", "wget -q -O - http://localhost:3000/api/status | grep -o '\"success\":\\s*true' | awk -F: '{print $2}'" ]
+      # 使用 HTTP 接口健康检查（应用不支持 --health-check 参数）
+      # 接口返回: {"success":true,"message":"..."}
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:3000/api/status | grep -q '\"success\":true'"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
+      start_period: 10s
 
   redis:
-    image: "${REGISTRY:-docker.io}/redis:latest"
+    image: "redis:7-alpine"
     container_name: redis
     restart: always
+    # 如需密码，取消下面两行并设置密码：
+    # command: redis-server --requirepass your_redis_password
+    # 环境变量 REDIS_CONN_STRING 对应改为: redis://:your_redis_password@redis:6379/0
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    volumes:
+      - ./data/redis:/data   # Redis 持久化（可选）
 
   db:
-    image: "${REGISTRY:-docker.io}/mysql:8.2.0"
+    image: "mysql:8.2.0"
     restart: always
     container_name: mysql
     volumes:
-      - ./data/mysql:/var/lib/mysql  # 挂载目录，持久化存储
-    ports:
-      - '3306:3306'
+      - ./data/mysql:/var/lib/mysql
+    # 如需外网访问数据库，取消下行端口映射（生产环境不建议暴露）
+    # ports:
+    #   - '3306:3306'
     environment:
-      TZ: Asia/Shanghai   # 设置时区
-      MYSQL_ROOT_PASSWORD: 'OneAPI@justsong' # 设置 root 用户的密码
-      MYSQL_USER: oneapi   # 创建专用用户
-      MYSQL_PASSWORD: '123456'    # 设置专用用户密码
-      MYSQL_DATABASE: one-api   # 自动创建数据库
+      TZ: Asia/Shanghai
+      # ------------------------------------------------------------------
+      # 【必改】MySQL 密码（生产环境必须修改！）
+      # ------------------------------------------------------------------
+      # Root 密码
+      #   格式: 强密码（建议 16+ 字符，含大小写数字特殊符号）
+      #   生成: openssl rand -base64 24
+      #   示例: K8s9fJ3nL2pQ7vX1zA4bC6dE8fG0hI2j
+      MYSQL_ROOT_PASSWORD: 'OneAPI@justsong_CHANGE_ME_IN_PRODUCTION'
+
+      # 业务用户名（一般不改）
+      MYSQL_USER: oneapi
+
+      # 业务密码
+      #   格式: 强密码，建议与 Root 密码不同
+      #   生成: openssl rand -base64 24
+      #   示例: mY4sTr0ngP@ssw0rd_F0r_0n3Ap1
+      MYSQL_PASSWORD: '123456_CHANGE_ME_IN_PRODUCTION'
+
+      # 数据库名（一般不改，需与 SQL_DSN 中的数据库名一致）
+      MYSQL_DATABASE: one-api
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+# ============================================================
+# 网络（默认 bridge，一般无需修改）
+# ============================================================
+# networks:
+#   default:
+#     driver: bridge
+
+# ============================================================
+# 卷（数据持久化，宿主机路径 ./data/...）
+# ============================================================
+# volumes:
+#   oneapi_data:
+#   mysql_data:
+#   redis_data:

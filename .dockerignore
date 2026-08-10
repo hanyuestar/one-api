@@ -1,0 +1,40 @@
+# Git
+.git
+.gitignore
+
+# 前端依赖与构建产物（由构建阶段自己生成）
+web/*/node_modules
+web/*/build
+web/build
+
+# Go
+go.sum
+*.exe
+one-api
+
+# 数据与日志
+data
+logs
+*.db
+*.db-journal
+
+# IDE/OS
+.idea
+.vscode
+.DS_Store
+
+# 环境配置
+.env
+.env.local
+.env.*.local
+
+# 临时文件
+tmp
+temp
+*.tmp
+*.log
+
+# 文档
+README*.md
+docs
+LICENSE

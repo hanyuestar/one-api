@@ -30,6 +30,16 @@ var ImageSizeRatios = map[string]map[string]float64{
 		"720x1280":  1,
 		"1280x720":  1,
 	},
+	"wanx2.1-t2i-turbo": {
+		"1024x1024": 1,
+		"720x1280":  1,
+		"1280x720":  1,
+	},
+	"wanx2.1-t2i-plus": {
+		"1024x1024": 1,
+		"720x1280":  1.2,
+		"1280x720":  1.2,
+	},
 	"step-1x-medium": {
 		"256x256":   1,
 		"512x512":   1,
@@ -71,6 +81,8 @@ var ImageGenerationAmounts = map[string][2]int{
 	"ali-stable-diffusion-xl":   {1, 4}, // Ali
 	"ali-stable-diffusion-v1.5": {1, 4}, // Ali
 	"wanx-v1":                   {1, 4}, // Ali
+	"wanx2.1-t2i-turbo":         {1, 4}, // Ali
+	"wanx2.1-t2i-plus":          {1, 4}, // Ali
 	"cogview-3":                 {1, 1},
 	"step-1x-medium":            {1, 1},
 	// Doubao Seedream
@@ -86,6 +98,8 @@ var ImagePromptLengthLimitations = map[string]int{
 	"ali-stable-diffusion-xl":   4000,
 	"ali-stable-diffusion-v1.5": 4000,
 	"wanx-v1":                   4000,
+	"wanx2.1-t2i-turbo":         4000,
+	"wanx2.1-t2i-plus":          4000,
 	"cogview-3":                 833,
 	"step-1x-medium":            4000,
 	// Doubao Seedream
