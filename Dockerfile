@@ -23,8 +23,9 @@ COPY web/berry ./berry
 COPY web/air ./air
 COPY VERSION .
 
-# 串行构建（读版本 → 三个主题分别构建）
-RUN if [ -s VERSION ]; then VERSION_CONTENT=$(cat VERSION | tr -d '\n'); else VERSION_CONTENT=$(git describe --tags --always --dirty 2>/dev/null || echo "v0.0.0"); fi && \
+# 串行构建（先创建 web/build 目录，因 react build 脚本执行 mv 需目标目录存在）
+RUN mkdir -p /web/build && \
+    if [ -s VERSION ]; then VERSION_CONTENT=$(cat VERSION | tr -d '\n'); else VERSION_CONTENT=$(git describe --tags --always --dirty 2>/dev/null || echo "v0.0.0"); fi && \
     echo "$VERSION_CONTENT" > VERSION && \
     DISABLE_ESLINT_PLUGIN=true REACT_APP_VERSION="$VERSION_CONTENT" npm run build --prefix /web/default && \
     DISABLE_ESLINT_PLUGIN=true REACT_APP_VERSION="$VERSION_CONTENT" npm run build --prefix /web/berry && \
