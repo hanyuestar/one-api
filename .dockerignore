@@ -7,8 +7,7 @@ web/*/node_modules
 web/*/build
 web/build
 
-# Go
-go.sum
+# Go（go.mod + go.sum 必须保留供构建阶段下载依赖）
 *.exe
 one-api
 
