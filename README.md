@@ -121,6 +121,45 @@ _✨ 开源 OpenAI 接口管理 & 分发系统，支持生图接口 ✨_
 26. 🆕 **火山引擎（Seedream）生图** — 渠道类型 40，支持 Seedream 4.0/4.5/5.0 系列。
 27. 🆕 **Air 主题渠道类型补全** — 新增百度V2、讯飞V2、阿里百炼、OpenAI兼容、Gemini OpenAI 五种类型。
 
+## 更新日志
+
+### v1.0.3（2026-08-11）
+
+**Bug 修复**
+
+- 修复阿里百炼渠道（type 49）文本对话返回 `usage is nil` 的问题。此前该渠道独立适配器 `DoResponse` 未正确提取 usage，导致**请求不扣费、消费日志不记录**。现已复用 OpenAI 标准 Handler/StreamHandler 处理响应，生图接口不受影响。
+
+**功能优化**
+
+- 补全 **berry 主题**缺失的 5 个渠道注册：百度文心千帆 V2、讯飞星火认知 V2、阿里云百炼、OpenAI 兼容、Gemini (OpenAI)。三个主题（default/air/berry）渠道类型现已完全对齐（51 种）。
+- go.mod 版本声明统一为 `1.22`，与 Docker 构建环境保持一致。
+- 修正 berry 主题 `ChannelConstants.js` 中 Replicate 渠道对象键与内部键不一致的问题。
+
+### v1.0.2（2026-08-10）
+
+- 修复 default 主题前端构建失败：移除 eslint 配置中 `react-app/jest` 引用（`jest/globals` environment key 在 react-scripts 5 中已不识别）。
+
+### v1.0.1（2026-08-10）
+
+- 默认版本号由 `v0.0.0` 修正为 `v1.0.0`，与发布 tag 保持一致。
+- 新增 Wiki 文档（`docs/wiki/`）：项目总览、Docker 部署指南、模型倍率说明。
+
+### v1.0.0（2026-08-10）
+
+**Docker 部署优化**
+
+- 基础镜像版本固定：Node 20 / Go 1.22 / Alpine 3.20，避免版本漂移。
+- 新增 `.dockerignore`，排除 node_modules、构建产物、数据库文件等，镜像体积显著减小。
+- 多阶段构建 + BuildKit 缓存挂载，二次构建速度提升。
+- 运行时使用非 root 用户（appuser），内置 HTTP 健康检查。
+- `docker-compose.yml` 零配置可跑（SQLite 模式），生产环境按注释修改密钥即可。
+- 新增 `.env.example` 模板。
+
+**模型倍率更新**
+
+- 修正过时/错误倍率：`gpt-4o`（$5/M→$2.5/M）、`o3-mini`（$3/M→$1.1/M）、`qwen2.5-32b/3b` 等。
+- 新增 50+ 个常见模型倍率（GPT-4.1/5、Claude 4.x、Gemini 2.5/3、DeepSeek V4、GLM-4.5/4.6/4.7、qwen3、豆包 Seed 系列、Kimi K2 等）。
+
 ## 部署
 ### 基于 Docker 进行部署
 ```shell

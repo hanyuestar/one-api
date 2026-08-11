@@ -185,7 +185,7 @@ export const CHANNEL_OPTIONS = {
     value: 45,
     color: 'primary'
   },
-  45: {
+  46: {
     key: 46,
     text: 'Replicate',
     value: 46,
@@ -274,5 +274,39 @@ export const CHANNEL_OPTIONS = {
     text: '代理：AIGC2D',
     value: 13,
     color: 'success'
+  },
+  47: {
+    key: 47,
+    text: '百度文心千帆 V2',
+    value: 47,
+    color: 'primary',
+    tip: '请前往此处获取 API Key（百度 IAM），仅支持推理服务 V2 相关模型'
+  },
+  48: {
+    key: 48,
+    text: '讯飞星火认知 V2',
+    value: 48,
+    color: 'primary',
+    tip: 'HTTP 版本的讯飞接口，前往讯飞控制台获取 HTTP 服务接口认证密钥'
+  },
+  49: {
+    key: 49,
+    text: '阿里云百炼',
+    value: 49,
+    color: 'primary'
+  },
+  50: {
+    key: 50,
+    text: 'OpenAI 兼容',
+    value: 50,
+    color: 'primary',
+    description: 'OpenAI 兼容渠道，支持设置 Base URL'
+  },
+  51: {
+    key: 51,
+    text: 'Gemini (OpenAI)',
+    value: 51,
+    color: 'warning',
+    description: 'Gemini OpenAI 兼容格式'
   }
 };

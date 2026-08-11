@@ -1,7 +1,6 @@
 package alibailian
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -10,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/songquanpeng/one-api/relay/adaptor"
 	"github.com/songquanpeng/one-api/relay/adaptor/ali"
+	"github.com/songquanpeng/one-api/relay/adaptor/openai"
 	"github.com/songquanpeng/one-api/relay/meta"
 	"github.com/songquanpeng/one-api/relay/model"
 	"github.com/songquanpeng/one-api/relay/relaymode"
@@ -68,38 +68,22 @@ func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, meta *meta.Met
 		err, _ = ali.ImageHandler(c, resp)
 		return
 	}
-	// Bailian compatible-mode returns OpenAI-compatible responses, pass through after reading.
-	responseBody, readErr := io.ReadAll(resp.Body)
-	if readErr != nil {
-		return nil, &model.ErrorWithStatusCode{
-			Error:      model.Error{Message: readErr.Error(), Type: "read_response_failed"},
-			StatusCode: http.StatusInternalServerError,
-		}
-	}
-	resp.Body.Close()
-
-	// For streaming responses, forward the SSE stream directly.
+	// Bailian compatible-mode returns OpenAI-compatible responses,
+	// reuse the OpenAI handler so that usage is always extracted correctly.
 	if meta.IsStream {
-		for k, v := range resp.Header {
-			c.Writer.Header().Set(k, v[0])
+		var responseText string
+		err, responseText, usage = openai.StreamHandler(c, resp, meta.Mode)
+		if usage == nil || usage.TotalTokens == 0 {
+			usage = openai.ResponseText2Usage(responseText, meta.ActualModelName, meta.PromptTokens)
 		}
-		c.Writer.WriteHeader(resp.StatusCode)
-		c.Writer.Write(responseBody)
-		return nil, nil
+		if usage.TotalTokens != 0 && usage.PromptTokens == 0 { // some channels only return total tokens
+			usage.PromptTokens = meta.PromptTokens
+			usage.CompletionTokens = usage.TotalTokens - meta.PromptTokens
+		}
+	} else {
+		err, usage = openai.Handler(c, resp, meta.PromptTokens, meta.ActualModelName)
 	}
-
-	// For non-streaming, unmarshal to generic map to extract usage if available.
-	c.Writer.Header().Set("Content-Type", "application/json")
-	c.Writer.WriteHeader(resp.StatusCode)
-	c.Writer.Write(responseBody)
-
-	var genericResp struct {
-		Usage *model.Usage `json:"usage"`
-	}
-	if json.Unmarshal(responseBody, &genericResp) == nil && genericResp.Usage != nil {
-		return nil, nil
-	}
-	return nil, nil
+	return
 }
 
 func (a *Adaptor) GetModelList() []string {
