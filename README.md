@@ -123,6 +123,12 @@ _✨ 开源 OpenAI 接口管理 & 分发系统，支持生图接口 ✨_
 
 ## 更新日志
 
+### v1.0.4（2026-08-14）
+
+**Bug 修复**
+
+- 修复令牌（Token）页面「已用额度」始终为 0 的问题。根因：`PreConsumeTokenQuota` 和 `PostConsumeTokenQuota` 在无限制额度令牌（`UnlimitedQuota=true`）下跳过了 `used_quota` 的累加逻辑。现已为无限制令牌单独写入 `used_quota` 字段，不影响有额度限制令牌的行为。
+
 ### v1.0.3（2026-08-11）
 
 **Bug 修复**
