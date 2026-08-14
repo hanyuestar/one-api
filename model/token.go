@@ -274,6 +274,16 @@ func PreConsumeTokenQuota(tokenId int, quota int64) (err error) {
 		if err != nil {
 			return err
 		}
+	} else {
+		err = DB.Model(&Token{}).Where("id = ?", tokenId).Updates(
+			map[string]interface{}{
+				"used_quota":    gorm.Expr("used_quota + ?", quota),
+				"accessed_time": helper.GetTimestamp(),
+			},
+		).Error
+		if err != nil {
+			return err
+		}
 	}
 	err = DecreaseUserQuota(token.UserId, quota)
 	return err
@@ -295,6 +305,16 @@ func PostConsumeTokenQuota(tokenId int, quota int64) (err error) {
 		} else {
 			err = IncreaseTokenQuota(tokenId, -quota)
 		}
+		if err != nil {
+			return err
+		}
+	} else {
+		err = DB.Model(&Token{}).Where("id = ?", tokenId).Updates(
+			map[string]interface{}{
+				"used_quota":    gorm.Expr("used_quota + ?", quota),
+				"accessed_time": helper.GetTimestamp(),
+			},
+		).Error
 		if err != nil {
 			return err
 		}
