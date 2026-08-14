@@ -31,6 +31,16 @@
 
 默认倍率表已更新至 2026 年 8 月的最新官方定价，修正了上游几处错误，并补充了 50+ 个近期发布的模型。
 
+### Bug 修复
+
+| 版本 | 修复内容 |
+|------|---------|
+| v1.0.4 | 修复无限制额度令牌 `used_quota` 不累计的问题 |
+| v1.0.3 | 修复阿里百炼 text 通道 `usage is nil` 问题；补全 berry 主题 5 个缺失渠道 |
+| v1.0.2 | 修复 default 主题前端构建 eslint 配置错误 |
+| v1.0.1 | 修正硬编码版本号与发布 tag 不一致 |
+| v1.0.0 | Docker 构建全链路优化（基础镜像固定、非 root 运行、健康检查等） |
+
 ## 快速开始
 
 ```bash
@@ -67,4 +77,5 @@ docker compose up -d
 ## 相关链接
 
 - 上游原始项目：[songquanpeng/one-api](https://github.com/songquanpeng/one-api)
+- 发布版本：[v1.0.4](https://github.com/hanyuestar/one-api/releases/tag/v1.0.4)（[查看更新日志](https://github.com/hanyuestar/one-api#%E6%9B%B4%E6%96%B0%E6%97%A5%E5%BF%97)）
 - Docker 镜像：[GitHub Packages](https://github.com/hanyuestar/one-api/pkgs/container/one-api) | [Docker Hub](https://hub.docker.com/r/kyson666/one-api)
