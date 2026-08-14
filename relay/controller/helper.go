@@ -103,7 +103,43 @@ func postConsumeQuota(ctx context.Context, usage *relaymodel.Usage, meta *meta.M
 	completionRatio := billingratio.GetCompletionRatio(textRequest.Model, meta.ChannelType)
 	promptTokens := usage.PromptTokens
 	completionTokens := usage.CompletionTokens
-	quota = int64(math.Ceil((float64(promptTokens) + float64(completionTokens)*completionRatio) * ratio))
+	// 缓存命中/写入 token 数（从 OpenAI 的 prompt_tokens_details.cached_tokens 或 Anthropic 的 cache_* 字段解析得到）
+	cacheHitTokens := usage.CacheHitTokens
+	cacheWriteTokens := usage.CacheWriteTokens
+	// 兜底：若 PromptTokensDetails.CachedTokens 存在而 CacheHitTokens 未映射，则补齐
+	if cacheHitTokens == 0 {
+		if usage.PromptTokensDetails != nil {
+			cacheHitTokens = usage.PromptTokensDetails.CachedTokens
+		}
+		if cacheHitTokens == 0 {
+			cacheHitTokens = usage.PromptCacheHitTokens
+		}
+	}
+	// 防御：缓存命中+写入的 token 不应超过输入 token 总数
+	if cacheHitTokens < 0 {
+		cacheHitTokens = 0
+	}
+	if cacheWriteTokens < 0 {
+		cacheWriteTokens = 0
+	}
+	if cacheHitTokens+cacheWriteTokens > promptTokens {
+		// 异常时按比例回退，避免计费为负或超过输入
+		over := cacheHitTokens + cacheWriteTokens - promptTokens
+		if cacheWriteTokens >= over {
+			cacheWriteTokens -= over
+		} else {
+			cacheHitTokens -= (over - cacheWriteTokens)
+			cacheWriteTokens = 0
+		}
+	}
+	cacheHitRatio := billingratio.GetCacheHitRatio(textRequest.Model, meta.ChannelType)
+	cacheWriteRatio := billingratio.GetCacheWriteRatio(textRequest.Model, meta.ChannelType)
+	normalPromptTokens := promptTokens - cacheHitTokens - cacheWriteTokens
+	// 计费 = (正常输入 + 缓存命中×折扣 + 缓存写入×加价 + 输出×输出倍率) × 模型倍率 × 分组倍率
+	quota = int64(math.Ceil((float64(normalPromptTokens) +
+		float64(cacheHitTokens)*cacheHitRatio +
+		float64(cacheWriteTokens)*cacheWriteRatio +
+		float64(completionTokens)*completionRatio) * ratio))
 	if ratio != 0 && quota <= 0 {
 		quota = 1
 	}
@@ -123,11 +159,19 @@ func postConsumeQuota(ctx context.Context, usage *relaymodel.Usage, meta *meta.M
 		logger.Error(ctx, "error update user quota cache: "+err.Error())
 	}
 	logContent := fmt.Sprintf("倍率：%.2f × %.2f × %.2f", modelRatio, groupRatio, completionRatio)
+	if cacheHitTokens > 0 {
+		logContent += fmt.Sprintf("（缓存命中 %d，折扣 %.2f）", cacheHitTokens, cacheHitRatio)
+	}
+	if cacheWriteTokens > 0 {
+		logContent += fmt.Sprintf("（缓存写入 %d，加价 %.2f）", cacheWriteTokens, cacheWriteRatio)
+	}
 	model.RecordConsumeLog(ctx, &model.Log{
 		UserId:            meta.UserId,
 		ChannelId:         meta.ChannelId,
 		PromptTokens:      promptTokens,
 		CompletionTokens:  completionTokens,
+		CacheHitTokens:    cacheHitTokens,
+		CacheWriteTokens:  cacheWriteTokens,
 		ModelName:         textRequest.Model,
 		TokenName:         meta.TokenName,
 		Quota:             int(quota),

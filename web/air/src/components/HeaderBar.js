@@ -21,14 +21,6 @@ let headerButtons = [
   }
 ];
 
-if (localStorage.getItem('chat_link')) {
-  headerButtons.splice(1, 0, {
-    name: '聊天',
-    to: '/chat',
-    icon: 'comments'
-  });
-}
-
 const HeaderBar = () => {
   const [userState, userDispatch] = useContext(UserContext);
   let navigate = useNavigate();

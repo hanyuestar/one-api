@@ -15,9 +15,6 @@ const StatusProvider = ({ children }) => {
     const { success, data } = res.data;
     let system_name = "";
     if (success) {
-      if (!data.chat_link) {
-        delete data.chat_link;
-      }
       localStorage.setItem("siteInfo", JSON.stringify(data));
       localStorage.setItem("quota_per_unit", data.quota_per_unit);
       localStorage.setItem("display_in_currency", data.display_in_currency);

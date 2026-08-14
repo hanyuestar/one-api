@@ -723,9 +723,86 @@ var CompletionRatio = map[string]float64{
 	"gemini-3.1-flash-lite-preview": 1.5 / 0.25,
 }
 
+// CacheHitRatio 缓存命中（读缓存）折扣系数：缓存命中的输入 token 按输入价格的该比例计费。
+// 例如 0.1 表示打 1 折、0.5 表示打 5 折。默认 1.0 表示不享受折扣（按正常输入计费）。
+// 各模型官方缓存命中价 / 正常输入价：
+//   - OpenAI（cached input）：多为 0.5（如 gpt-4o $2.50 → $1.25），gpt-4.1 系列 0.25
+//   - Anthropic（cache read）：0.1（claude 系列缓存读取为输入的 1/10）
+//   - DeepSeek（cache hit）：0.1（v4 系列缓存命中为未命中的 1/10），chat/reasoner 为 0.25
+//   - Google Gemini（context caching）：0.25
+var CacheHitRatio = map[string]float64{
+	// OpenAI
+	"gpt-4o":             0.5,
+	"gpt-4o-2024-05-13":  0.5,
+	"gpt-4o-2024-08-06":  0.5,
+	"gpt-4o-2024-11-20":  0.5,
+	"gpt-4o-mini":        0.5,
+	"gpt-4o-mini-2024-07-18": 0.5,
+	"gpt-4.1":            0.25,
+	"gpt-4.1-mini":       0.25,
+	"gpt-4.1-nano":       0.25,
+	"gpt-5":              0.25,
+	"gpt-5-mini":         0.25,
+	"gpt-5-nano":         0.25,
+	"gpt-5.1":            0.25,
+	"gpt-5.2":            0.25,
+	"o1":                 0.5,
+	"o1-preview":         0.5,
+	"o3-mini":            0.5,
+	"o4-mini":            0.5,
+	// Anthropic（cache read = 0.1）
+	"claude-3-5-haiku-20241022":  0.1,
+	"claude-3-5-haiku-latest":    0.1,
+	"claude-3-5-sonnet-20240620": 0.1,
+	"claude-3-5-sonnet-20241022": 0.1,
+	"claude-3-5-sonnet-latest":   0.1,
+	"claude-3-7-sonnet-20250219": 0.1,
+	"claude-3.7-sonnet-thinking-20250219": 0.1,
+	"claude-sonnet-4-20250514":   0.1,
+	"claude-sonnet-4.5-20250929": 0.1,
+	"claude-opus-4-20250514":     0.1,
+	"claude-opus-4.1":            0.1,
+	"claude-opus-4.5":            0.1,
+	"claude-haiku-4.5":           0.1,
+	// DeepSeek（cache hit）
+	"deepseek-v4-flash": 0.1, // ¥0.1 / 1M cache hit vs ¥1.0 miss
+	"deepseek-v4-pro":   0.1, // ¥0.3 / 1M cache hit vs ¥3.0 miss
+	"deepseek-chat":     0.25,
+	"deepseek-reasoner": 0.25,
+	// Google Gemini（context caching）
+	"gemini-2.5-flash":      0.25,
+	"gemini-2.5-flash-lite": 0.25,
+	"gemini-2.5-pro":        0.25,
+	"gemini-3-flash":        0.25,
+	"gemini-3-pro-preview":  0.25,
+	"gemini-3.1-pro-preview":  0.25,
+	"gemini-3.1-flash-lite-preview": 0.25,
+}
+
+// CacheWriteRatio 缓存写入加价系数：写入缓存的输入 token 按输入价格的该比例计费。
+// Anthropic 缓存写入（cache write）为输入的 1.25 倍。默认 1.0 表示不加价（按正常输入计费）。
+var CacheWriteRatio = map[string]float64{
+	// Anthropic（cache write = 1.25x input）
+	"claude-3-5-haiku-20241022":  1.25,
+	"claude-3-5-haiku-latest":    1.25,
+	"claude-3-5-sonnet-20240620": 1.25,
+	"claude-3-5-sonnet-20241022": 1.25,
+	"claude-3-5-sonnet-latest":   1.25,
+	"claude-3-7-sonnet-20250219": 1.25,
+	"claude-3.7-sonnet-thinking-20250219": 1.25,
+	"claude-sonnet-4-20250514":   1.25,
+	"claude-sonnet-4.5-20250929": 1.25,
+	"claude-opus-4-20250514":     1.25,
+	"claude-opus-4.1":            1.25,
+	"claude-opus-4.5":            1.25,
+	"claude-haiku-4.5":           1.25,
+}
+
 var (
 	DefaultModelRatio      map[string]float64
 	DefaultCompletionRatio map[string]float64
+	DefaultCacheHitRatio   map[string]float64
+	DefaultCacheWriteRatio map[string]float64
 )
 
 func init() {
@@ -736,6 +813,14 @@ func init() {
 	DefaultCompletionRatio = make(map[string]float64)
 	for k, v := range CompletionRatio {
 		DefaultCompletionRatio[k] = v
+	}
+	DefaultCacheHitRatio = make(map[string]float64)
+	for k, v := range CacheHitRatio {
+		DefaultCacheHitRatio[k] = v
+	}
+	DefaultCacheWriteRatio = make(map[string]float64)
+	for k, v := range CacheWriteRatio {
+		DefaultCacheWriteRatio[k] = v
 	}
 }
 
@@ -923,4 +1008,72 @@ func GetCompletionRatio(name string, channelType int) float64 {
 	}
 
 	return 1
+}
+
+func CacheHitRatio2JSONString() string {
+	jsonBytes, err := json.Marshal(CacheHitRatio)
+	if err != nil {
+		logger.SysError("error marshalling cache hit ratio: " + err.Error())
+	}
+	return string(jsonBytes)
+}
+
+func UpdateCacheHitRatioByJSONString(jsonStr string) error {
+	CacheHitRatio = make(map[string]float64)
+	return json.Unmarshal([]byte(jsonStr), &CacheHitRatio)
+}
+
+// GetCacheHitRatio 返回模型缓存命中折扣系数；未配置时默认 1.0（即不享受折扣，等价于按正常输入计费）。
+func GetCacheHitRatio(name string, channelType int) float64 {
+	if strings.HasPrefix(name, "qwen-") && strings.HasSuffix(name, "-internet") {
+		name = strings.TrimSuffix(name, "-internet")
+	}
+	model := fmt.Sprintf("%s(%d)", name, channelType)
+	if ratio, ok := CacheHitRatio[model]; ok {
+		return ratio
+	}
+	if ratio, ok := DefaultCacheHitRatio[model]; ok {
+		return ratio
+	}
+	if ratio, ok := CacheHitRatio[name]; ok {
+		return ratio
+	}
+	if ratio, ok := DefaultCacheHitRatio[name]; ok {
+		return ratio
+	}
+	return 1.0
+}
+
+func CacheWriteRatio2JSONString() string {
+	jsonBytes, err := json.Marshal(CacheWriteRatio)
+	if err != nil {
+		logger.SysError("error marshalling cache write ratio: " + err.Error())
+	}
+	return string(jsonBytes)
+}
+
+func UpdateCacheWriteRatioByJSONString(jsonStr string) error {
+	CacheWriteRatio = make(map[string]float64)
+	return json.Unmarshal([]byte(jsonStr), &CacheWriteRatio)
+}
+
+// GetCacheWriteRatio 返回模型缓存写入加价系数；未配置时默认 1.0（即不加价，等价于按正常输入计费）。
+func GetCacheWriteRatio(name string, channelType int) float64 {
+	if strings.HasPrefix(name, "qwen-") && strings.HasSuffix(name, "-internet") {
+		name = strings.TrimSuffix(name, "-internet")
+	}
+	model := fmt.Sprintf("%s(%d)", name, channelType)
+	if ratio, ok := CacheWriteRatio[model]; ok {
+		return ratio
+	}
+	if ratio, ok := DefaultCacheWriteRatio[model]; ok {
+		return ratio
+	}
+	if ratio, ok := CacheWriteRatio[name]; ok {
+		return ratio
+	}
+	if ratio, ok := DefaultCacheWriteRatio[name]; ok {
+		return ratio
+	}
+	return 1.0
 }

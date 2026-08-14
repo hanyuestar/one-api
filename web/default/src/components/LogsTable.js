@@ -558,7 +558,11 @@ const LogsTable = () => {
                       </Table.Cell>
 
                       <Table.Cell>
-                        {log.prompt_tokens ? log.prompt_tokens : ''}
+                        {log.prompt_tokens
+                          ? log.cache_hit_tokens
+                            ? `${log.prompt_tokens}（缓存命中 ${log.cache_hit_tokens}）`
+                            : log.prompt_tokens
+                          : ''}
                       </Table.Cell>
                       <Table.Cell>
                         {log.completion_tokens ? log.completion_tokens : ''}

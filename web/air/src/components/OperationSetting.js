@@ -13,8 +13,9 @@ const OperationSetting = () => {
     ModelRatio: '',
     CompletionRatio: '',
     GroupRatio: '',
+    CacheHitRatio: '',
+    CacheWriteRatio: '',
     TopUpLink: '',
-    ChatLink: '',
     QuotaPerUnit: 0,
     AutomaticDisableChannelEnabled: '',
     AutomaticEnableChannelEnabled: '',
@@ -35,7 +36,7 @@ const OperationSetting = () => {
     if (success) {
       let newInputs = {};
       data.forEach((item) => {
-        if (item.key === 'ModelRatio' || item.key === 'GroupRatio' || item.key === 'CompletionRatio') {
+        if (item.key === 'ModelRatio' || item.key === 'GroupRatio' || item.key === 'CompletionRatio' || item.key === 'CacheHitRatio' || item.key === 'CacheWriteRatio') {
           item.value = JSON.stringify(JSON.parse(item.value), null, 2);
         }
         if (item.value === '{}') {
@@ -112,6 +113,20 @@ const OperationSetting = () => {
           }
           await updateOption('CompletionRatio', inputs.CompletionRatio);
         }
+        if (originInputs['CacheHitRatio'] !== inputs.CacheHitRatio) {
+          if (!verifyJSON(inputs.CacheHitRatio)) {
+            showError('缓存命中倍率不是合法的 JSON 字符串');
+            return;
+          }
+          await updateOption('CacheHitRatio', inputs.CacheHitRatio);
+        }
+        if (originInputs['CacheWriteRatio'] !== inputs.CacheWriteRatio) {
+          if (!verifyJSON(inputs.CacheWriteRatio)) {
+            showError('缓存写入倍率不是合法的 JSON 字符串');
+            return;
+          }
+          await updateOption('CacheWriteRatio', inputs.CacheWriteRatio);
+        }
         break;
       case 'quota':
         if (originInputs['QuotaForNewUser'] !== inputs.QuotaForNewUser) {
@@ -130,9 +145,6 @@ const OperationSetting = () => {
       case 'general':
         if (originInputs['TopUpLink'] !== inputs.TopUpLink) {
           await updateOption('TopUpLink', inputs.TopUpLink);
-        }
-        if (originInputs['ChatLink'] !== inputs.ChatLink) {
-          await updateOption('ChatLink', inputs.ChatLink);
         }
         if (originInputs['QuotaPerUnit'] !== inputs.QuotaPerUnit) {
           await updateOption('QuotaPerUnit', inputs.QuotaPerUnit);
@@ -171,15 +183,6 @@ const OperationSetting = () => {
               value={inputs.TopUpLink}
               type='link'
               placeholder='例如发卡网站的购买链接'
-            />
-            <Form.Input
-              label='聊天页面链接'
-              name='ChatLink'
-              onChange={handleInputChange}
-              autoComplete='new-password'
-              value={inputs.ChatLink}
-              type='link'
-              placeholder='例如 ChatGPT Next Web 的部署地址'
             />
             <Form.Input
               label='单位美元额度'
@@ -375,6 +378,28 @@ const OperationSetting = () => {
               autoComplete='new-password'
               value={inputs.GroupRatio}
               placeholder='为一个 JSON 文本，键为分组名称，值为倍率'
+            />
+          </Form.Group>
+          <Form.Group widths='equal'>
+            <Form.TextArea
+              label='缓存命中倍率'
+              name='CacheHitRatio'
+              onChange={handleInputChange}
+              style={{ minHeight: 250, fontFamily: 'JetBrains Mono, Consolas' }}
+              autoComplete='new-password'
+              value={inputs.CacheHitRatio}
+              placeholder='为一个 JSON 文本，键为模型名称，值为缓存命中（读缓存）输入 token 的折扣系数（如 0.5 表示打 5 折、0.1 表示打 1 折），未配置的模型默认按正常输入计费'
+            />
+          </Form.Group>
+          <Form.Group widths='equal'>
+            <Form.TextArea
+              label='缓存写入倍率'
+              name='CacheWriteRatio'
+              onChange={handleInputChange}
+              style={{ minHeight: 250, fontFamily: 'JetBrains Mono, Consolas' }}
+              autoComplete='new-password'
+              value={inputs.CacheWriteRatio}
+              placeholder='为一个 JSON 文本，键为模型名称，值为缓存写入（写缓存）输入 token 的加价系数（如 Anthropic 为 1.25 表示 1.25 倍），未配置的模型默认按正常输入计费'
             />
           </Form.Group>
           <Form.Button onClick={() => {

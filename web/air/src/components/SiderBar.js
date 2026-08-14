@@ -8,7 +8,6 @@ import '../index.css';
 
 import {
   IconCalendarClock,
-  IconComment,
   IconCreditCard,
   IconGift,
   IconHistogram,
@@ -47,13 +46,6 @@ const SiderBar = () => {
       to: '/channel',
       icon: <IconLayers />,
       className: isAdmin() ? 'semi-navigation-item-normal' : 'tableHiddle'
-    },
-    {
-      text: '聊天',
-      itemKey: 'chat',
-      to: '/chat',
-      icon: <IconComment />,
-      className: localStorage.getItem('chat_link') ? 'semi-navigation-item-normal' : 'tableHiddle'
     },
     {
       text: '令牌',
@@ -113,7 +105,7 @@ const SiderBar = () => {
     //     to: '/about',
     //     icon: <IconAt/>
     // }
-  ], [localStorage.getItem('enable_data_export'), localStorage.getItem('enable_drawing'), localStorage.getItem('chat_link'), isAdmin()]);
+  ], [localStorage.getItem('enable_data_export'), localStorage.getItem('enable_drawing'), isAdmin()]);
 
   const loadStatus = async () => {
     const res = await API.get('/api/status');
@@ -131,16 +123,6 @@ const SiderBar = () => {
       localStorage.setItem('data_export_default_time', data.data_export_default_time);
       localStorage.setItem('default_collapse_sidebar', data.default_collapse_sidebar);
       localStorage.setItem('mj_notify_enabled', data.mj_notify_enabled);
-      if (data.chat_link) {
-        localStorage.setItem('chat_link', data.chat_link);
-      } else {
-        localStorage.removeItem('chat_link');
-      }
-      if (data.chat_link2) {
-        localStorage.setItem('chat_link2', data.chat_link2);
-      } else {
-        localStorage.removeItem('chat_link2');
-      }
     } else {
       showError('无法正常连接至服务器！');
     }

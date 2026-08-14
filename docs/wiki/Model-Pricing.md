@@ -120,6 +120,24 @@ one-api 用「倍率」来统一度量不同模型的消耗。基准是：
 
 部分模型的 input 和 output 价格比例不一致。`CompletionRatio` 记录的是 output 价格 ÷ input 价格的比例，用于精确计算抵扣额度。如果某个模型的 output 价比 input 贵得多，它的 CompletionRatio 就会更大。
 
+## 关于缓存命中 / 写入倍率
+
+除基础模型倍率外，本 fork 还支持对输入 token 中的「缓存命中」和「缓存写入」部分单独计费：
+
+- **缓存命中倍率（CacheHitRatio）**：缓存命中（读缓存）的输入 token 按该折扣系数计费。例如 0.5 表示打 5 折、0.1 表示打 1 折。未配置的模型默认按正常输入计费（系数 1.0）。
+- **缓存写入倍率（CacheWriteRatio）**：缓存写入（写缓存）的输入 token 按该加价系数计费。例如 Anthropic 为 1.25 表示 1.25 倍。未配置的模型默认按正常输入计费（系数 1.0）。
+
+内置常见模型费率参考（`缓存命中价 ÷ 输入价`）：
+
+| 厂商 | 缓存命中倍率 | 缓存写入倍率 | 说明 |
+|------|------------|------------|------|
+| OpenAI | 0.5 / 0.25 | — | gpt-4o 系列 0.5，gpt-4.1 系列 0.25 |
+| Anthropic (Claude) | 0.1 | 1.25 | cache read 为输入的 1/10，cache write 为 1.25 倍 |
+| DeepSeek | 0.1 / 0.25 | — | v4 系列 0.1，chat/reasoner 0.25 |
+| Google (Gemini) | 0.25 | — | context caching |
+
+渠道返回缓存字段时自动生效（OpenAI `prompt_tokens_details.cached_tokens`、DeepSeek `prompt_cache_hit_tokens`、Anthropic `cache_read_input_tokens` / `cache_creation_input_tokens`）；渠道不支持时按正常输入计费兜底，不影响原有计费。
+
 ## 手动调整
 
 后台修改倍率后立即生效，无需重启。如果想让某个模型的用户多花钱或少花钱，直接改倍率数值即可。比如把某个免费模型的倍率从 0 改到 0.5，用户调用时就会消耗额度。

@@ -10,7 +10,6 @@
     "log": "Log",
     "setting": "Settings",
     "about": "About",
-    "chat": "Chat",
     "login": "Login",
     "logout": "Logout",
     "register": "Register"
@@ -179,7 +178,6 @@
     },
     "buttons": {
       "copy": "Copy",
-      "chat": "Chat",
       "delete": "Delete",
       "confirm_delete": "Delete Token",
       "enable": "Enable",
@@ -218,13 +216,6 @@
         "create_success": "Token created successfully, please copy it from the list page!",
         "expire_time_invalid": "Invalid expiry time format!"
       }
-    },
-    "copy_options": {
-      "raw": "Copy Raw Token",
-      "ama": "Copy AMA Link",
-      "opencat": "Copy OpenCat Link",
-      "next": "Copy NextChat Link",
-      "lobe": "Copy LobeChat Link"
     },
     "messages": {
       "copy_success": "Copied to clipboard!",
@@ -324,8 +315,8 @@
       "channel_id": "Channel ID",
       "channel_id_placeholder": "Optional",
       "username_placeholder": "Optional",
-      "prompt_tokens": "Prompt Tokens",
-      "completion_tokens": "Completion Tokens",
+      "prompt_tokens": "Input Tokens",
+      "completion_tokens": "Output Tokens",
       "quota": "Quota",
       "detail": "Detail"
     },
@@ -628,6 +619,14 @@
           "title": "Completion Ratio",
           "placeholder": "A JSON text where keys are model names and values are ratios. These ratios are the proportion of completion to prompt ratio, which can override One API's internal ratios"
         },
+        "cache_hit": {
+          "title": "Cache Hit Ratio",
+          "placeholder": "A JSON text where keys are model names and values are discount ratios for cache-hit (read) input tokens (e.g. 0.5 means 50% off, 0.1 means 90% off). Unconfigured models are billed as normal input"
+        },
+        "cache_write": {
+          "title": "Cache Write Ratio",
+          "placeholder": "A JSON text where keys are model names and values are markup ratios for cache-write input tokens (e.g. Anthropic uses 1.25). Unconfigured models are billed as normal input"
+        },
         "group": {
           "title": "Group Ratio",
           "placeholder": "A JSON text where keys are group names and values are ratios"
@@ -660,8 +659,6 @@
         "title": "General Settings",
         "topup_link": "Top-up Link",
         "topup_link_placeholder": "e.g.: Card selling website purchase link",
-        "chat_link": "Chat Page Link",
-        "chat_link_placeholder": "e.g.: ChatGPT Next Web deployment address",
         "quota_per_unit": "Quota per Dollar",
         "quota_per_unit_placeholder": "Quota exchangeable per unit of currency",
         "retry_times": "Retry Times on Failure",

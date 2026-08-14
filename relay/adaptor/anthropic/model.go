@@ -59,6 +59,9 @@ type Request struct {
 type Usage struct {
 	InputTokens  int `json:"input_tokens"`
 	OutputTokens int `json:"output_tokens"`
+	// 缓存写入（cache write）与缓存读取（cache read）的输入 token 数
+	CacheCreationInputTokens int `json:"cache_creation_input_tokens,omitempty"`
+	CacheReadInputTokens     int `json:"cache_read_input_tokens,omitempty"`
 }
 
 type Error struct {

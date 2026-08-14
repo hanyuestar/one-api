@@ -123,6 +123,15 @@ _✨ 开源 OpenAI 接口管理 & 分发系统，支持生图接口 ✨_
 
 ## 更新日志
 
+### v1.0.5（2026-08-14）
+
+**功能优化**
+
+- **移除聊天功能**：本镜像定位为纯 AI 接口管理 & 分发平台，删除三个主题（default/air/berry）中令牌（Token）页面的「聊天」入口、聊天客户端菜单（ChatGPT Next Web / AMA / OpenCat / LobeChat 等）、聊天链接设置项以及独立的 `/chat` 内嵌页面，聚焦核心分发能力。
+- **新增缓存命中计费**：支持按「缓存命中（读缓存）」与「缓存写入（写缓存）」对输入 token 差异化计费。缓存命中按折扣系数计费（内置 OpenAI 0.5、Anthropic 0.1、DeepSeek 0.1 等常见模型费率），缓存写入按加价系数计费（Anthropic 1.25）。新增「缓存命中倍率」「缓存写入倍率」设置项（与模型倍率同款 JSON 编辑样式），管理员可自定义；未配置的模型默认按正常输入计费。
+- **日志字段更名**：日志页面的「提示 / 补全」列更名为更符合行业习惯的「输入 / 输出」，并在输入列标注缓存命中部分（如 `1000（缓存命中 200）`）。
+- **缓存数据兜底**：统一在 OpenAI 兼容（含 `prompt_tokens_details.cached_tokens`、DeepSeek `prompt_cache_hit_tokens`）与 Anthropic（`cache_read_input_tokens` / `cache_creation_input_tokens`）解析层提取缓存数据；渠道不返回缓存字段时按正常输入计费，不影响原有计费逻辑。
+
 ### v1.0.4（2026-08-14）
 
 **Bug 修复**

@@ -6,7 +6,6 @@ const config = {
   fontFamily: `'Roboto', sans-serif, Helvetica, Arial, sans-serif`,
   borderRadius: 12,
   siteInfo: {
-    chat_link: '',
     display_in_currency: true,
     email_verification: false,
     footer_html: '',

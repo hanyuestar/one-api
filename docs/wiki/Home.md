@@ -31,10 +31,21 @@
 
 默认倍率表已更新至 2026 年 8 月的最新官方定价，修正了上游几处错误，并补充了 50+ 个近期发布的模型。
 
+### 缓存命中计费
+
+本 fork 支持按「缓存命中（读缓存）」与「缓存写入（写缓存）」对输入 token 差异化计费：
+
+- **缓存命中倍率**：缓存命中的输入 token 按折扣系数计费（内置 OpenAI 0.5、Anthropic 0.1、DeepSeek 0.1 等常见模型费率）。
+- **缓存写入倍率**：写入缓存的输入 token 按加价系数计费（Anthropic 为 1.25）。
+- 管理员可在「设置 → 运营设置 → 倍率设置」中通过 JSON 自定义这两个倍率（与模型倍率同款样式）；未配置的模型默认按正常输入计费。
+- 渠道返回缓存字段（OpenAI `cached_tokens`、DeepSeek `prompt_cache_hit_tokens`、Anthropic `cache_read/cache_creation_input_tokens`）时自动生效；渠道不支持时按正常输入计费兜底。
+- 日志「输入」列会标注缓存命中部分，如 `1000（缓存命中 200）`。
+
 ### Bug 修复
 
 | 版本 | 修复内容 |
 |------|---------|
+| v1.0.5 | 移除令牌聊天功能；新增缓存命中/写入计费；日志「提示/补全」更名「输入/输出」 |
 | v1.0.4 | 修复无限制额度令牌 `used_quota` 不累计的问题 |
 | v1.0.3 | 修复阿里百炼 text 通道 `usage is nil` 问题；补全 berry 主题 5 个缺失渠道 |
 | v1.0.2 | 修复 default 主题前端构建 eslint 配置错误 |
@@ -77,5 +88,5 @@ docker compose up -d
 ## 相关链接
 
 - 上游原始项目：[songquanpeng/one-api](https://github.com/songquanpeng/one-api)
-- 发布版本：[v1.0.4](https://github.com/hanyuestar/one-api/releases/tag/v1.0.4)（[查看更新日志](https://github.com/hanyuestar/one-api#%E6%9B%B4%E6%96%B0%E6%97%A5%E5%BF%97)）
+- 发布版本：[v1.0.5](https://github.com/hanyuestar/one-api/releases/tag/v1.0.5)（[查看更新日志](https://github.com/hanyuestar/one-api#%E6%9B%B4%E6%96%B0%E6%97%A5%E5%BF%97)）
 - Docker 镜像：[GitHub Packages](https://github.com/hanyuestar/one-api/pkgs/container/one-api) | [Docker Hub](https://hub.docker.com/r/kyson666/one-api)

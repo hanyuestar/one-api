@@ -23,7 +23,6 @@ import Redemption from './pages/Redemption';
 import EditRedemption from './pages/Redemption/EditRedemption';
 import TopUp from './pages/TopUp';
 import Log from './pages/Log';
-import Chat from './pages/Chat';
 import LarkOAuth from './components/LarkOAuth';
 import Dashboard from './pages/Dashboard';
 
@@ -54,11 +53,6 @@ function App() {
         localStorage.setItem('footer_html', data.footer_html);
         localStorage.setItem('quota_per_unit', data.quota_per_unit);
         localStorage.setItem('display_in_currency', data.display_in_currency);
-        if (data.chat_link) {
-          localStorage.setItem('chat_link', data.chat_link);
-        } else {
-          localStorage.removeItem('chat_link');
-        }
         if (
           data.version !== process.env.REACT_APP_VERSION &&
           data.version !== 'v0.0.0' &&
@@ -294,7 +288,7 @@ function App() {
         path='/chat'
         element={
           <Suspense fallback={<Loading></Loading>}>
-            <Chat />
+            <NotFound />
           </Suspense>
         }
       />

@@ -19,7 +19,6 @@ import EditChannel from './pages/Channel/EditChannel';
 import Redemption from './pages/Redemption';
 import TopUp from './pages/TopUp';
 import Log from './pages/Log';
-import Chat from './pages/Chat';
 import { Layout } from '@douyinfe/semi-ui';
 import Midjourney from './pages/Midjourney';
 import Detail from './pages/Detail';
@@ -226,7 +225,7 @@ function App() {
             path="/chat"
             element={
               <Suspense fallback={<Loading></Loading>}>
-                <Chat />
+                <NotFound />
               </Suspense>
             }
           />

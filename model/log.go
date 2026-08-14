@@ -24,6 +24,8 @@ type Log struct {
 	Quota             int    `json:"quota" gorm:"default:0"`
 	PromptTokens      int    `json:"prompt_tokens" gorm:"default:0"`
 	CompletionTokens  int    `json:"completion_tokens" gorm:"default:0"`
+	CacheHitTokens    int    `json:"cache_hit_tokens" gorm:"default:0"`
+	CacheWriteTokens  int    `json:"cache_write_tokens" gorm:"default:0"`
 	ChannelId         int    `json:"channel" gorm:"index"`
 	RequestId         string `json:"request_id" gorm:"default:''"`
 	ElapsedTime       int64  `json:"elapsed_time" gorm:"default:0"` // unit is ms

@@ -113,13 +113,13 @@ const LogsTable = () => {
   //   }
   // },
   {
-    title: '提示', dataIndex: 'prompt_tokens', render: (text, record, index) => {
+    title: '输入', dataIndex: 'prompt_tokens', render: (text, record, index) => {
       return (record.type === 0 || record.type === 2 ? <div>
-        {<span> {text} </span>}
+        {<span> {text}{record.cache_hit_tokens ? `（缓存命中 ${record.cache_hit_tokens}）` : ''} </span>}
       </div> : <></>);
     }
   }, {
-    title: '补全', dataIndex: 'completion_tokens', render: (text, record, index) => {
+    title: '输出', dataIndex: 'completion_tokens', render: (text, record, index) => {
       return (parseInt(text) > 0 && (record.type === 0 || record.type === 2) ? <div>
         {<span> {text} </span>}
       </div> : <></>);

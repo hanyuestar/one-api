@@ -54,7 +54,13 @@ export default function LogTableRow({ item, userIsAdmin }) {
             </Label>
           )}
         </TableCell>
-        <TableCell>{item.prompt_tokens || ''}</TableCell>
+        <TableCell>
+          {item.prompt_tokens
+            ? item.cache_hit_tokens
+              ? `${item.prompt_tokens}（缓存命中 ${item.cache_hit_tokens}）`
+              : item.prompt_tokens
+            : ''}
+        </TableCell>
         <TableCell>{item.completion_tokens || ''}</TableCell>
         <TableCell>{item.quota ? renderQuota(item.quota, 6) : ''}</TableCell>
         <TableCell>{item.content}</TableCell>

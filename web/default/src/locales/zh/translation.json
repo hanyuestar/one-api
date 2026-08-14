@@ -10,7 +10,6 @@
     "log": "日志",
     "setting": "设置",
     "about": "关于",
-    "chat": "聊天",
     "login": "登录",
     "logout": "注销",
     "register": "注册"
@@ -179,7 +178,6 @@
     },
     "buttons": {
       "copy": "复制",
-      "chat": "聊天",
       "delete": "删除",
       "confirm_delete": "删除令牌",
       "enable": "启用",
@@ -218,13 +216,6 @@
         "create_success": "令牌创建成功，请在列表页面点击复制获取令牌！",
         "expire_time_invalid": "过期时间格式错误！"
       }
-    },
-    "copy_options": {
-      "raw": "复制原始令牌",
-      "ama": "复制 AMA 链接",
-      "opencat": "复制 OpenCat 链接",
-      "next": "复制 NextChat 链接",
-      "lobe": "复制 LobeChat 链接"
     },
     "messages": {
       "copy_success": "已复制到剪贴板！",
@@ -324,8 +315,8 @@
       "channel_id": "渠道 ID",
       "channel_id_placeholder": "可选值",
       "username_placeholder": "可选值",
-      "prompt_tokens": "提示词消耗",
-      "completion_tokens": "补全消耗",
+      "prompt_tokens": "输入 Tokens",
+      "completion_tokens": "输出 Tokens",
       "quota": "额度",
       "detail": "详情"
     },
@@ -626,6 +617,14 @@
           "title": "补全倍率",
           "placeholder": "为一个 JSON 文本，键为模型名称，值为倍率，此处的倍率设置是模型补全倍率相较于提示倍率的比例，使用该设置可强制覆盖 One API 的内部比例"
         },
+        "cache_hit": {
+          "title": "缓存命中倍率",
+          "placeholder": "为一个 JSON 文本，键为模型名称，值为缓存命中（读缓存）输入 token 的折扣系数（如 0.5 表示打 5 折、0.1 表示打 1 折），未配置的模型默认按正常输入计费"
+        },
+        "cache_write": {
+          "title": "缓存写入倍率",
+          "placeholder": "为一个 JSON 文本，键为模型名称，值为缓存写入（写缓存）输入 token 的加价系数（如 Anthropic 为 1.25 表示 1.25 倍），未配置的模型默认按正常输入计费"
+        },
         "group": {
           "title": "分组倍率",
           "placeholder": "为一个 JSON 文本，键为分组名称，值为倍率"
@@ -658,8 +657,6 @@
         "title": "通用设置",
         "topup_link": "充值链接",
         "topup_link_placeholder": "例如发卡网站的购买链接",
-        "chat_link": "聊天页面链接",
-        "chat_link_placeholder": "例如 ChatGPT Next Web 的部署地址",
         "quota_per_unit": "单位美元额度",
         "quota_per_unit_placeholder": "一单位货币能兑换的额度",
         "retry_times": "失败重试次数",

@@ -21,8 +21,9 @@ const OperationSetting = () => {
     ModelRatio: '',
     CompletionRatio: '',
     GroupRatio: '',
+    CacheHitRatio: '',
+    CacheWriteRatio: '',
     TopUpLink: '',
-    ChatLink: '',
     QuotaPerUnit: 0,
     AutomaticDisableChannelEnabled: '',
     AutomaticEnableChannelEnabled: '',
@@ -48,7 +49,9 @@ const OperationSetting = () => {
         if (
           item.key === 'ModelRatio' ||
           item.key === 'GroupRatio' ||
-          item.key === 'CompletionRatio'
+          item.key === 'CompletionRatio' ||
+          item.key === 'CacheHitRatio' ||
+          item.key === 'CacheWriteRatio'
         ) {
           item.value = JSON.stringify(JSON.parse(item.value), null, 2);
         }
@@ -137,6 +140,20 @@ const OperationSetting = () => {
           }
           await updateOption('CompletionRatio', inputs.CompletionRatio);
         }
+        if (originInputs['CacheHitRatio'] !== inputs.CacheHitRatio) {
+          if (!verifyJSON(inputs.CacheHitRatio)) {
+            showError('缓存命中倍率不是合法的 JSON 字符串');
+            return;
+          }
+          await updateOption('CacheHitRatio', inputs.CacheHitRatio);
+        }
+        if (originInputs['CacheWriteRatio'] !== inputs.CacheWriteRatio) {
+          if (!verifyJSON(inputs.CacheWriteRatio)) {
+            showError('缓存写入倍率不是合法的 JSON 字符串');
+            return;
+          }
+          await updateOption('CacheWriteRatio', inputs.CacheWriteRatio);
+        }
         break;
       case 'quota':
         if (originInputs['QuotaForNewUser'] !== inputs.QuotaForNewUser) {
@@ -155,9 +172,6 @@ const OperationSetting = () => {
       case 'general':
         if (originInputs['TopUpLink'] !== inputs.TopUpLink) {
           await updateOption('TopUpLink', inputs.TopUpLink);
-        }
-        if (originInputs['ChatLink'] !== inputs.ChatLink) {
-          await updateOption('ChatLink', inputs.ChatLink);
         }
         if (originInputs['QuotaPerUnit'] !== inputs.QuotaPerUnit) {
           await updateOption('QuotaPerUnit', inputs.QuotaPerUnit);
@@ -275,6 +289,28 @@ const OperationSetting = () => {
               placeholder={t('setting.operation.ratio.group.placeholder')}
             />
           </Form.Group>
+          <Form.Group widths='equal'>
+            <Form.TextArea
+              label={t('setting.operation.ratio.cache_hit.title')}
+              name='CacheHitRatio'
+              onChange={handleInputChange}
+              style={{ minHeight: 250, fontFamily: 'JetBrains Mono, Consolas' }}
+              autoComplete='new-password'
+              value={inputs.CacheHitRatio}
+              placeholder={t('setting.operation.ratio.cache_hit.placeholder')}
+            />
+          </Form.Group>
+          <Form.Group widths='equal'>
+            <Form.TextArea
+              label={t('setting.operation.ratio.cache_write.title')}
+              name='CacheWriteRatio'
+              onChange={handleInputChange}
+              style={{ minHeight: 250, fontFamily: 'JetBrains Mono, Consolas' }}
+              autoComplete='new-password'
+              value={inputs.CacheWriteRatio}
+              placeholder={t('setting.operation.ratio.cache_write.placeholder')}
+            />
+          </Form.Group>
           <Form.Button
             onClick={() => {
               submitConfig('ratio').then();
@@ -374,15 +410,6 @@ const OperationSetting = () => {
               placeholder={t(
                 'setting.operation.general.topup_link_placeholder'
               )}
-            />
-            <Form.Input
-              label={t('setting.operation.general.chat_link')}
-              name='ChatLink'
-              onChange={handleInputChange}
-              autoComplete='new-password'
-              value={inputs.ChatLink}
-              type='link'
-              placeholder={t('setting.operation.general.chat_link_placeholder')}
             />
             <Form.Input
               label={t('setting.operation.general.quota_per_unit')}

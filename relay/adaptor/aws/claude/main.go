@@ -92,6 +92,8 @@ func Handler(c *gin.Context, awsCli *bedrockruntime.Client, modelName string) (*
 		PromptTokens:     claudeResponse.Usage.InputTokens,
 		CompletionTokens: claudeResponse.Usage.OutputTokens,
 		TotalTokens:      claudeResponse.Usage.InputTokens + claudeResponse.Usage.OutputTokens,
+		CacheWriteTokens: claudeResponse.Usage.CacheCreationInputTokens,
+		CacheHitTokens:   claudeResponse.Usage.CacheReadInputTokens,
 	}
 	openaiResp.Usage = usage
 
@@ -161,6 +163,8 @@ func StreamHandler(c *gin.Context, awsCli *bedrockruntime.Client) (*relaymodel.E
 			if meta != nil {
 				usage.PromptTokens += meta.Usage.InputTokens
 				usage.CompletionTokens += meta.Usage.OutputTokens
+				usage.CacheWriteTokens += meta.Usage.CacheCreationInputTokens
+				usage.CacheHitTokens += meta.Usage.CacheReadInputTokens
 				if len(meta.Id) > 0 { // only message_start has an id, otherwise it's a finish_reason event.
 					id = fmt.Sprintf("chatcmpl-%s", meta.Id)
 					return true

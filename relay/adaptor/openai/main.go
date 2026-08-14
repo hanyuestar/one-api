@@ -147,5 +147,14 @@ func Handler(c *gin.Context, resp *http.Response, promptTokens int, modelName st
 			TotalTokens:      promptTokens + completionTokens,
 		}
 	}
+	// 将 OpenAI 的 prompt_tokens_details.cached_tokens 或 DeepSeek 的 prompt_cache_hit_tokens 映射到统一的缓存命中字段
+	if textResponse.Usage.CacheHitTokens == 0 {
+		if textResponse.Usage.PromptTokensDetails != nil {
+			textResponse.Usage.CacheHitTokens = textResponse.Usage.PromptTokensDetails.CachedTokens
+		}
+		if textResponse.Usage.CacheHitTokens == 0 {
+			textResponse.Usage.CacheHitTokens = textResponse.Usage.PromptCacheHitTokens
+		}
+	}
 	return nil, &textResponse.Usage
 }
