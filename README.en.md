@@ -54,6 +54,78 @@ _✨ Access all LLM through the standard OpenAI API format, easy to deploy & use
 
 > **Note**: The latest image pulled from Docker may be an `alpha` release. Specify the version manually if you require stability.
 
+## Changelog
+
+### v1.0.6 (2026-08-17)
+
+**Bug Fixes**
+
+- **Fix severe under-billing for Anthropic / AWS Bedrock Claude cache usage**: Anthropic's `input_tokens` does not include `cache_read`/`cache_creation` (they are reported separately). The previous billing formula assumed the OpenAI convention (`prompt_tokens` already includes cached tokens), so cached tokens were deducted twice, under-billing all cache-using Claude requests by ~60%. Cache read/write tokens are now merged into `PromptTokens` to match the OpenAI convention (both streaming and non-streaming fixed).
+- **Fix privilege escalation allowing ordinary users to force any channel (security)**: the `/v1/oneapi/proxy/:channelid/*` route previously let any authenticated token force a specific channel, bypassing group/model assignment and risking use of admin channels or unauthorized models. It is now aligned with the token key suffix rule: only admins can specify a channel.
+- **Fix defensive clamp corrupting logged cache statistics**: when cached tokens exceed total input tokens, the defensive fallback now only affects the billing calculation and no longer rewrites the persisted cache hit/write statistics.
+- **Fix quota pre-consumption race condition (TOCTOU)**: token/user quota pre-deduction now uses atomic conditional updates (`WHERE remain_quota >= ?` with affected-row checks), preventing negative balances under high concurrency.
+- **Fix weak randomness in API token keys**: token keys are now generated with `crypto/rand` (replacing `math/rand` with a time seed), eliminating predictability in the first 16 characters.
+- **Fix session type-assertion panic**: the auth middleware now checks type assertions with `ok`, so malformed sessions no longer cause panics.
+- **Fix tool-call argument parsing**: added protection for the `Arguments` type assertion in the Anthropic adapter; JSON parse failures are now logged instead of silently ignored.
+
+**Enhancements**
+
+- **Restore the "Group" column in the Air theme channel table**: aligned with the default/berry themes so channel groups are visible.
+- **Remove dead `/chat` routes**: deleted leftover `/chat` routes in the default/air themes and the orphan mapping in the air sidebar, consistent with the berry theme.
+- **Consolidate cache field mapping**: cache-hit field mapping for OpenAI-compatible channels now lives solely in the billing fallback logic, eliminating duplicated mapping.
+
+### v1.0.5 (2026-08-14)
+
+**Enhancements**
+
+- **Remove chat functionality**: this image is positioned as a pure AI API management & distribution platform; the chat entry on the token page, chat client menu (ChatGPT Next Web / AMA / OpenCat / LobeChat, etc.), chat link setting, and the standalone `/chat` embedded page have been removed from all three themes (default/air/berry) to focus on core distribution capabilities.
+- **Add cache-hit billing**: input tokens are now billed differently for "cache hit (read)" and "cache write". Cache hits are billed at a discount ratio (built-in OpenAI 0.5, Anthropic 0.1, DeepSeek 0.1, etc.), cache writes at a markup ratio (Anthropic 1.25). New "Cache Hit Ratio" and "Cache Write Ratio" settings (same JSON editing style as model ratios) are available for admins; models without configuration default to normal input billing.
+- **Rename log fields**: the "Prompt / Completion" columns in the log page are renamed to "Input / Output", and the input column marks the cache-hit portion (e.g., `1000 (cache hit 200)`).
+- **Cache data fallback**: cache data is now extracted at the parsing layer for OpenAI-compatible channels (`prompt_tokens_details.cached_tokens`, DeepSeek `prompt_cache_hit_tokens`) and Anthropic (`cache_read_input_tokens` / `cache_creation_input_tokens`); channels that do not return cache fields fall back to normal input billing without affecting the original billing logic.
+
+### v1.0.4 (2026-08-14)
+
+**Bug Fixes**
+
+- Fix the "Used Quota" always showing 0 on the token page. Root cause: `PreConsumeTokenQuota` and `PostConsumeTokenQuota` skipped the `used_quota` accumulation for unlimited tokens (`UnlimitedQuota=true`). `used_quota` is now written separately for unlimited tokens, without affecting limited tokens.
+
+### v1.0.3 (2026-08-11)
+
+**Bug Fixes**
+
+- Fix the Ali Bailian channel (type 49) text conversation returning `usage is nil`. The channel's standalone adapter `DoResponse` previously failed to extract usage, causing requests to be **unbilled and logs not recorded**. It now reuses the standard OpenAI Handler/StreamHandler; image generation is unaffected.
+
+**Enhancements**
+
+- Complete the 5 missing channel registrations in the **berry theme**: Baidu Qianfan V2, iFlytek Spark V2, Alibaba Bailian, OpenAI-compatible, Gemini (OpenAI). Channel types across the three themes (default/air/berry) are now fully aligned (51 types).
+- Unify the go.mod version declaration to `1.22`, consistent with the Docker build environment.
+- Fix the Replicate channel object key inconsistency in the berry theme's `ChannelConstants.js`.
+
+### v1.0.2 (2026-08-10)
+
+- Fix the default theme frontend build failure: removed the `react-app/jest` reference from the eslint config (the `jest/globals` environment key is no longer recognized in react-scripts 5).
+
+### v1.0.1 (2026-08-10)
+
+- Fix the default version number from `v0.0.0` to `v1.0.0`, consistent with the release tag.
+- Add Wiki docs (`docs/wiki/`): project overview, Docker deployment guide, model ratio documentation.
+
+### v1.0.0 (2026-08-10)
+
+**Docker Deployment Improvements**
+
+- Pin base image versions: Node 20 / Go 1.22 / Alpine 3.20, avoiding version drift.
+- Add `.dockerignore`, excluding node_modules, build artifacts, database files, etc., significantly reducing image size.
+- Multi-stage build with BuildKit cache mounts, speeding up rebuilds.
+- Run as a non-root user (appuser) at runtime, with built-in HTTP health check.
+- `docker-compose.yml` runs out of the box (SQLite mode); modify secrets per comments for production.
+- Add `.env.example` template.
+
+**Model Ratio Updates**
+
+- Fix outdated/incorrect ratios: `gpt-4o` ($5/M→$2.5/M), `o3-mini` ($3/M→$1.1/M), `qwen2.5-32b/3b`, etc.
+- Add ratios for 50+ common models (GPT-4.1/5, Claude 4.x, Gemini 2.5/3, DeepSeek V4, GLM-4.5/4.6/4.7, qwen3, Doubao Seed series, Kimi K2, etc.).
+
 ## Features
 1. Support for multiple large models:
    + [x] [OpenAI ChatGPT Series Models](https://platform.openai.com/docs/guides/gpt/chat-completions-api) (Supports [Azure OpenAI API](https://learn.microsoft.com/en-us/azure/ai-services/openai/reference))

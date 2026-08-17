@@ -59,68 +59,6 @@ _✨ 开源 OpenAI 接口管理 & 分发系统，支持生图接口 ✨_
 > [!WARNING]
 > 使用 root 用户初次登录系统后，务必修改默认密码 `123456`！
 
-## 功能
-1. 支持多种大模型：
-   + [x] [OpenAI ChatGPT 系列模型](https://platform.openai.com/docs/guides/gpt/chat-completions-api)（支持 [Azure OpenAI API](https://learn.microsoft.com/en-us/azure/ai-services/openai/reference)）
-   + [x] [Anthropic Claude 系列模型](https://anthropic.com) (支持 AWS Claude)
-   + [x] [Google PaLM2/Gemini 系列模型](https://developers.generativeai.google)
-   + [x] [Mistral 系列模型](https://mistral.ai/)
-   + [x] [字节跳动豆包大模型（火山引擎）](https://www.volcengine.com/experience/ark?utm_term=202502dsinvite&ac=DSASUQY5&rc=2QXCA1VI)
-   + [x] [百度文心一言系列模型](https://cloud.baidu.com/doc/WENXINWORKSHOP/index.html)
-   + [x] [阿里通义千问系列模型](https://help.aliyun.com/document_detail/2400395.html)
-   + [x] [讯飞星火认知大模型](https://www.xfyun.cn/doc/spark/Web.html)
-   + [x] [智谱 ChatGLM 系列模型](https://bigmodel.cn)
-   + [x] [360 智脑](https://ai.360.cn)
-   + [x] [腾讯混元大模型](https://cloud.tencent.com/document/product/1729)
-   + [x] [Moonshot AI](https://platform.moonshot.cn/)
-   + [x] [百川大模型](https://platform.baichuan-ai.com)
-   + [x] [MINIMAX](https://api.minimax.chat/)
-   + [x] [Groq](https://wow.groq.com/)
-   + [x] [Ollama](https://github.com/ollama/ollama)
-   + [x] [零一万物](https://platform.lingyiwanwu.com/)
-   + [x] [阶跃星辰](https://platform.stepfun.com/)
-   + [x] [Coze](https://www.coze.com/)
-   + [x] [Cohere](https://cohere.com/)
-   + [x] [DeepSeek](https://www.deepseek.com/)
-   + [x] [Cloudflare Workers AI](https://developers.cloudflare.com/workers-ai/)
-   + [x] [DeepL](https://www.deepl.com/)
-   + [x] [together.ai](https://www.together.ai/)
-   + [x] [novita.ai](https://www.novita.ai/)
-   + [x] [硅基流动 SiliconCloud](https://cloud.siliconflow.cn/i/rKXmRobW)
-   + [x] [xAI](https://x.ai/)
-2. 支持配置镜像以及众多[第三方代理服务](https://iamazing.cn/page/openai-api-third-party-services)。
-3. 支持通过**负载均衡**的方式访问多个渠道。
-4. 支持 **stream 模式**，可以通过流式传输实现打字机效果。
-5. 支持**多机部署**，[详见此处](#多机部署)。
-6. 支持**令牌管理**，设置令牌的过期时间、额度、允许的 IP 范围以及允许的模型访问。
-7. 支持**兑换码管理**，支持批量生成和导出兑换码，可使用兑换码为账户进行充值。
-8. 支持**渠道管理**，批量创建渠道。
-9. 支持**用户分组**以及**渠道分组**，支持为不同分组设置不同的倍率。
-10. 支持渠道**设置模型列表**。
-11. 支持**查看额度明细**。
-12. 支持**用户邀请奖励**。
-13. 支持以美元为单位显示额度。
-14. 支持发布公告，设置充值链接，设置新用户初始额度。
-15. 支持模型映射，重定向用户的请求模型，如无必要请不要设置，设置之后会导致请求体被重新构造而非直接透传，会导致部分还未正式支持的字段无法传递成功。
-16. 支持失败自动重试。
-17. 支持绘图接口（DALL-E / 通义万相 / 火山 Seedream / CogView / Replicate），详见 [[Image-Generation]]。
-18. 支持 [Cloudflare AI Gateway](https://developers.cloudflare.com/ai-gateway/providers/openai/)，渠道设置的代理部分填写 `https://gateway.ai.cloudflare.com/v1/ACCOUNT_TAG/GATEWAY/openai` 即可。
-19. 支持丰富的**自定义**设置，
-    1. 支持自定义系统名称，logo 以及页脚。
-    2. 支持自定义首页和关于页面，可以选择使用 HTML & Markdown 代码进行自定义，或者使用一个单独的网页通过 iframe 嵌入。
-20. 支持通过系统访问令牌调用管理 API，进而**在无需二开的情况下扩展和自定义** One API 的功能，详情请参考此处 [API 文档](./docs/API.md)。
-21. 支持 Cloudflare Turnstile 用户校验。
-22. 支持用户管理，支持**多种用户登录注册方式**：
-    + 邮箱登录注册（支持注册邮箱白名单）以及通过邮箱进行密码重置。
-    + 支持[飞书授权登录](https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/authen-v1/authorize/get)（[这里有 One API 的实现细节阐述供参考](https://iamazing.cn/page/feishu-oauth-login)）。
-    + 支持 [GitHub 授权登录](https://github.com/settings/applications/new)。
-    + 微信公众号授权（需要额外部署 [WeChat Server](https://github.com/songquanpeng/wechat-server)）。
-23. 支持主题切换，设置环境变量 `THEME` 即可，默认为 `default`，欢迎 PR 更多主题，具体参考[此处](./web/README.md)。
-24. 配合 [Message Pusher](https://github.com/songquanpeng/message-pusher) 可将报警信息推送到多种 App 上。
-25. 🆕 **阿里百炼（通义万相）生图** — 渠道类型 49，支持 wanx-v1 / stable-diffusion 系列。
-26. 🆕 **火山引擎（Seedream）生图** — 渠道类型 40，支持 Seedream 4.0/4.5/5.0 系列。
-27. 🆕 **Air 主题渠道类型补全** — 新增百度V2、讯飞V2、阿里百炼、OpenAI兼容、Gemini OpenAI 五种类型。
-
 ## 更新日志
 
 ### v1.0.6（2026-08-17）
@@ -192,6 +130,68 @@ _✨ 开源 OpenAI 接口管理 & 分发系统，支持生图接口 ✨_
 
 - 修正过时/错误倍率：`gpt-4o`（$5/M→$2.5/M）、`o3-mini`（$3/M→$1.1/M）、`qwen2.5-32b/3b` 等。
 - 新增 50+ 个常见模型倍率（GPT-4.1/5、Claude 4.x、Gemini 2.5/3、DeepSeek V4、GLM-4.5/4.6/4.7、qwen3、豆包 Seed 系列、Kimi K2 等）。
+
+## 功能
+1. 支持多种大模型：
+   + [x] [OpenAI ChatGPT 系列模型](https://platform.openai.com/docs/guides/gpt/chat-completions-api)（支持 [Azure OpenAI API](https://learn.microsoft.com/en-us/azure/ai-services/openai/reference)）
+   + [x] [Anthropic Claude 系列模型](https://anthropic.com) (支持 AWS Claude)
+   + [x] [Google PaLM2/Gemini 系列模型](https://developers.generativeai.google)
+   + [x] [Mistral 系列模型](https://mistral.ai/)
+   + [x] [字节跳动豆包大模型（火山引擎）](https://www.volcengine.com/experience/ark?utm_term=202502dsinvite&ac=DSASUQY5&rc=2QXCA1VI)
+   + [x] [百度文心一言系列模型](https://cloud.baidu.com/doc/WENXINWORKSHOP/index.html)
+   + [x] [阿里通义千问系列模型](https://help.aliyun.com/document_detail/2400395.html)
+   + [x] [讯飞星火认知大模型](https://www.xfyun.cn/doc/spark/Web.html)
+   + [x] [智谱 ChatGLM 系列模型](https://bigmodel.cn)
+   + [x] [360 智脑](https://ai.360.cn)
+   + [x] [腾讯混元大模型](https://cloud.tencent.com/document/product/1729)
+   + [x] [Moonshot AI](https://platform.moonshot.cn/)
+   + [x] [百川大模型](https://platform.baichuan-ai.com)
+   + [x] [MINIMAX](https://api.minimax.chat/)
+   + [x] [Groq](https://wow.groq.com/)
+   + [x] [Ollama](https://github.com/ollama/ollama)
+   + [x] [零一万物](https://platform.lingyiwanwu.com/)
+   + [x] [阶跃星辰](https://platform.stepfun.com/)
+   + [x] [Coze](https://www.coze.com/)
+   + [x] [Cohere](https://cohere.com/)
+   + [x] [DeepSeek](https://www.deepseek.com/)
+   + [x] [Cloudflare Workers AI](https://developers.cloudflare.com/workers-ai/)
+   + [x] [DeepL](https://www.deepl.com/)
+   + [x] [together.ai](https://www.together.ai/)
+   + [x] [novita.ai](https://www.novita.ai/)
+   + [x] [硅基流动 SiliconCloud](https://cloud.siliconflow.cn/i/rKXmRobW)
+   + [x] [xAI](https://x.ai/)
+2. 支持配置镜像以及众多[第三方代理服务](https://iamazing.cn/page/openai-api-third-party-services)。
+3. 支持通过**负载均衡**的方式访问多个渠道。
+4. 支持 **stream 模式**，可以通过流式传输实现打字机效果。
+5. 支持**多机部署**，[详见此处](#多机部署)。
+6. 支持**令牌管理**，设置令牌的过期时间、额度、允许的 IP 范围以及允许的模型访问。
+7. 支持**兑换码管理**，支持批量生成和导出兑换码，可使用兑换码为账户进行充值。
+8. 支持**渠道管理**，批量创建渠道。
+9. 支持**用户分组**以及**渠道分组**，支持为不同分组设置不同的倍率。
+10. 支持渠道**设置模型列表**。
+11. 支持**查看额度明细**。
+12. 支持**用户邀请奖励**。
+13. 支持以美元为单位显示额度。
+14. 支持发布公告，设置充值链接，设置新用户初始额度。
+15. 支持模型映射，重定向用户的请求模型，如无必要请不要设置，设置之后会导致请求体被重新构造而非直接透传，会导致部分还未正式支持的字段无法传递成功。
+16. 支持失败自动重试。
+17. 支持绘图接口（DALL-E / 通义万相 / 火山 Seedream / CogView / Replicate），详见 [[Image-Generation]]。
+18. 支持 [Cloudflare AI Gateway](https://developers.cloudflare.com/ai-gateway/providers/openai/)，渠道设置的代理部分填写 `https://gateway.ai.cloudflare.com/v1/ACCOUNT_TAG/GATEWAY/openai` 即可。
+19. 支持丰富的**自定义**设置，
+    1. 支持自定义系统名称，logo 以及页脚。
+    2. 支持自定义首页和关于页面，可以选择使用 HTML & Markdown 代码进行自定义，或者使用一个单独的网页通过 iframe 嵌入。
+20. 支持通过系统访问令牌调用管理 API，进而**在无需二开的情况下扩展和自定义** One API 的功能，详情请参考此处 [API 文档](./docs/API.md)。
+21. 支持 Cloudflare Turnstile 用户校验。
+22. 支持用户管理，支持**多种用户登录注册方式**：
+    + 邮箱登录注册（支持注册邮箱白名单）以及通过邮箱进行密码重置。
+    + 支持[飞书授权登录](https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/authen-v1/authorize/get)（[这里有 One API 的实现细节阐述供参考](https://iamazing.cn/page/feishu-oauth-login)）。
+    + 支持 [GitHub 授权登录](https://github.com/settings/applications/new)。
+    + 微信公众号授权（需要额外部署 [WeChat Server](https://github.com/songquanpeng/wechat-server)）。
+23. 支持主题切换，设置环境变量 `THEME` 即可，默认为 `default`，欢迎 PR 更多主题，具体参考[此处](./web/README.md)。
+24. 配合 [Message Pusher](https://github.com/songquanpeng/message-pusher) 可将报警信息推送到多种 App 上。
+25. 🆕 **阿里百炼（通义万相）生图** — 渠道类型 49，支持 wanx-v1 / stable-diffusion 系列。
+26. 🆕 **火山引擎（Seedream）生图** — 渠道类型 40，支持 Seedream 4.0/4.5/5.0 系列。
+27. 🆕 **Air 主题渠道类型补全** — 新增百度V2、讯飞V2、阿里百炼、OpenAI兼容、Gemini OpenAI 五种类型。
 
 ## 部署
 ### 基于 Docker 进行部署
