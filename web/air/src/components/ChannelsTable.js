@@ -56,23 +56,23 @@ const ChannelsTable = () => {
       title: '名称',
       dataIndex: 'name'
     },
-    // {
-    //   title: '分组',
-    //   dataIndex: 'group',
-    //   render: (text, record, index) => {
-    //     return (
-    //       <div>
-    //         <Space spacing={2}>
-    //           {
-    //             text.split(',').map((item, index) => {
-    //               return (renderGroup(item));
-    //             })
-    //           }
-    //         </Space>
-    //       </div>
-    //     );
-    //   }
-    // },
+    {
+      title: '分组',
+      dataIndex: 'group',
+      render: (text, record, index) => {
+        return (
+          <div>
+            <Space spacing={2}>
+              {
+                text.split(',').map((item, index) => {
+                  return (renderGroup(item));
+                })
+              }
+            </Space>
+          </div>
+        );
+      }
+    },
     {
       title: '类型',
       dataIndex: 'type',
@@ -108,7 +108,7 @@ const ChannelsTable = () => {
     },
     {
       title: '已用/剩余',
-      dataIndex: 'expired_time',
+      dataIndex: 'balance',
       render: (text, record, index) => {
         return (
           <div>

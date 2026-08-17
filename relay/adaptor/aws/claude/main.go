@@ -89,9 +89,10 @@ func Handler(c *gin.Context, awsCli *bedrockruntime.Client, modelName string) (*
 	openaiResp := anthropic.ResponseClaude2OpenAI(claudeResponse)
 	openaiResp.Model = modelName
 	usage := relaymodel.Usage{
-		PromptTokens:     claudeResponse.Usage.InputTokens,
+		// Anthropic 的 input_tokens 不含 cache_read/cache_creation，需并入 PromptTokens（与 OpenAI 口径一致），否则 helper.go 计费会重复扣减缓存 token
+		PromptTokens:     claudeResponse.Usage.InputTokens + claudeResponse.Usage.CacheCreationInputTokens + claudeResponse.Usage.CacheReadInputTokens,
 		CompletionTokens: claudeResponse.Usage.OutputTokens,
-		TotalTokens:      claudeResponse.Usage.InputTokens + claudeResponse.Usage.OutputTokens,
+		TotalTokens:      claudeResponse.Usage.InputTokens + claudeResponse.Usage.CacheCreationInputTokens + claudeResponse.Usage.CacheReadInputTokens + claudeResponse.Usage.OutputTokens,
 		CacheWriteTokens: claudeResponse.Usage.CacheCreationInputTokens,
 		CacheHitTokens:   claudeResponse.Usage.CacheReadInputTokens,
 	}
@@ -161,7 +162,8 @@ func StreamHandler(c *gin.Context, awsCli *bedrockruntime.Client) (*relaymodel.E
 
 			response, meta := anthropic.StreamResponseClaude2OpenAI(claudeResp)
 			if meta != nil {
-				usage.PromptTokens += meta.Usage.InputTokens
+				// Anthropic 的 input_tokens 不含 cache_read/cache_creation，需并入 PromptTokens（与 OpenAI 口径一致），否则计费会重复扣减缓存 token
+				usage.PromptTokens += meta.Usage.InputTokens + meta.Usage.CacheCreationInputTokens + meta.Usage.CacheReadInputTokens
 				usage.CompletionTokens += meta.Usage.OutputTokens
 				usage.CacheWriteTokens += meta.Usage.CacheCreationInputTokens
 				usage.CacheHitTokens += meta.Usage.CacheReadInputTokens
@@ -171,7 +173,7 @@ func StreamHandler(c *gin.Context, awsCli *bedrockruntime.Client) (*relaymodel.E
 				} else { // finish_reason case
 					if len(lastToolCallChoice.Delta.ToolCalls) > 0 {
 						lastArgs := &lastToolCallChoice.Delta.ToolCalls[len(lastToolCallChoice.Delta.ToolCalls)-1].Function
-						if len(lastArgs.Arguments.(string)) == 0 { // compatible with OpenAI sending an empty object `{}` when no arguments.
+						if argsStr, ok := lastArgs.Arguments.(string); ok && len(argsStr) == 0 { // compatible with OpenAI sending an empty object `{}` when no arguments.
 							lastArgs.Arguments = "{}"
 							response.Choices[len(response.Choices)-1].Delta.Content = nil
 							response.Choices[len(response.Choices)-1].Delta.ToolCalls = lastToolCallChoice.Delta.ToolCalls

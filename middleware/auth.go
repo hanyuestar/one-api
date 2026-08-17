@@ -45,7 +45,25 @@ func authHelper(c *gin.Context, minRole int) {
 			return
 		}
 	}
-	if status.(int) == model.UserStatusDisabled || blacklist.IsUserBanned(id.(int)) {
+	statusInt, ok := status.(int)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"message": "会话状态异常，请重新登录",
+		})
+		c.Abort()
+		return
+	}
+	idInt, ok := id.(int)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"message": "会话状态异常，请重新登录",
+		})
+		c.Abort()
+		return
+	}
+	if statusInt == model.UserStatusDisabled || blacklist.IsUserBanned(idInt) {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"message": "用户已被封禁",
@@ -56,7 +74,16 @@ func authHelper(c *gin.Context, minRole int) {
 		c.Abort()
 		return
 	}
-	if role.(int) < minRole {
+	roleInt, ok := role.(int)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"message": "会话状态异常，请重新登录",
+		})
+		c.Abort()
+		return
+	}
+	if roleInt < minRole {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"message": "无权进行此操作，权限不足",
@@ -141,9 +168,14 @@ func TokenAuth() func(c *gin.Context) {
 			}
 		}
 
-		// set channel id for proxy relay
+		// set channel id for proxy relay（与令牌 key 后缀规则保持一致：仅管理员可指定渠道，防止普通用户越权使用他人/管理员的渠道）
 		if channelId := c.Param("channelid"); channelId != "" {
-			c.Set(ctxkey.SpecificChannelId, channelId)
+			if model.IsAdmin(token.UserId) {
+				c.Set(ctxkey.SpecificChannelId, channelId)
+			} else {
+				abortWithMessage(c, http.StatusForbidden, "普通用户不支持指定渠道")
+				return
+			}
 		}
 
 		c.Next()

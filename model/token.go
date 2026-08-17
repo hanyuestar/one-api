@@ -269,10 +269,40 @@ func PreConsumeTokenQuota(tokenId int, quota int64) (err error) {
 			}
 		}()
 	}
+	if config.BatchUpdateEnabled {
+		// 批量更新模式：维持原逻辑（预检只读、无原子约束，属既有设计权衡）
+		if !token.UnlimitedQuota {
+			err = DecreaseTokenQuota(tokenId, quota)
+			if err != nil {
+				return err
+			}
+		} else {
+			err = DB.Model(&Token{}).Where("id = ?", tokenId).Updates(
+				map[string]interface{}{
+					"used_quota":    gorm.Expr("used_quota + ?", quota),
+					"accessed_time": helper.GetTimestamp(),
+				},
+			).Error
+			if err != nil {
+				return err
+			}
+		}
+		return DecreaseUserQuota(token.UserId, quota)
+	}
+	// 非批量模式：原子条件扣减（WHERE remain_quota/quota >= ? 并在扣减后校验影响行数），消除并发 TOCTOU 超扣
 	if !token.UnlimitedQuota {
-		err = DecreaseTokenQuota(tokenId, quota)
-		if err != nil {
-			return err
+		result := DB.Model(&Token{}).Where("id = ? AND remain_quota >= ?", tokenId, quota).Updates(
+			map[string]interface{}{
+				"remain_quota":  gorm.Expr("remain_quota - ?", quota),
+				"used_quota":    gorm.Expr("used_quota + ?", quota),
+				"accessed_time": helper.GetTimestamp(),
+			},
+		)
+		if result.Error != nil {
+			return result.Error
+		}
+		if result.RowsAffected == 0 {
+			return errors.New("令牌额度不足")
 		}
 	} else {
 		err = DB.Model(&Token{}).Where("id = ?", tokenId).Updates(
@@ -285,8 +315,14 @@ func PreConsumeTokenQuota(tokenId int, quota int64) (err error) {
 			return err
 		}
 	}
-	err = DecreaseUserQuota(token.UserId, quota)
-	return err
+	result := DB.Model(&User{}).Where("id = ? AND quota >= ?", token.UserId, quota).Update("quota", gorm.Expr("quota - ?", quota))
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return errors.New("用户额度不足")
+	}
+	return nil
 }
 
 func PostConsumeTokenQuota(tokenId int, quota int64) (err error) {

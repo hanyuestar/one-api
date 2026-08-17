@@ -147,14 +147,7 @@ func Handler(c *gin.Context, resp *http.Response, promptTokens int, modelName st
 			TotalTokens:      promptTokens + completionTokens,
 		}
 	}
-	// 将 OpenAI 的 prompt_tokens_details.cached_tokens 或 DeepSeek 的 prompt_cache_hit_tokens 映射到统一的缓存命中字段
-	if textResponse.Usage.CacheHitTokens == 0 {
-		if textResponse.Usage.PromptTokensDetails != nil {
-			textResponse.Usage.CacheHitTokens = textResponse.Usage.PromptTokensDetails.CachedTokens
-		}
-		if textResponse.Usage.CacheHitTokens == 0 {
-			textResponse.Usage.CacheHitTokens = textResponse.Usage.PromptCacheHitTokens
-		}
-	}
+	// 缓存命中字段（prompt_tokens_details.cached_tokens / prompt_cache_hit_tokens）的统一映射
+	// 已收敛到 relay/controller/helper.go 的计费兜底逻辑，此处不再重复映射，避免两处逻辑漂移
 	return nil, &textResponse.Usage
 }

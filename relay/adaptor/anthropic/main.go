@@ -110,7 +110,11 @@ func ConvertRequest(textRequest model.GeneralOpenAIRequest) *Request {
 			claudeMessage.Content = append(claudeMessage.Content, content)
 			for i := range message.ToolCalls {
 				inputParam := make(map[string]any)
-				_ = json.Unmarshal([]byte(message.ToolCalls[i].Function.Arguments.(string)), &inputParam)
+				if argsStr, ok := message.ToolCalls[i].Function.Arguments.(string); ok {
+					if err := json.Unmarshal([]byte(argsStr), &inputParam); err != nil {
+						logger.SysError("error unmarshalling tool call arguments: " + err.Error())
+					}
+				}
 				claudeMessage.Content = append(claudeMessage.Content, Content{
 					Type:  "tool_use",
 					Id:    message.ToolCalls[i].Id,
@@ -286,7 +290,8 @@ func StreamHandler(c *gin.Context, resp *http.Response) (*model.ErrorWithStatusC
 
 		response, meta := StreamResponseClaude2OpenAI(&claudeResponse)
 		if meta != nil {
-			usage.PromptTokens += meta.Usage.InputTokens
+			// Anthropic 的 input_tokens 不含 cache_read/cache_creation，需并入 PromptTokens（与 OpenAI 口径一致），否则计费会重复扣减缓存 token
+			usage.PromptTokens += meta.Usage.InputTokens + meta.Usage.CacheCreationInputTokens + meta.Usage.CacheReadInputTokens
 			usage.CompletionTokens += meta.Usage.OutputTokens
 			usage.CacheWriteTokens += meta.Usage.CacheCreationInputTokens
 			usage.CacheHitTokens += meta.Usage.CacheReadInputTokens
@@ -297,7 +302,7 @@ func StreamHandler(c *gin.Context, resp *http.Response) (*model.ErrorWithStatusC
 			} else { // finish_reason case
 				if len(lastToolCallChoice.Delta.ToolCalls) > 0 {
 					lastArgs := &lastToolCallChoice.Delta.ToolCalls[len(lastToolCallChoice.Delta.ToolCalls)-1].Function
-					if len(lastArgs.Arguments.(string)) == 0 { // compatible with OpenAI sending an empty object `{}` when no arguments.
+					if argsStr, ok := lastArgs.Arguments.(string); ok && len(argsStr) == 0 { // compatible with OpenAI sending an empty object `{}` when no arguments.
 						lastArgs.Arguments = "{}"
 						response.Choices[len(response.Choices)-1].Delta.Content = nil
 						response.Choices[len(response.Choices)-1].Delta.ToolCalls = lastToolCallChoice.Delta.ToolCalls
@@ -365,9 +370,10 @@ func Handler(c *gin.Context, resp *http.Response, promptTokens int, modelName st
 	fullTextResponse := ResponseClaude2OpenAI(&claudeResponse)
 	fullTextResponse.Model = modelName
 	usage := model.Usage{
-		PromptTokens:     claudeResponse.Usage.InputTokens,
+		// Anthropic 的 input_tokens 不含 cache_read/cache_creation，需并入 PromptTokens（与 OpenAI 口径一致），否则 helper.go 计费会重复扣减缓存 token
+		PromptTokens:     claudeResponse.Usage.InputTokens + claudeResponse.Usage.CacheCreationInputTokens + claudeResponse.Usage.CacheReadInputTokens,
 		CompletionTokens: claudeResponse.Usage.OutputTokens,
-		TotalTokens:      claudeResponse.Usage.InputTokens + claudeResponse.Usage.OutputTokens,
+		TotalTokens:      claudeResponse.Usage.InputTokens + claudeResponse.Usage.CacheCreationInputTokens + claudeResponse.Usage.CacheReadInputTokens + claudeResponse.Usage.OutputTokens,
 		// Anthropic 缓存写入 → CacheWriteTokens，缓存读取 → CacheHitTokens
 		CacheWriteTokens: claudeResponse.Usage.CacheCreationInputTokens,
 		CacheHitTokens:   claudeResponse.Usage.CacheReadInputTokens,

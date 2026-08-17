@@ -159,7 +159,6 @@ const SiderBar = () => {
                 midjourney: '/midjourney',
                 setting: '/setting',
                 about: '/about',
-                chat: '/chat',
                 detail: '/detail'
               };
               return (

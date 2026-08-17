@@ -45,6 +45,7 @@
 
 | 版本 | 修复内容 |
 |------|---------|
+| v1.0.6 | 修复 Anthropic/Bedrock Claude 缓存计费少计约 60%；修复普通用户经 proxy 路由越权指定渠道；修复配额预扣并发竞态；令牌 Key 改用 crypto/rand；修复会话类型断言 panic；Air 主题恢复渠道「分组」列；清理 /chat 死路由 |
 | v1.0.5 | 移除令牌聊天功能；新增缓存命中/写入计费；日志「提示/补全」更名「输入/输出」 |
 | v1.0.4 | 修复无限制额度令牌 `used_quota` 不累计的问题 |
 | v1.0.3 | 修复阿里百炼 text 通道 `usage is nil` 问题；补全 berry 主题 5 个缺失渠道 |
@@ -88,5 +89,5 @@ docker compose up -d
 ## 相关链接
 
 - 上游原始项目：[songquanpeng/one-api](https://github.com/songquanpeng/one-api)
-- 发布版本：[v1.0.5](https://github.com/hanyuestar/one-api/releases/tag/v1.0.5)（[查看更新日志](https://github.com/hanyuestar/one-api#%E6%9B%B4%E6%96%B0%E6%97%A5%E5%BF%97)）
+- 发布版本：[v1.0.6](https://github.com/hanyuestar/one-api/releases/tag/v1.0.6)（[查看更新日志](https://github.com/hanyuestar/one-api#%E6%9B%B4%E6%96%B0%E6%97%A5%E5%BF%97)）
 - Docker 镜像：[GitHub Packages](https://github.com/hanyuestar/one-api/pkgs/container/one-api) | [Docker Hub](https://hub.docker.com/r/kyson666/one-api)

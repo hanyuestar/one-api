@@ -285,14 +285,6 @@ function App() {
         }
       />
       <Route
-        path='/chat'
-        element={
-          <Suspense fallback={<Loading></Loading>}>
-            <NotFound />
-          </Suspense>
-        }
-      />
-      <Route
         path='/dashboard'
         element={
           <PrivateRoute>

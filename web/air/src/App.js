@@ -221,14 +221,6 @@ function App() {
               </Suspense>
             }
           />
-          <Route
-            path="/chat"
-            element={
-              <Suspense fallback={<Loading></Loading>}>
-                <NotFound />
-              </Suspense>
-            }
-          />
           <Route path="*" element={
             <NotFound />
           } />
