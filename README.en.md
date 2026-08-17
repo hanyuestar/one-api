@@ -2,30 +2,30 @@
     <a href="./README.md">中文</a> | <strong>English</strong> | <a href="./README.ja.md">日本語</a>
 </p>
 
+
 <p align="center">
-  <a href="https://github.com/songquanpeng/one-api"><img src="https://raw.githubusercontent.com/songquanpeng/one-api/main/web/default/public/logo.png" width="150" height="150" alt="one-api logo"></a>
+  <a href="https://github.com/hanyuestar/one-api"><img src="https://raw.githubusercontent.com/songquanpeng/one-api/main/web/default/public/logo.png" width="150" height="150" alt="one-api logo"></a>
 </p>
 
 <div align="center">
 
 # One API
 
-_✨ Access all LLM through the standard OpenAI API format, easy to deploy & use ✨_
+_✨ Open-source OpenAI API management & distribution system with image generation support ✨_
+
+> This repository is maintained based on [songquanpeng/one-api](https://github.com/songquanpeng/one-api). It adds Alibaba Bailian & Volcano Engine image generation support and is pushed to both ghcr.io and Docker Hub.
 
 </div>
 
 <p align="center">
   <a href="https://raw.githubusercontent.com/songquanpeng/one-api/main/LICENSE">
-    <img src="https://img.shields.io/github/license/songquanpeng/one-api?color=brightgreen" alt="license">
+    <img src="https://img.shields.io/github/license/hanyuestar/one-api?color=brightgreen" alt="license">
   </a>
-  <a href="https://github.com/songquanpeng/one-api/releases/latest">
-    <img src="https://img.shields.io/github/v/release/songquanpeng/one-api?color=brightgreen&include_prereleases" alt="release">
+  <a href="https://github.com/hanyuestar/one-api/pkgs/container/one-api">
+    <img src="https://img.shields.io/badge/ghcr.io-hanyuestar%2Fone--api-blue" alt="ghcr">
   </a>
-  <a href="https://hub.docker.com/repository/docker/justsong/one-api">
-    <img src="https://img.shields.io/docker/pulls/justsong/one-api?color=brightgreen" alt="docker pull">
-  </a>
-  <a href="https://github.com/songquanpeng/one-api/releases/latest">
-    <img src="https://img.shields.io/github/downloads/songquanpeng/one-api/total?color=brightgreen&include_prereleases" alt="release">
+  <a href="https://hub.docker.com/r/kyson666/one-api">
+    <img src="https://img.shields.io/docker/pulls/kyson666/one-api?color=brightgreen" alt="docker pull">
   </a>
   <a href="https://goreportcard.com/report/github.com/songquanpeng/one-api">
     <img src="https://goreportcard.com/badge/github.com/songquanpeng/one-api" alt="GoReportCard">
@@ -33,26 +33,31 @@ _✨ Access all LLM through the standard OpenAI API format, easy to deploy & use
 </p>
 
 <p align="center">
-  <a href="#deployment">Deployment Tutorial</a>
+  <a href="#deployment">Deployment</a>
   ·
   <a href="#usage">Usage</a>
   ·
-  <a href="https://github.com/songquanpeng/one-api/issues">Feedback</a>
+  <a href="https://github.com/hanyuestar/one-api/issues">Feedback</a>
   ·
-  <a href="#screenshots">Screenshots</a>
-  ·
-  <a href="https://openai.justsong.cn/">Live Demo</a>
+  <a href="https://github.com/hanyuestar/one-api/wiki">Wiki</a>
   ·
   <a href="#faq">FAQ</a>
-  ·
-  <a href="#related-projects">Related Projects</a>
-  ·
-  <a href="https://iamazing.cn/page/reward">Donate</a>
 </p>
 
-> **Warning**: This README is translated by ChatGPT. Please feel free to submit a PR if you find any translation errors.
+> [!NOTE]
+> This project is open source. Users must comply with OpenAI's [Terms of Use](https://openai.com/policies/terms-of-use) and **applicable laws and regulations**, and must not use it for illegal purposes.
+>
+> In accordance with the [Interim Measures for the Management of Generative AI Services](http://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm), please do not provide any unregistered generative AI services to the public in mainland China.
 
-> **Note**: The latest image pulled from Docker may be an `alpha` release. Specify the version manually if you require stability.
+> [!NOTE]
+> Docker images of this repository:
+> - GitHub Container Registry: `ghcr.io/hanyuestar/one-api:latest`
+> - Docker Hub: `kyson666/one-api:latest`
+>
+> Upstream original image: [justsong/one-api](https://hub.docker.com/repository/docker/justsong/one-api) or [ghcr.io/songquanpeng/one-api](https://github.com/songquanpeng/one-api/pkgs/container/one-api)
+
+> [!WARNING]
+> After the first login with the root user, be sure to change the default password `123456`!
 
 ## Changelog
 
@@ -129,64 +134,107 @@ _✨ Access all LLM through the standard OpenAI API format, easy to deploy & use
 ## Features
 1. Support for multiple large models:
    + [x] [OpenAI ChatGPT Series Models](https://platform.openai.com/docs/guides/gpt/chat-completions-api) (Supports [Azure OpenAI API](https://learn.microsoft.com/en-us/azure/ai-services/openai/reference))
-   + [x] [Anthropic Claude Series Models](https://anthropic.com)
-   + [x] [Google PaLM2 and Gemini Series Models](https://developers.generativeai.google)
-   + [x] [Baidu Wenxin Yiyuan Series Models](https://cloud.baidu.com/doc/WENXINWORKSHOP/index.html)
+   + [x] [Anthropic Claude Series Models](https://anthropic.com) (Supports AWS Claude)
+   + [x] [Google PaLM2/Gemini Series Models](https://developers.generativeai.google)
+   + [x] [Mistral Series Models](https://mistral.ai/)
+   + [x] [ByteDance Doubao (Volcano Engine)](https://www.volcengine.com/experience/ark?utm_term=202502dsinvite&ac=DSASUQY5&rc=2QXCA1VI)
+   + [x] [Baidu Wenxin Yiyan Series Models](https://cloud.baidu.com/doc/WENXINWORKSHOP/index.html)
    + [x] [Alibaba Tongyi Qianwen Series Models](https://help.aliyun.com/document_detail/2400395.html)
+   + [x] [iFlytek Spark Cognitive Models](https://www.xfyun.cn/doc/spark/Web.html)
    + [x] [Zhipu ChatGLM Series Models](https://bigmodel.cn)
-2. Supports access to multiple channels through **load balancing**.
-3. Supports **stream mode** that enables typewriter-like effect through stream transmission.
-4. Supports **multi-machine deployment**. [See here](#multi-machine-deployment) for more details.
-5. Supports **token management** that allows setting token expiration time and usage count.
-6. Supports **voucher management** that enables batch generation and export of vouchers. Vouchers can be used for account balance replenishment.
-7. Supports **channel management** that allows bulk creation of channels.
-8. Supports **user grouping** and **channel grouping** for setting different rates for different groups.
-9. Supports channel **model list configuration**.
-10. Supports **quota details checking**.
-11. Supports **user invite rewards**.
-12. Allows display of balance in USD.
-13. Supports announcement publishing, recharge link setting, and initial balance setting for new users.
-14. Offers rich **customization** options:
-    1. Supports customization of system name, logo, and footer.
-    2. Supports customization of homepage and about page using HTML & Markdown code, or embedding a standalone webpage through iframe.
-15. Supports management API access through system access tokens.
-16. Supports Cloudflare Turnstile user verification.
-17. Supports user management and multiple user login/registration methods:
-    + Email login/registration and password reset via email.
-    + [GitHub OAuth](https://github.com/settings/applications/new).
-    + WeChat Official Account authorization (requires additional deployment of [WeChat Server](https://github.com/songquanpeng/wechat-server)).
-18. Immediate support and encapsulation of other major model APIs as they become available.
+   + [x] [360 Zhinao](https://ai.360.cn)
+   + [x] [Tencent Hunyuan](https://cloud.tencent.com/document/product/1729)
+   + [x] [Moonshot AI](https://platform.moonshot.cn/)
+   + [x] [Baichuan](https://platform.baichuan-ai.com)
+   + [x] [MINIMAX](https://api.minimax.chat/)
+   + [x] [Groq](https://wow.groq.com/)
+   + [x] [Ollama](https://github.com/ollama/ollama)
+   + [x] [Lingyi Wanwu](https://platform.lingyiwanwu.com/)
+   + [x] [StepFun](https://platform.stepfun.com/)
+   + [x] [Coze](https://www.coze.com/)
+   + [x] [Cohere](https://cohere.com/)
+   + [x] [DeepSeek](https://www.deepseek.com/)
+   + [x] [Cloudflare Workers AI](https://developers.cloudflare.com/workers-ai/)
+   + [x] [DeepL](https://www.deepl.com/)
+   + [x] [together.ai](https://www.together.ai/)
+   + [x] [novita.ai](https://www.novita.ai/)
+   + [x] [SiliconFlow](https://cloud.siliconflow.cn/i/rKXmRobW)
+   + [x] [xAI](https://x.ai/)
+2. Supports configuring mirror sites and many [third-party proxy services](https://iamazing.cn/page/openai-api-third-party-services).
+3. Supports accessing multiple channels through **load balancing**.
+4. Supports **stream mode** with typewriter effects via streaming.
+5. Supports **multi-machine deployment**, [see here](#multi-machine-deployment).
+6. Supports **token management** — set token expiration time, quota, allowed IP ranges, and allowed model access.
+7. Supports **redemption code management** — batch generation and export, can be used to top up accounts.
+8. Supports **channel management** — batch creation of channels.
+9. Supports **user groups** and **channel groups** — different ratios for different groups.
+10. Supports setting a **model list** per channel.
+11. Supports **viewing quota details**.
+12. Supports **user invitation rewards**.
+13. Supports displaying quota in USD.
+14. Supports publishing announcements, setting recharge links, and setting initial quota for new users.
+15. Supports model mapping to redirect user request models. Please do not set it unless necessary — setting it reconstructs the request body instead of passing it through, which may prevent some not-yet-officially-supported fields from being delivered.
+16. Supports automatic retry on failure.
+17. Supports image generation interfaces (DALL-E / Tongyi Wanxiang / Volcano Seedream / CogView / Replicate), see [[Image-Generation]].
+18. Supports [Cloudflare AI Gateway](https://developers.cloudflare.com/ai-gateway/providers/openai/) — fill `https://gateway.ai.cloudflare.com/v1/ACCOUNT_TAG/GATEWAY/openai` in the proxy field of the channel settings.
+19. Rich **customization** settings:
+    1. Custom system name, logo, and footer.
+    2. Custom home page and about page — via HTML & Markdown, or embed a separate page with an iframe.
+20. Supports calling the management API with a system access token, enabling **extension and customization without code changes**. See the [API docs](./docs/API.md).
+21. Supports Cloudflare Turnstile user verification.
+22. Supports user management and **multiple login/registration methods**:
+    + Email registration/login (with registration email whitelist) and password reset via email.
+    + [Feishu (Lark) OAuth login](https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/authen-v1/authorize/get) ([implementation details here](https://iamazing.cn/page/feishu-oauth-login)).
+    + [GitHub OAuth login](https://github.com/settings/applications/new).
+    + WeChat Official Account authorization (requires deploying [WeChat Server](https://github.com/songquanpeng/wechat-server) separately).
+23. Supports theme switching via the `THEME` environment variable, default `default`. PRs for more themes are welcome — see [here](./web/README.md).
+24. Works with [Message Pusher](https://github.com/songquanpeng/message-pusher) to push alerts to various Apps.
+25. 🆕 **Alibaba Bailian (Tongyi Wanxiang) image generation** — channel type 49, supports wanx-v1 / stable-diffusion series.
+26. 🆕 **Volcano Engine (Seedream) image generation** — channel type 40, supports Seedream 4.0/4.5/5.0 series.
+27. 🆕 **Air theme channel type completion** — added Baidu V2, iFlytek V2, Alibaba Bailian, OpenAI-compatible, Gemini OpenAI.
 
 ## Deployment
 ### Docker Deployment
+```shell
+# Use ghcr.io image (recommended):
+docker run --name one-api -d --restart always -p 3000:3000 -e TZ=Asia/Shanghai -v /home/ubuntu/data/one-api:/data ghcr.io/hanyuestar/one-api:latest
+# Docker Hub image:
+docker run --name one-api -d --restart always -p 3000:3000 -e TZ=Asia/Shanghai -v /home/ubuntu/data/one-api:/data kyson666/one-api:latest
+# Use MySQL:
+docker run --name one-api -d --restart always -p 3000:3000 -e SQL_DSN="root:123456@tcp(localhost:3306)/oneapi" -e TZ=Asia/Shanghai -v /home/ubuntu/data/one-api:/data ghcr.io/hanyuestar/one-api:latest
+```
 
-Deployment command:
-`docker run --name one-api -d --restart always -p 3000:3000 -e TZ=Asia/Shanghai -v /home/ubuntu/data/one-api:/data justsong/one-api`
+The first `3000` in `-p 3000:3000` is the host port and can be changed as needed.
+
+Data and logs are saved to `/home/ubuntu/data/one-api` on the host. Please make sure the directory exists and is writable, or change it to a suitable directory.
+
+If the startup fails, add `--privileged=true`; see https://github.com/songquanpeng/one-api/issues/482 .
+
+If the images above cannot be pulled, try Docker Compose deployment (below) or the upstream original image.
+
+If your concurrency is high, **be sure** to set `SQL_DSN`; see the [environment variables](#environment-variables) section below.
 
 Update command: `docker run --rm -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower -cR`
 
-The first `3000` in `-p 3000:3000` is the port of the host, which can be modified as needed.
-
-Data will be saved in the `/home/ubuntu/data/one-api` directory on the host. Ensure that the directory exists and has write permissions, or change it to a suitable directory.
-
-Nginx reference configuration:
+Sample Nginx configuration:
 ```
 server{
-   server_name openai.justsong.cn;  # Modify your domain name accordingly
+   server_name openai.justsong.cn;  # change to your own domain
 
    location / {
           client_max_body_size  64m;
           proxy_http_version 1.1;
-          proxy_pass http://localhost:3000;  # Modify your port accordingly
+          proxy_pass http://localhost:3000;  # change to your own port
           proxy_set_header Host $host;
           proxy_set_header X-Forwarded-For $remote_addr;
           proxy_cache_bypass $http_upgrade;
           proxy_set_header Accept-Encoding gzip;
+          proxy_read_timeout 300s;  # GPT-4 needs a longer timeout, adjust as needed
    }
 }
 ```
 
-Next, configure HTTPS with Let's Encrypt certbot:
+Then configure HTTPS with Let's Encrypt certbot:
 ```bash
 # Install certbot on Ubuntu:
 sudo snap install --classic certbot
@@ -198,12 +246,29 @@ sudo certbot --nginx
 sudo service nginx restart
 ```
 
-The initial account username is `root` and password is `123456`.
+The initial account is `root` with password `123456`.
+
+### One-click Deployment via Baota Panel
+1. Install Baota Panel 9.2.0 or above from the [Baota Panel](https://www.bt.cn/new/download.html?r=dk_oneapi) official website (choose the official version script).
+2. Log in to the Baota Panel, click `Docker` in the left menu. On first entry it will prompt to install the `Docker` service — click install now and follow the prompts.
+3. After installation, search for `One-API` in the App Store, click install, configure the domain and basic info to finish.
+
+### Docker Compose Deployment
+
+The repository ships with `docker-compose.yml` for one-click deployment (MySQL + Redis + One API):
+
+```shell
+# Use ghcr.io image (default)
+docker compose up -d
+
+# Use Docker Hub image
+IMAGE=kyson666/one-api docker compose up -d
+```
 
 ### Manual Deployment
-1. Download the executable file from [GitHub Releases](https://github.com/songquanpeng/one-api/releases/latest) or compile from source:
+1. Download the executable from [this repository's Releases](https://github.com/hanyuestar/one-api) or build from source:
    ```shell
-   git clone https://github.com/songquanpeng/one-api.git
+   git clone https://github.com/hanyuestar/one-api.git
 
    # Build the frontend
    cd one-api/web/default
@@ -214,188 +279,271 @@ The initial account username is `root` and password is `123456`.
    cd ../..
    go mod download
    go build -ldflags "-s -w" -o one-api
-   ```
+   ````
 2. Run:
    ```shell
    chmod u+x one-api
    ./one-api --port 3000 --log-dir ./logs
    ```
-3. Access [http://localhost:3000/](http://localhost:3000/) and log in. The initial account username is `root` and password is `123456`.
+3. Visit [http://localhost:3000/](http://localhost:3000/) and log in. The initial account is `root` with password `123456`.
 
-For more detailed deployment tutorials, please refer to [this page](https://iamazing.cn/page/how-to-deploy-a-website).
+A more detailed deployment tutorial can be found [here](https://iamazing.cn/page/how-to-deploy-a-website).
 
 ### Multi-machine Deployment
-1. Set the same `SESSION_SECRET` for all servers.
-2. Set `SQL_DSN` and use MySQL instead of SQLite. All servers should connect to the same database.
-3. Set the `NODE_TYPE` for all non-master nodes to `slave`.
-4. Set `SYNC_FREQUENCY` for servers to periodically sync configurations from the database.
-5. Non-master nodes can optionally set `FRONTEND_BASE_URL` to redirect page requests to the master server.
-6. Install Redis separately on non-master nodes, and configure `REDIS_CONN_STRING` so that the database can be accessed with zero latency when the cache has not expired.
-7. If the main server also has high latency accessing the database, Redis must be enabled and `SYNC_FREQUENCY` must be set to periodically sync configurations from the database.
+1. All servers must set the same `SESSION_SECRET`.
+2. You must set `SQL_DSN` to use MySQL instead of SQLite; all servers connect to the same database.
+3. All slave servers must set `NODE_TYPE` to `slave`; if unset, the server is the master.
+4. Set `SYNC_FREQUENCY` so servers periodically sync configuration from the database; with a remote database, it is recommended to set this and enable Redis, on both master and slave.
+5. Slave servers may set `FRONTEND_BASE_URL` to redirect page requests to the master server.
+6. Install Redis **separately** on each slave server and set `REDIS_CONN_STRING`, so the database is not accessed when the cache is valid, reducing latency (Redis cluster/sentinel support: see the environment variable docs).
+7. If the master server also has high database latency, enable Redis and set `SYNC_FREQUENCY` to periodically sync configuration.
 
-Please refer to the [environment variables](#environment-variables) section for details on using environment variables.
+See [here](#environment-variables) for the detailed usage of environment variables.
 
-### Deployment on Control Panels (e.g., Baota)
-Refer to [#175](https://github.com/songquanpeng/one-api/issues/175) for detailed instructions.
+### Baota Deployment Tutorial
 
-If you encounter a blank page after deployment, refer to [#97](https://github.com/songquanpeng/one-api/issues/97) for possible solutions.
+See [#175](https://github.com/songquanpeng/one-api/issues/175).
 
-### Deployment on Third-Party Platforms
+If the page is blank after deployment, see [#97](https://github.com/songquanpeng/one-api/issues/97).
+
+### Deploying Third-party Services with One API
+> PRs adding more examples are welcome.
+
+#### ChatGPT Next Web
+Project page: https://github.com/Yidadaa/ChatGPT-Next-Web
+
+```bash
+docker run --name chat-next-web -d -p 3001:3000 yidadaa/chatgpt-next-web
+```
+
+Remember to change the port, then set the interface address (e.g., `https://openai.justsong.cn/`) and API Key on the page.
+
+#### ChatGPT Web
+Project page: https://github.com/Chanzhaoyu/chatgpt-web
+
+```bash
+docker run --name chatgpt-web -d -p 3002:3002 -e OPENAI_API_BASE_URL=https://openai.justsong.cn -e OPENAI_API_KEY=sk-xxx chenzhaoyu94/chatgpt-web
+```
+
+Remember to change the port, `OPENAI_API_BASE_URL` and `OPENAI_API_KEY`.
+
+#### QChatGPT - QQ Robot
+Project page: https://github.com/RockChinQ/QChatGPT
+
+After deploying per the [docs](https://qchatgpt.rockchin.top), set `requester.openai-chat-completions.base-url` in `data/provider.json` to your One API instance address, put the API Key into the `keys.openai` group, and set `model` to the model name you want.
+
+Use the `!model` command at runtime to view/switch available models.
+
+### Deploy to Third-party Platforms
 <details>
-<summary><strong>Deploy on Sealos</strong></summary>
+<summary><strong>Deploy to Sealos</strong></summary>
 <div>
 
-> Sealos supports high concurrency, dynamic scaling, and stable operations for millions of users.
+> Sealos servers are overseas, no extra network handling needed; supports high concurrency & dynamic scaling.
 
-> Click the button below to deploy with one click.👇
+Click the button below for one-click deployment (if you see 404 after deployment, wait 3~5 minutes):
 
-[![](https://raw.githubusercontent.com/labring-actions/templates/main/Deploy-on-Sealos.svg)](https://cloud.sealos.io/?openapp=system-fastdeploy?templateName=one-api)
-
+[![Deploy-on-Sealos.svg](https://raw.githubusercontent.com/labring-actions/templates/main/Deploy-on-Sealos.svg)](https://cloud.sealos.io/?openapp=system-fastdeploy?templateName=one-api)
 
 </div>
 </details>
 
 <details>
-<summary><strong>Deployment on Zeabur</strong></summary>
+<summary><strong>Deploy to Zeabur</strong></summary>
 <div>
 
-> Zeabur's servers are located overseas, automatically solving network issues, and the free quota is sufficient for personal usage.
+> Zeabur servers are overseas, solving network issues automatically; the free quota is enough for personal use.
 
 [![Deploy on Zeabur](https://zeabur.com/button.svg)](https://zeabur.com/templates/7Q0KO3)
 
-1. First, fork the code.
+1. First fork a copy of the code.
 2. Go to [Zeabur](https://zeabur.com?referralCode=songquanpeng), log in, and enter the console.
-3. Create a new project. In Service -> Add Service, select Marketplace, and choose MySQL. Note down the connection parameters (username, password, address, and port).
-4. Copy the connection parameters and run ```create database `one-api` ``` to create the database.
-5. Then, in Service -> Add Service, select Git (authorization is required for the first use) and choose your forked repository.
-6. Automatic deployment will start, but please cancel it for now. Go to the Variable tab, add a `PORT` with a value of `3000`, and then add a `SQL_DSN` with a value of `<username>:<password>@tcp(<addr>:<port>)/one-api`. Save the changes. Please note that if `SQL_DSN` is not set, data will not be persisted, and the data will be lost after redeployment.
-7. Select Redeploy.
-8. In the Domains tab, select a suitable domain name prefix, such as "my-one-api". The final domain name will be "my-one-api.zeabur.app". You can also CNAME your own domain name.
-9. Wait for the deployment to complete, and click on the generated domain name to access One API.
+3. Create a new Project; in Service -> Add Service select Marketplace, choose MySQL, and note the connection parameters (username, password, address, port).
+4. Paste the connection parameters and run ```create database `one-api` ``` to create the database.
+5. In Service -> Add Service, choose Git (authorize on first use) and select your forked repository.
+6. Deploy starts automatically — cancel it first. Go to Variable below, add `PORT` = `3000`, and add `SQL_DSN` = `<username>:<password>@tcp(<addr>:<port>)/one-api`, then save. Note: without `SQL_DSN`, data will not persist and will be lost on redeploy.
+7. Choose Redeploy.
+8. Go to Domains below and choose a suitable domain prefix, e.g. "my-one-api" → final domain "my-one-api.zeabur.app"; you can also CNAME your own domain.
+9. Wait for the deployment to finish, then click the generated domain to enter One API.
+
+</div>
+</details>
+
+<details>
+<summary><strong>Deploy to Render</strong></summary>
+<div>
+
+> Render offers a free tier; binding a card raises the limits further.
+
+Render can deploy docker images directly without forking: https://dashboard.render.com
 
 </div>
 </details>
 
 ## Configuration
-The system is ready to use out of the box.
+The system works out of the box.
 
-You can configure it by setting environment variables or command line parameters.
+You can configure it via environment variables or command-line arguments.
 
-After the system starts, log in as the `root` user to further configure the system.
+After the system starts, log in with the `root` user for further configuration.
+
+**Note**: if you don't know what a configuration item means, temporarily remove its value to see the hint text.
 
 ## Usage
-Add your API Key on the `Channels` page, and then add an access token on the `Tokens` page.
+Add your API Key on the `Channels` page, then create an access token on the `Tokens` page.
 
-You can then use your access token to access One API. The usage is consistent with the [OpenAI API](https://platform.openai.com/docs/api-reference/introduction).
+You can then access One API with your token, in the same way as the [OpenAI API](https://platform.openai.com/docs/api-reference/introduction).
 
-In places where the OpenAI API is used, remember to set the API Base to your One API deployment address, for example: `https://openai.justsong.cn`. The API Key should be the token generated in One API.
+Set the API Base of every place that uses the OpenAI API to your One API deployment address, e.g., `https://openai.justsong.cn`, and use the token generated in One API as the API Key.
 
-Note that the specific API Base format depends on the client you are using.
+Note that the exact API Base format depends on the client you use.
+
+For example, with the official OpenAI library:
+```bash
+OPENAI_API_KEY="sk-xxxxxx"
+OPENAI_API_BASE="https://<HOST>:<PORT>/v1"
+```
 
 ```mermaid
 graph LR
     A(User)
-    A --->|Request| B(One API)
-    B -->|Relay Request| C(OpenAI)
-    B -->|Relay Request| D(Azure)
-    B -->|Relay Request| E(Other downstream channels)
+    A --->|Request with key distributed by One API| B(One API)
+    B -->|Relay request| C(OpenAI)
+    B -->|Relay request| D(Azure)
+    B -->|Relay request| E(Other OpenAI API format downstream channels)
+    B -->|Relay and modify request body and response body| F(Non-OpenAI API format downstream channels)
 ```
 
-To specify which channel to use for the current request, you can add the channel ID after the token, for example: `Authorization: Bearer ONE_API_KEY-CHANNEL_ID`.
-Note that the token needs to be created by an administrator to specify the channel ID.
+You can force a specific channel for a request by appending the channel ID to the token, e.g.: `Authorization: Bearer ONE_API_KEY-CHANNEL_ID`.
+Note: only tokens created by admin users can specify a channel ID.
 
-If the channel ID is not provided, load balancing will be used to distribute the requests to multiple channels.
+Without it, multiple channels are used via load balancing.
 
 ### Environment Variables
-1. `REDIS_CONN_STRING`: When set, Redis will be used as the storage for request rate limiting instead of memory.
-    + Example: `REDIS_CONN_STRING=redis://default:redispw@localhost:49153`
-2. `SESSION_SECRET`: When set, a fixed session key will be used to ensure that cookies of logged-in users are still valid after the system restarts.
-    + Example: `SESSION_SECRET=random_string`
-3. `SQL_DSN`: When set, the specified database will be used instead of SQLite. Please use MySQL version 8.0.
-    + Example: `SQL_DSN=root:123456@tcp(localhost:3306)/oneapi`
-4. `LOG_SQL_DSN`: When set, a separate database will be used for the `logs` table; please use MySQL or PostgreSQL.
-    + Example: `LOG_SQL_DSN=root:123456@tcp(localhost:3306)/oneapi-logs`
-5. `FRONTEND_BASE_URL`: When set, the specified frontend address will be used instead of the backend address.
-    + Example: `FRONTEND_BASE_URL=https://openai.justsong.cn`
-6. 'MEMORY_CACHE_ENABLED': Enabling memory caching can cause a certain delay in updating user quotas, with optional values of 'true' and 'false'. If not set, it defaults to 'false'.
-7. `SYNC_FREQUENCY`: When set, the system will periodically sync configurations from the database, with the unit in seconds. If not set, no sync will happen.
-    + Example: `SYNC_FREQUENCY=60`
-8. `NODE_TYPE`: When set, specifies the node type. Valid values are `master` and `slave`. If not set, it defaults to `master`.
-    + Example: `NODE_TYPE=slave`
-9. `CHANNEL_UPDATE_FREQUENCY`: When set, it periodically updates the channel balances, with the unit in minutes. If not set, no update will happen.
-    + Example: `CHANNEL_UPDATE_FREQUENCY=1440`
-10. `CHANNEL_TEST_FREQUENCY`: When set, it periodically tests the channels, with the unit in minutes. If not set, no test will happen.
-    + Example: `CHANNEL_TEST_FREQUENCY=1440`
-11. `POLLING_INTERVAL`: The time interval (in seconds) between requests when updating channel balances and testing channel availability. Default is no interval.
+> One API supports reading environment variables from a `.env` file; refer to `.env.example` and rename it to `.env` when using.
+1. `REDIS_CONN_STRING`: enables Redis as the cache when set.
+   + Example: `REDIS_CONN_STRING=redis://default:redispw@localhost:49153`
+   + If database access latency is low, there is no need to enable Redis — enabling it may cause data lag.
+   + For sentinel or cluster mode:
+     + Set the variable to the node list, e.g., `localhost:49153,localhost:49154,localhost:49155`.
+     + Also set the following:
+       + `REDIS_PASSWORD`: password for Redis cluster or sentinel mode.
+       + `REDIS_MASTER_NAME`: master node name in Redis sentinel mode.
+2. `SESSION_SECRET`: sets a fixed session secret so logged-in users' cookies remain valid after a restart.
+   + Example: `SESSION_SECRET=random_string`
+3. `SQL_DSN`: uses the specified database instead of SQLite; use MySQL or PostgreSQL.
+   + Examples:
+     + MySQL: `SQL_DSN=root:123456@tcp(localhost:3306)/oneapi`
+     + PostgreSQL: `SQL_DSN=postgres://postgres:123456@localhost:5432/oneapi` (in adaptation; feedback welcome)
+   + Create the database `oneapi` in advance — no manual table creation needed; the program creates tables automatically.
+   + For a local database: add `--network="host"` to the deployment command so the container can reach MySQL on the host.
+   + For a cloud database: if the cloud server requires identity verification, add `?tls=skip-verify` to the connection string.
+   + Adjust the following parameters per your database configuration (or keep defaults):
+     + `SQL_MAX_IDLE_CONNS`: max idle connections, default `100`.
+     + `SQL_MAX_OPEN_CONNS`: max open connections, default `1000`.
+       + If you see `Error 1040: Too many connections`, lower this value.
+     + `SQL_CONN_MAX_LIFETIME`: max connection lifetime, default `60` minutes.
+4. `LOG_SQL_DSN`: uses a separate database for the `logs` table when set; use MySQL or PostgreSQL.
+5. `FRONTEND_BASE_URL`: redirects page requests to the specified address; only for slave servers.
+   + Example: `FRONTEND_BASE_URL=https://openai.justsong.cn`
+6. `MEMORY_CACHE_ENABLED`: enables in-memory cache; user quota updates will lag slightly. Values: `true` / `false`, default `false`.
+   + Example: `MEMORY_CACHE_ENABLED=true`
+7. `SYNC_FREQUENCY`: frequency of syncing configuration from the database when cache is enabled, in seconds, default `600`.
+   + Example: `SYNC_FREQUENCY=60`
+8. `NODE_TYPE`: node type. Values: `master` / `slave`, default `master`.
+   + Example: `NODE_TYPE=slave`
+9. `CHANNEL_UPDATE_FREQUENCY`: periodically updates channel balance, in minutes; no update when unset.
+   + Example: `CHANNEL_UPDATE_FREQUENCY=1440`
+10. `CHANNEL_TEST_FREQUENCY`: periodically checks channels, in minutes; no check when unset.
+   + Example: `CHANNEL_TEST_FREQUENCY=1440`
+11. `POLLING_INTERVAL`: request interval when batch-updating channel balance and testing availability, in seconds, no interval by default.
     + Example: `POLLING_INTERVAL=5`
-12. `BATCH_UPDATE_ENABLED`: Enabling batch database update aggregation can cause a certain delay in updating user quotas. The optional values are 'true' and 'false', but if not set, it defaults to 'false'.
-    +Example: ` BATCH_UPDATE_ENABLED=true`
-    +If you encounter an issue with too many database connections, you can try enabling this option.
-13. `BATCH_UPDATE_INTERVAL=5`: The time interval for batch updating aggregates, measured in seconds, defaults to '5'.
-    +Example: ` BATCH_UPDATE_INTERVAL=5`
-14. Request frequency limit:
-    + `GLOBAL_API_RATE_LIMIT`: Global API rate limit (excluding relay requests), the maximum number of requests within three minutes per IP, default to 180.
-    + `GLOBAL_WEL_RATE_LIMIT`: Global web speed limit, the maximum number of requests within three minutes per IP, default to 60.
-15. Encoder cache settings:
-    +`TIKTOKEN_CACHE_DIR`: By default, when the program starts, it will download the encoding of some common word elements online, such as' gpt-3.5 turbo '. In some unstable network environments or offline situations, it may cause startup problems. This directory can be configured to cache data and can be migrated to an offline environment.
-    +`DATA_GYM_CACHE_DIR`: Currently, this configuration has the same function as' TIKTOKEN-CACHE-DIR ', but its priority is not as high as it.
-16. `RELAY_TIMEOUT`: Relay timeout setting, measured in seconds, with no default timeout time set.
-17. `RELAY_PROXY`: After setting up, use this proxy to request APIs.
-18. `USER_CONTENT_REQUEST_TIMEOUT`: The timeout period for users to upload and download content, measured in seconds.
-19. `USER_CONTENT_REQUEST_PROXY`: After setting up, use this agent to request content uploaded by users, such as images.
-20. `SQLITE_BUSY_TIMEOUT`: SQLite lock wait timeout setting, measured in milliseconds, default to '3000'.
-21. `GEMINI_SAFETY_SETTING`: Gemini's security settings are set to 'BLOCK-NONE' by default.
-22. `GEMINI_VERSION`: The Gemini version used by the One API, which defaults to 'v1'.
-23. `THE`: The system's theme setting, default to 'default', specific optional values refer to [here] (./web/README. md).
-24. `ENABLE_METRIC`: Whether to disable channels based on request success rate, default not enabled, optional values are 'true' and 'false'.
-25. `METRIC_QUEUE_SIZE`: Request success rate statistics queue size, default to '10'.
-26. `METRIC_SUCCESS_RATE_THRESHOLD`: Request success rate threshold, default to '0.8'.
-27. `INITIAL_ROOT_TOKEN`: If this value is set, a root user token with the value of the environment variable will be automatically created when the system starts for the first time.
-28. `INITIAL_ROOT_ACCESS_TOKEN`: If this value is set, a system management token will be automatically created for the root user with a value of the environment variable when the system starts for the first time.
+12. `BATCH_UPDATE_ENABLED`: enables database batch update aggregation; user quota updates will lag slightly. Values: `true` / `false`, default `false`.
+    + Example: `BATCH_UPDATE_ENABLED=true`
+    + If you hit the database connection limit, try enabling this.
+13. `BATCH_UPDATE_INTERVAL=5`: interval of batch update aggregation, in seconds, default `5`.
+    + Example: `BATCH_UPDATE_INTERVAL=5`
+14. Request rate limits:
+    + `GLOBAL_API_RATE_LIMIT`: global API rate limit (excluding relay requests), max requests per IP per 3 minutes, default `180`.
+    + `GLOBAL_WEB_RATE_LIMIT`: global Web rate limit, max requests per IP per 3 minutes, default `60`.
+15. Tokenizer cache settings:
+    + `TIKTOKEN_CACHE_DIR`: the program downloads common token encodings (e.g., `gpt-3.5-turbo`) from the internet at startup; in unstable or offline environments this may cause startup issues. Configure this directory to cache data and migrate to offline environments.
+    + `DATA_GYM_CACHE_DIR`: currently behaves like `TIKTOKEN_CACHE_DIR` but with lower priority.
+16. `RELAY_TIMEOUT`: relay timeout, in seconds, no timeout by default.
+17. `RELAY_PROXY`: uses the given proxy to request APIs when set.
+18. `USER_CONTENT_REQUEST_TIMEOUT`: timeout for downloading user-uploaded content, in seconds.
+19. `USER_CONTENT_REQUEST_PROXY`: uses the given proxy for user-uploaded content (e.g., images) when set.
+20. `SQLITE_BUSY_TIMEOUT`: SQLite lock wait timeout, in milliseconds, default `3000`.
+21. `GEMINI_SAFETY_SETTING`: Gemini safety setting, default `BLOCK_NONE`.
+22. `GEMINI_VERSION`: Gemini version used by One API, default `v1`.
+23. `THEME`: system theme, default `default`; see [here](./web/README.md) for options.
+24. `ENABLE_METRIC`: whether to disable channels based on request success rate; disabled by default. Values: `true` / `false`.
+25. `METRIC_QUEUE_SIZE`: success-rate statistics queue size, default `10`.
+26. `METRIC_SUCCESS_RATE_THRESHOLD`: success-rate threshold, default `0.8`.
+27. `INITIAL_ROOT_TOKEN`: if set, a root user token with this value is created automatically on first startup.
+28. `INITIAL_ROOT_ACCESS_TOKEN`: if set, a root user system-management token with this value is created automatically on first startup.
+29. `ENFORCE_INCLUDE_USAGE`: whether to force returning `usage` in stream mode; disabled by default. Values: `true` / `false`.
+30. `TEST_PROMPT`: the user prompt when testing models, default `Print your model name exactly and do not output without any other text.`.
 
 ### Command Line Parameters
-1. `--port <port_number>`: Specifies the port number on which the server listens. Defaults to `3000`.
-    + Example: `--port 3000`
-2. `--log-dir <log_dir>`: Specifies the log directory. If not set, the logs will not be saved.
-    + Example: `--log-dir ./logs`
-3. `--version`: Prints the system version number and exits.
-4. `--help`: Displays the command usage help and parameter descriptions.
+1. `--port <port_number>`: port the server listens on, default `3000`.
+   + Example: `--port 3000`
+2. `--log-dir <log_dir>`: log directory; if unset, logs are saved to the `logs` folder of the working directory.
+   + Example: `--log-dir ./logs`
+3. `--version`: print the version and exit.
+4. `--help`: show usage help and parameter descriptions.
 
-## Screenshots
+## Demo
+### Online Demo
+Note: this demo site does not provide external services:
+https://openai.justsong.cn
+
+### Screenshots
 ![channel](https://user-images.githubusercontent.com/39998050/233837954-ae6683aa-5c4f-429f-a949-6645a83c9490.png)
 ![token](https://user-images.githubusercontent.com/39998050/233837971-dab488b7-6d96-43af-b640-a168e8d1c9bf.png)
 
 ## FAQ
 1. What is quota? How is it calculated? Does One API have quota calculation issues?
-    + Quota = Group multiplier * Model multiplier * (number of prompt tokens + number of completion tokens * completion multiplier)
-    + The completion multiplier is fixed at 1.33 for GPT3.5 and 2 for GPT4, consistent with the official definition.
-    + If it is not a stream mode, the official API will return the total number of tokens consumed. However, please note that the consumption multipliers for prompts and completions are different.
-2. Why does it prompt "insufficient quota" even though my account balance is sufficient?
-    + Please check if your token quota is sufficient. It is separate from the account balance.
-    + The token quota is used to set the maximum usage and can be freely set by the user.
-3. It says "No available channels" when trying to use a channel. What should I do?
-    + Please check the user and channel group settings.
-    + Also check the channel model settings.
-4. Channel testing reports an error: "invalid character '<' looking for beginning of value"
-    + This error occurs when the returned value is not valid JSON but an HTML page.
-    + Most likely, the IP of your deployment site or the node of the proxy has been blocked by CloudFlare.
-5. ChatGPT Next Web reports an error: "Failed to fetch"
-    + Do not set `BASE_URL` during deployment.
-    + Double-check that your interface address and API Key are correct.
+   + Quota = group ratio * model ratio * (prompt tokens + completion tokens * completion ratio)
+   + The completion ratio is fixed at 1.33 for GPT3.5 and 2 for GPT4, consistent with the official rates.
+   + In non-stream mode, the official API returns total tokens consumed, but note that prompt and completion have different consumption ratios.
+   + One API's default ratios are the official ones, already adjusted.
+2. Why does it say insufficient quota when my account has enough?
+   + Check your token quota — it is separate from the account quota.
+   + Token quota is only a max usage limit set by the user and can be freely configured.
+3. "No available channel"?
+   + Check the user group and channel group settings.
+   + And the channel's model settings.
+4. Channel test error: `invalid character '<' looking for beginning of value`
+   + The response is not valid JSON but an HTML page.
+   + Most likely your deployment's IP or proxy node is blocked by CloudFlare.
+5. ChatGPT Next Web error: `Failed to fetch`
+   + Do not set `BASE_URL` when deploying.
+   + Check that your interface address and API Key are correct.
+   + Check whether HTTPS is enabled; browsers block HTTP requests from HTTPS domains.
+6. Error: `当前分组负载已饱和，请稍后再试` (current group load is saturated, please try later)
+   + The upstream channel returned 429.
+7. Will I lose data after upgrading?
+   + No, if you use MySQL.
+   + With SQLite, mount a volume to persist the one-api.db file per the deployment command; otherwise data is lost after a container restart.
+8. Do I need to change the database before upgrading?
+   + Generally no; the system adjusts automatically on initialization.
+   + If needed, it will be noted in the changelog with a script.
+9. Error after manually modifying the database: `数据库一致性已被破坏，请联系管理员` (database consistency has been broken, contact admin)?
+   + This is detected when some channel ids in the ability table do not exist — most likely you deleted records from the channel table without cleaning up invalid channels in the ability table.
+   + Every model supported by a channel needs a dedicated ability table record indicating that the channel supports that model.
 
 ## Related Projects
-* [FastGPT](https://github.com/labring/FastGPT): Knowledge question answering system based on the LLM
-* [VChart](https://github.com/VisActor/VChart):  More than just a cross-platform charting library, but also an expressive data storyteller.
-* [VMind](https://github.com/VisActor/VMind):  Not just automatic, but also fantastic. Open-source solution for intelligent visualization.
-* * [CherryStudio](https://github.com/CherryHQ/cherry-studio):  A cross-platform AI client that integrates multiple service providers and supports local knowledge base management.
+* [FastGPT](https://github.com/labring/FastGPT): knowledge base QA system based on LLMs
+* [ChatGPT Next Web](https://github.com/Yidadaa/ChatGPT-Next-Web): one-click cross-platform ChatGPT app
+* [VChart](https://github.com/VisActor/VChart): not just an out-of-the-box multi-terminal chart library, but a vivid and flexible data storyteller
+* [VMind](https://github.com/VisActor/VMind): not just automatic, but smart. Open-source intelligent visualization solution
+* [CherryStudio](https://github.com/CherryHQ/cherry-studio): cross-platform AI client with multi-provider integration and local knowledge base support
 
 ## Note
-This project is an open-source project. Please use it in compliance with OpenAI's [Terms of Use](https://openai.com/policies/terms-of-use) and **applicable laws and regulations**. It must not be used for illegal purposes.
 
-This project is released under the MIT license. Based on this, attribution and a link to this project must be included at the bottom of the page.
+This project is open-sourced under the MIT license. **On that basis**, attribution and a link to this project must be kept at the bottom of the page. If you do not want to keep the attribution, you must first obtain authorization.
 
-The same applies to derivative projects based on this project.
+The same applies to projects derived from this one.
 
-If you do not wish to include attribution, prior authorization must be obtained.
-
-According to the MIT license, users should bear the risk and responsibility of using this project, and the developer of this open-source project is not responsible for this.
+Under the MIT license, users bear the risks and responsibilities of using this project; the developers of this open-source project are not liable.

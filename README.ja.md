@@ -2,30 +2,30 @@
     <a href="./README.md">中文</a> | <a href="./README.en.md">English</a> | <strong>日本語</strong>
 </p>
 
+
 <p align="center">
-  <a href="https://github.com/songquanpeng/one-api"><img src="https://raw.githubusercontent.com/songquanpeng/one-api/main/web/default/public/logo.png" width="150" height="150" alt="one-api logo"></a>
+  <a href="https://github.com/hanyuestar/one-api"><img src="https://raw.githubusercontent.com/songquanpeng/one-api/main/web/default/public/logo.png" width="150" height="150" alt="one-api logo"></a>
 </p>
 
 <div align="center">
 
 # One API
 
-_✨ 標準的な OpenAI API フォーマットを通じてすべての LLM にアクセスでき、導入と利用が容易です ✨_
+_✨ オープンソースの OpenAI API 管理＆配布システム、画像生成に対応 ✨_
+
+> このリポジトリは [songquanpeng/one-api](https://github.com/songquanpeng/one-api) をベースに保守されており、阿里百炼＆火山エンジンの画像生成サポートを追加し、ghcr.io と Docker Hub の両方にプッシュしています。
 
 </div>
 
 <p align="center">
   <a href="https://raw.githubusercontent.com/songquanpeng/one-api/main/LICENSE">
-    <img src="https://img.shields.io/github/license/songquanpeng/one-api?color=brightgreen" alt="license">
+    <img src="https://img.shields.io/github/license/hanyuestar/one-api?color=brightgreen" alt="license">
   </a>
-  <a href="https://github.com/songquanpeng/one-api/releases/latest">
-    <img src="https://img.shields.io/github/v/release/songquanpeng/one-api?color=brightgreen&include_prereleases" alt="release">
+  <a href="https://github.com/hanyuestar/one-api/pkgs/container/one-api">
+    <img src="https://img.shields.io/badge/ghcr.io-hanyuestar%2Fone--api-blue" alt="ghcr">
   </a>
-  <a href="https://hub.docker.com/repository/docker/justsong/one-api">
-    <img src="https://img.shields.io/docker/pulls/justsong/one-api?color=brightgreen" alt="docker pull">
-  </a>
-  <a href="https://github.com/songquanpeng/one-api/releases/latest">
-    <img src="https://img.shields.io/github/downloads/songquanpeng/one-api/total?color=brightgreen&include_prereleases" alt="release">
+  <a href="https://hub.docker.com/r/kyson666/one-api">
+    <img src="https://img.shields.io/docker/pulls/kyson666/one-api?color=brightgreen" alt="docker pull">
   </a>
   <a href="https://goreportcard.com/report/github.com/songquanpeng/one-api">
     <img src="https://goreportcard.com/badge/github.com/songquanpeng/one-api" alt="GoReportCard">
@@ -33,26 +33,31 @@ _✨ 標準的な OpenAI API フォーマットを通じてすべての LLM に�
 </p>
 
 <p align="center">
-  <a href="#deployment">デプロイチュートリアル</a>
+  <a href="#deployment">デプロイ</a>
   ·
   <a href="#usage">使用方法</a>
   ·
-  <a href="https://github.com/songquanpeng/one-api/issues">フィードバック</a>
+  <a href="https://github.com/hanyuestar/one-api/issues">意見・フィードバック</a>
   ·
-  <a href="#screenshots">スクリーンショット</a>
-  ·
-  <a href="https://openai.justsong.cn/">ライブデモ</a>
+  <a href="https://github.com/hanyuestar/one-api/wiki">Wiki</a>
   ·
   <a href="#faq">FAQ</a>
-  ·
-  <a href="#related-projects">関連プロジェクト</a>
-  ·
-  <a href="https://iamazing.cn/page/reward">寄付</a>
 </p>
 
-> **警告**: この README は ChatGPT によって翻訳されています。翻訳ミスを発見した場合は遠慮なく PR を投稿してください。
+> [!NOTE]
+> このプロジェクトはオープンソースです。利用者は OpenAI の[利用規約](https://openai.com/policies/terms-of-use)および**法令・規制**を遵守し、違法な目的に使用してはなりません。
+>
+> [《生成式人工智能服务管理暂行办法》](http://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm)の要求に基づき、中国本土の公衆に対して未登録の生成 AI サービスを提供しないでください。
 
-> **注**: Docker からプルされた最新のイメージは、`alpha` リリースかもしれません。安定性が必要な場合は、手動でバージョンを指定してください。
+> [!NOTE]
+> 本リポジトリの Docker イメージ：
+> - GitHub Container Registry: `ghcr.io/hanyuestar/one-api:latest`
+> - Docker Hub: `kyson666/one-api:latest`
+>
+> 上流のオリジナルイメージ：[justsong/one-api](https://hub.docker.com/repository/docker/justsong/one-api) または [ghcr.io/songquanpeng/one-api](https://github.com/songquanpeng/one-api/pkgs/container/one-api)
+
+> [!WARNING]
+> root ユーザーで初回ログイン後、必ずデフォルトパスワード `123456` を変更してください！
 
 ## 更新履歴
 
@@ -129,65 +134,107 @@ _✨ 標準的な OpenAI API フォーマットを通じてすべての LLM に�
 ## 特徴
 1. 複数の大型モデルをサポート:
    + [x] [OpenAI ChatGPT シリーズモデル](https://platform.openai.com/docs/guides/gpt/chat-completions-api) ([Azure OpenAI API](https://learn.microsoft.com/en-us/azure/ai-services/openai/reference) をサポート)
-   + [x] [Anthropic Claude シリーズモデル](https://anthropic.com)
+   + [x] [Anthropic Claude シリーズモデル](https://anthropic.com) (AWS Claude をサポート)
    + [x] [Google PaLM2/Gemini シリーズモデル](https://developers.generativeai.google)
-   + [x] [Baidu Wenxin Yiyuan シリーズモデル](https://cloud.baidu.com/doc/WENXINWORKSHOP/index.html)
-   + [x] [Alibaba Tongyi Qianwen シリーズモデル](https://help.aliyun.com/document_detail/2400395.html)
-   + [x] [Zhipu ChatGLM シリーズモデル](https://bigmodel.cn)
-2. **ロードバランシング**による複数チャンネルへのアクセスをサポート。
-3. ストリーム伝送によるタイプライター的効果を可能にする**ストリームモード**に対応。
-4. **マルチマシンデプロイ**に対応。[詳細はこちら](#multi-machine-deployment)を参照。
-5. トークンの有効期限や使用回数を設定できる**トークン管理**に対応しています。
-6. **バウチャー管理**に対応しており、バウチャーの一括生成やエクスポートが可能です。バウチャーは口座残高の補充に利用できます。
-7. **チャンネル管理**に対応し、チャンネルの一括作成が可能。
-8. グループごとに異なるレートを設定するための**ユーザーグループ**と**チャンネルグループ**をサポートしています。
-9. チャンネル**モデルリスト設定**に対応。
-10. **クォータ詳細チェック**をサポート。
-11. **ユーザー招待報酬**をサポートします。
-12. 米ドルでの残高表示が可能。
-13. 新規ユーザー向けのお知らせ公開、リチャージリンク設定、初期残高設定に対応。
-14. 豊富な**カスタマイズ**オプションを提供します:
-    1. システム名、ロゴ、フッターのカスタマイズが可能。
-    2. HTML と Markdown コードを使用したホームページとアバウトページのカスタマイズ、または iframe を介したスタンドアロンウェブページの埋め込みをサポートしています。
-15. システム・アクセストークンによる管理 API アクセスをサポートする。
-16. Cloudflare Turnstile によるユーザー認証に対応。
-17. ユーザー管理と複数のユーザーログイン/登録方法をサポート:
-    + 電子メールによるログイン/登録とパスワードリセット。
-    + [GitHub OAuth](https://github.com/settings/applications/new)。
-    + WeChat 公式アカウントの認証（[WeChat Server](https://github.com/songquanpeng/wechat-server)の追加導入が必要）。
-18. 他の主要なモデル API が利用可能になった場合、即座にサポートし、カプセル化する。
+   + [x] [Mistral シリーズモデル](https://mistral.ai/)
+   + [x] [字节跳动豆包大模型（火山引擎）](https://www.volcengine.com/experience/ark?utm_term=202502dsinvite&ac=DSASUQY5&rc=2QXCA1VI)
+   + [x] [百度文心一言シリーズモデル](https://cloud.baidu.com/doc/WENXINWORKSHOP/index.html)
+   + [x] [阿里通義千問シリーズモデル](https://help.aliyun.com/document_detail/2400395.html)
+   + [x] [訊飛星火認知大モデル](https://www.xfyun.cn/doc/spark/Web.html)
+   + [x] [智谱 ChatGLM シリーズモデル](https://bigmodel.cn)
+   + [x] [360 智脳](https://ai.360.cn)
+   + [x] [腾讯混元大模型](https://cloud.tencent.com/document/product/1729)
+   + [x] [Moonshot AI](https://platform.moonshot.cn/)
+   + [x] [百川大模型](https://platform.baichuan-ai.com)
+   + [x] [MINIMAX](https://api.minimax.chat/)
+   + [x] [Groq](https://wow.groq.com/)
+   + [x] [Ollama](https://github.com/ollama/ollama)
+   + [x] [零一万物](https://platform.lingyiwanwu.com/)
+   + [x] [階跃星辰](https://platform.stepfun.com/)
+   + [x] [Coze](https://www.coze.com/)
+   + [x] [Cohere](https://cohere.com/)
+   + [x] [DeepSeek](https://www.deepseek.com/)
+   + [x] [Cloudflare Workers AI](https://developers.cloudflare.com/workers-ai/)
+   + [x] [DeepL](https://www.deepl.com/)
+   + [x] [together.ai](https://www.together.ai/)
+   + [x] [novita.ai](https://www.novita.ai/)
+   + [x] [硅基流動 SiliconCloud](https://cloud.siliconflow.cn/i/rKXmRobW)
+   + [x] [xAI](https://x.ai/)
+2. ミラーサイトおよび多くの[サードパーティプロキシサービス](https://iamazing.cn/page/openai-api-third-party-services)の設定をサポート。
+3. **ロードバランシング**による複数チャンネルへのアクセスをサポート。
+4. **ストリームモード**をサポートし、ストリーミングでタイプライター効果を実現。
+5. **マルチマシンデプロイ**をサポート。[詳細はこちら](#マルチマシンデプロイ)。
+6. **トークン管理**をサポート：トークンの有効期限、クォータ、許可 IP 範囲、許可モデルを設定可能。
+7. **兑换码（引き換えコード）管理**をサポート：一括生成・エクスポート、アカウントのチャージに使用可能。
+8. **チャンネル管理**をサポート：チャンネルの一括作成。
+9. **ユーザーグループ**と**チャンネルグループ**をサポート：グループごとに異なる倍率を設定可能。
+10. チャンネルごとに**モデルリスト**の設定をサポート。
+11. **クォータ明細の表示**をサポート。
+12. **ユーザー招待報酬**をサポート。
+13. クォータを米ドル単位で表示可能。
+14. お知らせの公開、チャージリンクの設定、新規ユーザーの初期クォータ設定をサポート。
+15. モデルマッピングをサポートし、ユーザーのリクエストモデルをリダイレクト。必要な場合以外は設定しないでください。設定するとリクエストボディが再構築され直接透過ではなくなり、未対応のフィールドが渡せなくなる可能性があります。
+16. 失敗時の自動リトライをサポート。
+17. 画像生成インターフェースをサポート（DALL-E / 通義万相 / 火山 Seedream / CogView / Replicate）。[[Image-Generation]] 参照。
+18. [Cloudflare AI Gateway](https://developers.cloudflare.com/ai-gateway/providers/openai/) をサポート：チャンネル設定のプロキシ欄に `https://gateway.ai.cloudflare.com/v1/ACCOUNT_TAG/GATEWAY/openai` を入力。
+19. 豊富な**カスタマイズ**設定をサポート：
+    1. システム名、ロゴ、フッターのカスタマイズ。
+    2. ホームページとアバウトページのカスタマイズ：HTML & Markdown コード、または iframe で別ページを埋め込み。
+20. システムアクセストークンによる管理 API 呼び出しをサポートし、**二度開発なしで** One API を拡張・カスタマイズ可能。[API ドキュメント](./docs/API.md) 参照。
+21. Cloudflare Turnstile ユーザー検証をサポート。
+22. ユーザー管理と**多様なログイン/登録方式**をサポート：
+    + メール登録/ログイン（登録メールホワイトリスト対応）およびメールによるパスワードリセット。
+    + [飞书（Feishu/Lark）認可ログイン](https://open.feishu.cn/document/uAjLw4CM/ukTMukTMukTM/reference/authen-v1/authorize/get)（[One API の実装詳細はこちら](https://iamazing.cn/page/feishu-oauth-login)）。
+    + [GitHub 認可ログイン](https://github.com/settings/applications/new)。
+    + 微信公衆号認可（別途 [WeChat Server](https://github.com/songquanpeng/wechat-server) のデプロイが必要）。
+23. テーマ切り替えをサポート：環境変数 `THEME` で設定、デフォルトは `default`。テーマ追加の PR 歓迎。[詳細はこちら](./web/README.md)。
+24. [Message Pusher](https://github.com/songquanpeng/message-pusher) と連携し、アラートを各種 App にプッシュ可能。
+25. 🆕 **阿里百炼（通義万相）画像生成** — チャンネルタイプ 49、wanx-v1 / stable-diffusion シリーズに対応。
+26. 🆕 **火山引擎（Seedream）画像生成** — チャンネルタイプ 40、Seedream 4.0/4.5/5.0 シリーズに対応。
+27. 🆕 **Air テーマのチャンネルタイプ補完** — 百度 V2、訊飛 V2、阿里百炼、OpenAI 互換、Gemini OpenAI の 5 タイプを追加。
 
 ## デプロイメント
 ### Docker デプロイメント
+```shell
+# ghcr.io イメージを使用（推奨）：
+docker run --name one-api -d --restart always -p 3000:3000 -e TZ=Asia/Shanghai -v /home/ubuntu/data/one-api:/data ghcr.io/hanyuestar/one-api:latest
+# Docker Hub イメージ：
+docker run --name one-api -d --restart always -p 3000:3000 -e TZ=Asia/Shanghai -v /home/ubuntu/data/one-api:/data kyson666/one-api:latest
+# MySQL を使用：
+docker run --name one-api -d --restart always -p 3000:3000 -e SQL_DSN="root:123456@tcp(localhost:3306)/oneapi" -e TZ=Asia/Shanghai -v /home/ubuntu/data/one-api:/data ghcr.io/hanyuestar/one-api:latest
+```
 
-デプロイコマンド:
-`docker run --name one-api -d --restart always -p 3000:3000 -e TZ=Asia/Shanghai -v /home/ubuntu/data/one-api:/data justsong/one-api`。
+`-p 3000:3000` の最初の `3000` はホスト側のポートです。必要に応じて変更してください。
 
-コマンドを更新する: `docker run --rm -v /var/run/docker.sock:/var/run/docker.sock containrr/watchtower -cR`。
+データとログはホストの `/home/ubuntu/data/one-api` ディレクトリに保存されます。ディレクトリが存在し書き込み権限があることを確認するか、適切なディレクトリに変更してください。
 
-`-p 3000:3000` の最初の `3000` はホストのポートで、必要に応じて変更できます。
+起動に失敗する場合は `--privileged=true` を追加してください。参考：https://github.com/songquanpeng/one-api/issues/482 。
 
-データはホストの `/home/ubuntu/data/one-api` ディレクトリに保存される。このディレクトリが存在し、書き込み権限があることを確認する、もしくは適切なディレクトリに変更してください。
+上のイメージをプルできない場合は、Docker Compose デプロイ（下記）または上流のオリジナルイメージを試してください。
 
-Nginxリファレンス設定:
+並行度が高い場合は**必ず** `SQL_DSN` を設定してください。詳細は下記の[環境変数](#環境変数)を参照。
+
+更新コマンド：`docker run --rm -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower -cR`
+
+Nginx の参考設定：
 ```
 server{
-   server_name openai.justsong.cn;  # ドメイン名は適宜変更
+   server_name openai.justsong.cn;  # 実際のドメインに変更
 
    location / {
           client_max_body_size  64m;
           proxy_http_version 1.1;
-          proxy_pass http://localhost:3000;  # それに応じてポートを変更
+          proxy_pass http://localhost:3000;  # 実際のポートに変更
           proxy_set_header Host $host;
           proxy_set_header X-Forwarded-For $remote_addr;
           proxy_cache_bypass $http_upgrade;
           proxy_set_header Accept-Encoding gzip;
-          proxy_read_timeout 300s;  # GPT-4 はより長いタイムアウトが必要
+          proxy_read_timeout 300s;  # GPT-4 は長いタイムアウトが必要、適宜調整
    }
 }
 ```
 
-次に、Let's Encrypt certbot を使って HTTPS を設定します:
+その後、Let's Encrypt の certbot で HTTPS を設定：
 ```bash
 # Ubuntu に certbot をインストール:
 sudo snap install --classic certbot
@@ -199,59 +246,104 @@ sudo certbot --nginx
 sudo service nginx restart
 ```
 
-初期アカウントのユーザー名は `root` で、パスワードは `123456` です。
+初期アカウントはユーザー名 `root`、パスワード `123456` です。
+
+### 宝塔（Baota）パネルでのワンクリックデプロイ
+1. 宝塔パネル 9.2.0 以上を[宝塔パネル公式サイト](https://www.bt.cn/new/download.html?r=dk_oneapi)からインストール（正式版スクリプトを選択）。
+2. ログイン後、左メニューの `Docker` をクリック。初回は `Docker` サービスのインストールが促されるので、すぐにインストールして手順に従います。
+3. インストール後、アプリストアで `One-API` を検索してインストールし、ドメインなどの基本情報を設定すれば完了です。
+
+### Docker Compose デプロイメント
+
+リポジトリに同梱の `docker-compose.yml` でワンクリックデプロイ（MySQL + Redis + One API）：
+
+```shell
+# ghcr.io イメージを使用（デフォルト）
+docker compose up -d
+
+# Docker Hub イメージを使用
+IMAGE=kyson666/one-api docker compose up -d
+```
 
 ### マニュアルデプロイ
-1. [GitHub Releases](https://github.com/songquanpeng/one-api/releases/latest) から実行ファイルをダウンロードする、もしくはソースからコンパイルする:
+1. [本リポジトリの Releases](https://github.com/hanyuestar/one-api) から実行ファイルをダウンロードするか、ソースからビルド：
    ```shell
-   git clone https://github.com/songquanpeng/one-api.git
+   git clone https://github.com/hanyuestar/one-api.git
 
-   # フロントエンドのビルド
+   # フロントエンドをビルド
    cd one-api/web/default
    npm install
    npm run build
 
-   # バックエンドのビルド
+   # バックエンドをビルド
    cd ../..
    go mod download
    go build -ldflags "-s -w" -o one-api
-   ```
-2. 実行:
+   ````
+2. 実行：
    ```shell
    chmod u+x one-api
    ./one-api --port 3000 --log-dir ./logs
    ```
-3. [http://localhost:3000/](http://localhost:3000/) にアクセスし、ログインする。初期アカウントのユーザー名は `root`、パスワードは `123456` である。
+3. [http://localhost:3000/](http://localhost:3000/) にアクセスしてログイン。初期アカウントは `root`、パスワードは `123456` です。
 
-より詳細なデプロイのチュートリアルについては、[このページ](https://iamazing.cn/page/how-to-deploy-a-website) を参照してください。
+より詳細なデプロイチュートリアルは[こちら](https://iamazing.cn/page/how-to-deploy-a-website)を参照。
 
 ### マルチマシンデプロイ
-1. すべてのサーバに同じ `SESSION_SECRET` を設定する。
-2. `SQL_DSN` を設定し、SQLite の代わりに MySQL を使用する。すべてのサーバは同じデータベースに接続する。
-3. マスターノード以外のノードの `NODE_TYPE` を `slave` に設定する。
-4. データベースから定期的に設定を同期するサーバーには `SYNC_FREQUENCY` を設定する。
-5. マスター以外のノードでは、オプションで `FRONTEND_BASE_URL` を設定して、ページ要求をマスターサーバーにリダイレクトすることができます。
-6. マスター以外のノードには Redis を個別にインストールし、`REDIS_CONN_STRING` を設定して、キャッシュの有効期限が切れていないときにデータベースにゼロレイテンシーでアクセスできるようにする。
-7. メインサーバーでもデータベースへのアクセスが高レイテンシになる場合は、Redis を有効にし、`SYNC_FREQUENCY` を設定してデータベースから定期的に設定を同期する必要がある。
+1. すべてのサーバーで `SESSION_SECRET` を同じ値に設定します。
+2. `SQL_DSN` を必ず設定し、SQLite ではなく MySQL を使用、全サーバーが同じデータベースに接続します。
+3. すべてのスレーブサーバーで `NODE_TYPE` を `slave` に設定。未設定の場合はマスターとして扱われます。
+4. `SYNC_FREQUENCY` を設定するとサーバーは定期的にデータベースから設定を同期します。リモートデータベース使用時は、マスター/スレーブ問わずこの設定と Redis 有効化を推奨。
+5. スレーブサーバーは任意で `FRONTEND_BASE_URL` を設定し、ページリクエストをマスターサーバーにリダイレクトできます。
+6. 各スレーブサーバーに**別々に** Redis を導入し、`REDIS_CONN_STRING` を設定。キャッシュが有効な間はデータベースにアクセスせず、遅延を減らせます（Redis クラスタ/センチネルは環境変数の説明を参照）。
+7. マスターサーバーもデータベース遅延が高い場合は、Redis を有効化し `SYNC_FREQUENCY` を設定して定期的に設定を同期します。
 
-Please refer to the [environment variables](#environment-variables) section for details on using environment variables.
+環境変数の詳細な使い方は[こちら](#環境変数)を参照。
 
-### コントロールパネル（例: Baota）への展開
-詳しい手順は [#175](https://github.com/songquanpeng/one-api/issues/175) を参照してください。
+### 宝塔デプロイチュートリアル
 
-配置後に空白のページが表示される場合は、[#97](https://github.com/songquanpeng/one-api/issues/97) を参照してください。
+[#175](https://github.com/songquanpeng/one-api/issues/175) を参照。
+
+デプロイ後に空白ページになる場合は [#97](https://github.com/songquanpeng/one-api/issues/97) を参照。
+
+### One API と連携するサードパーティサービスのデプロイ
+> サンプル追加の PR 歓迎です。
+
+#### ChatGPT Next Web
+プロジェクトページ：https://github.com/Yidadaa/ChatGPT-Next-Web
+
+```bash
+docker run --name chat-next-web -d -p 3001:3000 yidadaa/chatgpt-next-web
+```
+
+ポート番号を変更し、ページ上でインターフェースアドレス（例：https://openai.justsong.cn/ ）と API Key を設定してください。
+
+#### ChatGPT Web
+プロジェクトページ：https://github.com/Chanzhaoyu/chatgpt-web
+
+```bash
+docker run --name chatgpt-web -d -p 3002:3002 -e OPENAI_API_BASE_URL=https://openai.justsong.cn -e OPENAI_API_KEY=sk-xxx chenzhaoyu94/chatgpt-web
+```
+
+ポート番号、`OPENAI_API_BASE_URL`、`OPENAI_API_KEY` を変更してください。
+
+#### QChatGPT - QQ ボット
+プロジェクトページ：https://github.com/RockChinQ/QChatGPT
+
+[ドキュメント](https://qchatgpt.rockchin.top)に従ってデプロイ後、`data/provider.json` の `requester.openai-chat-completions.base-url` を One API インスタンスのアドレスに設定し、`keys.openai` グループに API Key を記入、`model` を使用したいモデル名に設定します。
+
+実行中は `!model` コマンドで利用可能なモデルを確認・切り替えできます。
 
 ### サードパーティプラットフォームへのデプロイ
 <details>
 <summary><strong>Sealos へのデプロイ</strong></summary>
 <div>
 
-> Sealos は、高い同時実行性、ダイナミックなスケーリング、数百万人のユーザーに対する安定した運用をサポートしています。
+> Sealos のサーバーは海外にあり、ネットワークの追加対応は不要。高並行＆動的スケーリングに対応。
 
-> 下のボタンをクリックすると、ワンクリックで展開できます。👇
+下のボタンでワンクリックデプロイ（デプロイ後に 404 が出る場合は 3〜5 分お待ちください）：
 
-[![](https://raw.githubusercontent.com/labring-actions/templates/main/Deploy-on-Sealos.svg)](https://cloud.sealos.io/?openapp=system-fastdeploy?templateName=one-api)
-
+[![Deploy-on-Sealos.svg](https://raw.githubusercontent.com/labring-actions/templates/main/Deploy-on-Sealos.svg)](https://cloud.sealos.io/?openapp=system-fastdeploy?templateName=one-api)
 
 </div>
 </details>
@@ -260,114 +352,198 @@ Please refer to the [environment variables](#environment-variables) section for 
 <summary><strong>Zeabur へのデプロイ</strong></summary>
 <div>
 
-> Zeabur のサーバーは海外にあるため、ネットワークの問題は自動的に解決されます。
+> Zeabur のサーバーは海外にあり、ネットワーク問題を自動解決。無料枠も個人利用には十分です。
 
 [![Deploy on Zeabur](https://zeabur.com/button.svg)](https://zeabur.com/templates/7Q0KO3)
 
-1. まず、コードをフォークする。
-2. [Zeabur](https://zeabur.com?referralCode=songquanpeng) にアクセスしてログインし、コンソールに入る。
-3. 新しいプロジェクトを作成します。Service -> Add ServiceでMarketplace を選択し、MySQL を選択する。接続パラメータ（ユーザー名、パスワード、アドレス、ポート）をメモします。
-4. 接続パラメータをコピーし、```create database `one-api` ``` を実行してデータベースを作成する。
-5. その後、Service -> Add Service で Git を選択し（最初の使用には認証が必要です）、フォークしたリポジトリを選択します。
-6. 自動デプロイが開始されますが、一旦キャンセルしてください。Variable タブで `PORT` に `3000` を追加し、`SQL_DSN` に `<username>:<password>@tcp(<addr>:<port>)/one-api` を追加します。変更を保存する。SQL_DSN` が設定されていないと、データが永続化されず、再デプロイ後にデータが失われるので注意すること。
-7. 再デプロイを選択します。
-8. Domains タブで、"my-one-api" のような適切なドメイン名の接頭辞を選択する。最終的なドメイン名は "my-one-api.zeabur.app" となります。独自のドメイン名を CNAME することもできます。
-9. デプロイが完了するのを待ち、生成されたドメイン名をクリックして One API にアクセスします。
+1. まずコードを fork します。
+2. [Zeabur](https://zeabur.com?referralCode=songquanpeng) にログインし、コンソールに入ります。
+3. 新しい Project を作成し、Service -> Add Service で Marketplace を選択、MySQL を選んで接続パラメータ（ユーザー名、パスワード、アドレス、ポート）を控えます。
+4. 接続パラメータをコピーし、```create database `one-api` ``` を実行してデータベースを作成します。
+5. Service -> Add Service で Git を選択（初回は認可が必要）、fork したリポジトリを選択します。
+6. Deploy が自動開始されるので先にキャンセル。下の Variable で `PORT` = `3000` を追加し、さらに `SQL_DSN` = `<username>:<password>@tcp(<addr>:<port>)/one-api` を追加して保存します。`SQL_DSN` を設定しないとデータが永続化されず、再デプロイでデータが失われます。
+7. Redeploy を選択します。
+8. 下の Domains で適切なドメイン接頭辞（例："my-one-api"）を選ぶと、最終ドメインは "my-one-api.zeabur.app" になります。独自ドメインの CNAME も可能です。
+9. デプロイ完了を待ち、生成されたドメインで One API にアクセスします。
+
+</div>
+</details>
+
+<details>
+<summary><strong>Render へのデプロイ</strong></summary>
+<div>
+
+> Render は無料枠を提供。カード登録でさらに枠が増えます。
+
+Render は fork 不要で docker イメージを直接デプロイ可能：https://dashboard.render.com
 
 </div>
 </details>
 
 ## コンフィグ
-システムは箱から出してすぐに使えます。
+システムは初期状態でそのまま使えます。
 
-環境変数やコマンドラインパラメータを設定することで、システムを構成することができます。
+環境変数またはコマンドラインパラメータで設定できます。
 
-システム起動後、`root` ユーザーとしてログインし、さらにシステムを設定します。
+起動後、`root` ユーザーでログインして追加設定を行います。
+
+**注**：設定項目の意味が不明な場合は、一時的に値を削除するとヒントテキストが表示されます。
 
 ## 使用方法
-`Channels` ページで API Key を追加し、`Tokens` ページでアクセストークンを追加する。
+`渠道（チャンネル）`ページで API Key を追加し、`令牌（トークン）`ページでアクセストークンを作成します。
 
-アクセストークンを使って One API にアクセスすることができる。使い方は [OpenAI API](https://platform.openai.com/docs/api-reference/introduction) と同じです。
+その後、トークンで One API にアクセスできます。[OpenAI API](https://platform.openai.com/docs/api-reference/introduction) と同じ使い方です。
 
-OpenAI API が使用されている場所では、API Base に One API のデプロイアドレスを設定することを忘れないでください（例: `https://openai.justsong.cn`）。API Key は One API で生成されたトークンでなければなりません。
+OpenAI API を使う各所で、API Base を One API のデプロイアドレス（例：`https://openai.justsong.cn`）に設定し、API Key には One API で生成したトークンを使用します。
 
-具体的な API Base のフォーマットは、使用しているクライアントに依存することに注意してください。
+API Base の正確な形式は使用するクライアントによって異なります。
+
+例：OpenAI 公式ライブラリの場合
+```bash
+OPENAI_API_KEY="sk-xxxxxx"
+OPENAI_API_BASE="https://<HOST>:<PORT>/v1"
+```
 
 ```mermaid
 graph LR
-    A(ユーザ)
-    A --->|リクエスト| B(One API)
+    A(ユーザー)
+    A --->|One API が配布したキーでリクエスト| B(One API)
     B -->|中継リクエスト| C(OpenAI)
     B -->|中継リクエスト| D(Azure)
-    B -->|中継リクエスト| E(その他のダウンストリームチャンネル)
+    B -->|中継リクエスト| E(その他 OpenAI API 形式の下流チャンネル)
+    B -->|中継してリクエスト/レスポンスを変換| F(非 OpenAI API 形式の下流チャンネル)
 ```
 
-現在のリクエストにどのチャネルを使うかを指定するには、トークンの後に チャネル ID を追加します： 例えば、`Authorization: Bearer ONE_API_KEY-CHANNEL_ID` のようにします。
-チャンネル ID を指定するためには、トークンは管理者によって作成される必要があることに注意してください。
+トークンの後ろにチャンネル ID を付けることで、このリクエストを処理するチャンネルを指定できます。例：`Authorization: Bearer ONE_API_KEY-CHANNEL_ID`。
+注：チャンネル ID を指定できるのは管理者ユーザーが作成したトークンのみです。
 
-もしチャネル ID が指定されない場合、ロードバランシングによってリクエストが複数のチャネルに振り分けられます。
+付けない場合はロードバランシングで複数チャンネルを使用します。
 
 ### 環境変数
-1. `REDIS_CONN_STRING`: 設定すると、リクエストレート制限のためのストレージとして、メモリの代わりに Redis が使われる。
-    + 例: `REDIS_CONN_STRING=redis://default:redispw@localhost:49153`
-2. `SESSION_SECRET`: 設定すると、固定セッションキーが使用され、システムの再起動後もログインユーザーのクッキーが有効であることが保証されます。
-    + 例: `SESSION_SECRET=random_string`
-3. `SQL_DSN`: 設定すると、SQLite の代わりに指定したデータベースが使用されます。MySQL バージョン 8.0 を使用してください。
-    + 例: `SQL_DSN=root:123456@tcp(localhost:3306)/oneapi`
-4. `LOG_SQL_DSN`: を設定すると、`logs`テーブルには独立したデータベースが使用されます。MySQLまたはPostgreSQLを使用してください。
-5. `FRONTEND_BASE_URL`: 設定されると、バックエンドアドレスではなく、指定されたフロントエンドアドレスが使われる。
-    + 例: `FRONTEND_BASE_URL=https://openai.justsong.cn`
-6. `SYNC_FREQUENCY`: 設定された場合、システムは定期的にデータベースからコンフィグを秒単位で同期する。設定されていない場合、同期は行われません。
-    + 例: `SYNC_FREQUENCY=60`
-7. `NODE_TYPE`: 設定すると、ノードのタイプを指定する。有効な値は `master` と `slave` である。設定されていない場合、デフォルトは `master`。
-    + 例: `NODE_TYPE=slave`
-8. `CHANNEL_UPDATE_FREQUENCY`: 設定すると、チャンネル残高を分単位で定期的に更新する。設定されていない場合、更新は行われません。
-    + 例: `CHANNEL_UPDATE_FREQUENCY=1440`
-9. `CHANNEL_TEST_FREQUENCY`: 設定すると、チャンネルを定期的にテストする。設定されていない場合、テストは行われません。
-    + 例: `CHANNEL_TEST_FREQUENCY=1440`
-10. `POLLING_INTERVAL`: チャネル残高の更新とチャネルの可用性をテストするときのリクエスト間の時間間隔 (秒)。デフォルトは間隔なし。
-    + 例: `POLLING_INTERVAL=5`
+> One API は `.env` ファイルから環境変数を読み込めます。`.env.example` を参照し、使用時に `.env` にリネームしてください。
+1. `REDIS_CONN_STRING`：設定すると Redis をキャッシュとして使用します。
+   + 例：`REDIS_CONN_STRING=redis://default:redispw@localhost:49153`
+   + データベースアクセスの遅延が十分低い場合は Redis を有効にする必要はありません。有効にするとデータ遅延が発生することがあります。
+   + センチネル/クラスタモードを使用する場合：
+     + 環境変数をノードリストに設定します。例：`localhost:49153,localhost:49154,localhost:49155`。
+     + さらに以下の環境変数も設定：
+       + `REDIS_PASSWORD`：Redis クラスタ/センチネルモードのパスワード。
+       + `REDIS_MASTER_NAME`：Redis センチネルモードのマスターノード名。
+2. `SESSION_SECRET`：設定すると固定のセッションキーを使用。再起動後もログインユーザーの cookie が有効のままになります。
+   + 例：`SESSION_SECRET=random_string`
+3. `SQL_DSN`：設定すると SQLite ではなく指定データベースを使用。MySQL または PostgreSQL を使用してください。
+   + 例：
+     + MySQL：`SQL_DSN=root:123456@tcp(localhost:3306)/oneapi`
+     + PostgreSQL：`SQL_DSN=postgres://postgres:123456@localhost:5432/oneapi`（対応調整中、フィードバック歓迎）
+   + 事前にデータベース `oneapi` を作成してください。テーブルはプログラムが自動生成します。
+   + ローカルデータベースの場合：デプロイコマンドに `--network="host"` を追加すると、コンテナ内からホスト上の MySQL にアクセスできます。
+   + クラウドデータベースで認証が必要な場合：接続パラメータに `?tls=skip-verify` を追加してください。
+   + データベース設定に応じて以下のパラメータを調整（またはデフォルトのまま）：
+     + `SQL_MAX_IDLE_CONNS`：最大アイドル接続数、デフォルト `100`。
+     + `SQL_MAX_OPEN_CONNS`：最大オープン接続数、デフォルト `1000`。
+       + `Error 1040: Too many connections` が出る場合はこの値を小さくしてください。
+     + `SQL_CONN_MAX_LIFETIME`：接続の最大ライフタイム、デフォルト `60` 分。
+4. `LOG_SQL_DSN`：設定すると `logs` テーブルに独立したデータベースを使用。MySQL または PostgreSQL。
+5. `FRONTEND_BASE_URL`：設定するとページリクエストを指定アドレスにリダイレクト。スレーブサーバーのみ設定。
+   + 例：`FRONTEND_BASE_URL=https://openai.justsong.cn`
+6. `MEMORY_CACHE_ENABLED`：メモリキャッシュを有効化。ユーザークォータの更新に遅延が生じます。値：`true` / `false`、デフォルト `false`。
+   + 例：`MEMORY_CACHE_ENABLED=true`
+7. `SYNC_FREQUENCY`：キャッシュ有効時にデータベースから設定を同期する頻度（秒）、デフォルト `600` 秒。
+   + 例：`SYNC_FREQUENCY=60`
+8. `NODE_TYPE`：ノードタイプ。値：`master` / `slave`、デフォルト `master`。
+   + 例：`NODE_TYPE=slave`
+9. `CHANNEL_UPDATE_FREQUENCY`：設定するとチャンネル残高を定期更新（分）。未設定なら更新しません。
+   + 例：`CHANNEL_UPDATE_FREQUENCY=1440`
+10. `CHANNEL_TEST_FREQUENCY`：設定するとチャンネルを定期チェック（分）。未設定ならチェックしません。
+    + 例：`CHANNEL_TEST_FREQUENCY=1440`
+11. `POLLING_INTERVAL`：チャンネル残高一括更新・可用性テスト時のリクエスト間隔（秒）、デフォルトは間隔なし。
+    + 例：`POLLING_INTERVAL=5`
+12. `BATCH_UPDATE_ENABLED`：データベース一括更新集約を有効化。ユーザークォータの更新に遅延が生じます。値：`true` / `false`、デフォルト `false`。
+    + 例：`BATCH_UPDATE_ENABLED=true`
+    + データベース接続数が多すぎる場合はこのオプションを試してください。
+13. `BATCH_UPDATE_INTERVAL=5`：一括更新集約の間隔（秒）、デフォルト `5`。
+    + 例：`BATCH_UPDATE_INTERVAL=5`
+14. リクエスト頻度制限：
+    + `GLOBAL_API_RATE_LIMIT`：グローバル API レート制限（中継リクエスト除く）、単 IP 3 分間の最大リクエスト数、デフォルト `180`。
+    + `GLOBAL_WEB_RATE_LIMIT`：グローバル Web レート制限、単 IP 3 分間の最大リクエスト数、デフォルト `60`。
+15. トークナイザーキャッシュ設定：
+    + `TIKTOKEN_CACHE_DIR`：デフォルトでは起動時に `gpt-3.5-turbo` 等のトークンエンコーディングをネットからダウンロードします。不安定なネットワークやオフライン環境では起動に問題が出ることがあるため、このディレクトリにキャッシュを設定し、オフライン環境へ移行できます。
+    + `DATA_GYM_CACHE_DIR`：現在は `TIKTOKEN_CACHE_DIR` と同じ役割ですが、優先度は低くなります。
+16. `RELAY_TIMEOUT`：中継タイムアウト（秒）、デフォルトはタイムアウトなし。
+17. `RELAY_PROXY`：設定するとこのプロキシで API をリクエストします。
+18. `USER_CONTENT_REQUEST_TIMEOUT`：ユーザーアップロードコンテンツのダウンロードタイムアウト（秒）。
+19. `USER_CONTENT_REQUEST_PROXY`：設定するとこのプロキシでユーザーアップロードコンテンツ（画像など）をリクエストします。
+20. `SQLITE_BUSY_TIMEOUT`：SQLite ロック待機タイムアウト（ミリ秒）、デフォルト `3000`。
+21. `GEMINI_SAFETY_SETTING`：Gemini の安全設定、デフォルト `BLOCK_NONE`。
+22. `GEMINI_VERSION`：One API が使用する Gemini バージョン、デフォルト `v1`。
+23. `THEME`：システムのテーマ設定、デフォルト `default`。選択肢は[こちら](./web/README.md)を参照。
+24. `ENABLE_METRIC`：リクエスト成功率に基づいてチャンネルを無効化するか。デフォルトは無効。値：`true` / `false`。
+25. `METRIC_QUEUE_SIZE`：成功率統計キューのサイズ、デフォルト `10`。
+26. `METRIC_SUCCESS_RATE_THRESHOLD`：成功率しきい値、デフォルト `0.8`。
+27. `INITIAL_ROOT_TOKEN`：設定すると、システム初回起動時にこの値を root ユーザートークンとして自動作成します。
+28. `INITIAL_ROOT_ACCESS_TOKEN`：設定すると、システム初回起動時にこの値を root ユーザーのシステム管理トークンとして自動作成します。
+29. `ENFORCE_INCLUDE_USAGE`：ストリームモードで usage の返却を強制するか。デフォルトは無効。値：`true` / `false`。
+30. `TEST_PROMPT`：モデルテスト時のユーザープロンプト、デフォルト `Print your model name exactly and do not output without any other text.`。
 
 ### コマンドラインパラメータ
-1. `--port <port_number>`: サーバがリッスンするポート番号を指定。デフォルトは `3000` です。
-    + 例: `--port 3000`
-2. `--log-dir <log_dir>`: ログディレクトリを指定。設定しない場合、ログは保存されません。
-    + 例: `--log-dir ./logs`
-3. `--version`: システムのバージョン番号を表示して終了する。
-4. `--help`: コマンドの使用法ヘルプとパラメータの説明を表示。
+1. `--port <port_number>`：サーバーのリッスンポート、デフォルト `3000`。
+   + 例：`--port 3000`
+2. `--log-dir <log_dir>`：ログフォルダ。未設定なら作業ディレクトリの `logs` フォルダに保存。
+   + 例：`--log-dir ./logs`
+3. `--version`：バージョン番号を表示して終了。
+4. `--help`：コマンドの使い方とパラメータ説明を表示。
 
-## スクリーンショット
+## デモ
+### オンラインデモ
+注意：このデモサイトは外部サービスを提供していません：
+https://openai.justsong.cn
+
+### スクリーンショット
 ![channel](https://user-images.githubusercontent.com/39998050/233837954-ae6683aa-5c4f-429f-a949-6645a83c9490.png)
 ![token](https://user-images.githubusercontent.com/39998050/233837971-dab488b7-6d96-43af-b640-a168e8d1c9bf.png)
 
 ## FAQ
-1. ノルマとは何か？どのように計算されますか？One API にはノルマ計算の問題はありますか？
-    + ノルマ = グループ倍率 * モデル倍率 * (プロンプトトークンの数 + 完了トークンの数 * 完了倍率)
-    + 完了倍率は、公式の定義と一致するように、GPT3.5 では 1.33、GPT4 では 2 に固定されています。
-    + ストリームモードでない場合、公式 API は消費したトークンの総数を返す。ただし、プロンプトとコンプリートの消費倍率は異なるので注意してください。
-2. アカウント残高は十分なのに、"insufficient quota" と表示されるのはなぜですか？
-    + トークンのクォータが十分かどうかご確認ください。トークンクォータはアカウント残高とは別のものです。
-    + トークンクォータは最大使用量を設定するためのもので、ユーザーが自由に設定できます。
-3. チャンネルを使おうとすると "No available channels" と表示されます。どうすればいいですか？
-    + ユーザーとチャンネルグループの設定を確認してください。
-    + チャンネルモデルの設定も確認してください。
-4. チャンネルテストがエラーを報告する: "invalid character '<' looking for beginning of value"
-    + このエラーは、返された値が有効な JSON ではなく、HTML ページである場合に発生する。
-    + ほとんどの場合、デプロイサイトのIPかプロキシのノードが CloudFlare によってブロックされています。
-5. ChatGPT Next Web でエラーが発生しました: "Failed to fetch"
-    + デプロイ時に `BASE_URL` を設定しないでください。
-    + インターフェイスアドレスと API Key が正しいか再確認してください。
+1. クォータとは？どう計算する？One API のクォータ計算に問題はある？
+   + クォータ = グループ倍率 * モデル倍率 * （プロンプトトークン数 + 補完トークン数 * 補完倍率）
+   + 補完倍率は GPT3.5 で固定 1.33、GPT4 で 2、公式と一致しています。
+   + 非ストリームモードでは公式 API が消費トークン総数を返しますが、プロンプトと補完の消費倍率が異なる点に注意してください。
+   + One API のデフォルト倍率は公式倍率で、すでに調整済みです。
+2. アカウントのクォータが十分なのに「クォータ不足」と出るのは？
+   + トークンのクォータが十分か確認してください。アカウントのクォータとは別です。
+   + トークンクォータはユーザーが設定する最大使用量で、自由に設定できます。
+3. 「利用可能なチャンネルがない」と出るのは？
+   + ユーザーグループとチャンネルグループの設定を確認してください。
+   + チャンネルのモデル設定も確認してください。
+4. チャンネルテストエラー：`invalid character '<' looking for beginning of value`
+   + 戻り値が有効な JSON ではなく HTML ページであるためです。
+   + デプロイサイトの IP またはプロキシノードが CloudFlare にブロックされている可能性が高いです。
+5. ChatGPT Next Web エラー：`Failed to fetch`
+   + デプロイ時に `BASE_URL` を設定しないでください。
+   + インターフェースアドレスと API Key が正しいか確認してください。
+   + HTTPS が有効か確認してください。ブラウザは HTTPS ドメイン下の HTTP リクエストをブロックします。
+6. エラー：`当前分组负载已饱和，请稍后再试`（グループの負荷が飽和、後で再試行）
+   + 上流チャンネルが 429 を返しています。
+7. アップグレード後にデータは失われますか？
+   + MySQL を使用している場合は失われません。
+   + SQLite の場合、デプロイコマンドの通りに volume をマウントして one-api.db を永続化してください。そうしないとコンテナ再起動でデータが失われます。
+8. アップグレード前にデータベースの変更は必要ですか？
+   + 通常は不要です。システムが初期化時に自動調整します。
+   + 必要な場合は更新履歴に記載し、スクリプトを提供します。
+9. データベースを手動で変更した後にエラー：`数据库一致性已被破坏，请联系管理员`（データベース整合性が壊れた、管理者に連絡）？
+   + ability テーブルに存在しないチャンネル ID のレコードがあることを検出しています。channel テーブルのレコードを削除した際に、ability テーブル内の無効なチャンネルを掃除していない可能性が高いです。
+   + 各チャンネルについて、サポートする各モデルには、そのチャンネルがモデルをサポートすることを示す ability テーブルのレコードが必要です。
 
 ## 関連プロジェクト
-* [FastGPT](https://github.com/labring/FastGPT): LLM に基づく知識質問応答システム
-* [CherryStudio](https://github.com/CherryHQ/cherry-studio):  マルチプラットフォーム対応のAIクライアント。複数のサービスプロバイダーを統合管理し、ローカル知識ベースをサポートします。
+* [FastGPT](https://github.com/labring/FastGPT): LLM 大規模言語モデルに基づくナレッジベース QA システム
+* [ChatGPT Next Web](https://github.com/Yidadaa/ChatGPT-Next-Web): ワンクリックで自分のクロスプラットフォーム ChatGPT アプリを
+* [VChart](https://github.com/VisActor/VChart): すぐ使えるマルチエンドチャートライブラリであるだけでなく、生き生きとしたデータストーリーテラー
+* [VMind](https://github.com/VisActor/VMind): 自動だけでなく、インテリジェント。オープンソースのスマート可視化ソリューション
+* [CherryStudio](https://github.com/CherryHQ/cherry-studio): 全プラットフォーム対応の AI クライアント、マルチプロバイダー統合管理、ローカルナレッジベース対応
+
 ## 注
-本プロジェクトはオープンソースプロジェクトです。OpenAI の[利用規約](https://openai.com/policies/terms-of-use)および**適用される法令**を遵守してご利用ください。違法な目的での利用はご遠慮ください。
 
-このプロジェクトは MIT ライセンスで公開されています。これに基づき、ページの最下部に帰属表示と本プロジェクトへのリンクを含める必要があります。
+このプロジェクトは MIT ライセンスでオープンソース化されています。**その上で**、ページ下部に署名と本プロジェクトへのリンクを必ず残してください。署名を残したくない場合は、事前に許可を得る必要があります。
 
-このプロジェクトを基にした派生プロジェクトについても同様です。
+本プロジェクトをベースにした二次開発プロジェクトにも同様に適用されます。
 
-帰属表示を含めたくない場合は、事前に許可を得なければなりません。
-
-MIT ライセンスによると、このプロジェクトを利用するリスクと責任は利用者が負うべきであり、このオープンソースプロジェクトの開発者は責任を負いません。
+MIT ライセンスに基づき、利用者は本プロジェクトの使用に伴うリスクと責任を自己負担します。本オープンソースプロジェクトの開発者はこれに関与しません。
