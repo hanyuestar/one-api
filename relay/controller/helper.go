@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
@@ -161,15 +162,41 @@ func postConsumeQuota(ctx context.Context, usage *relaymodel.Usage, meta *meta.M
 		logger.Error(ctx, "error update user quota cache: "+err.Error())
 	}
 	logContent := fmt.Sprintf("倍率：%.2f × %.2f × %.2f", modelRatio, groupRatio, completionRatio)
-	if cacheHitTokens > 0 {
-		logContent += fmt.Sprintf("（缓存命中 %d，折扣 %.2f）", cacheHitTokens, cacheHitRatio)
+	// 口径一致：Content 展示与实际计费统一使用钳制后的 billingCacheHitTokens/billingCacheWriteTokens
+	if billingCacheHitTokens > 0 {
+		logContent += fmt.Sprintf("（缓存命中 %d，折扣 %.2f）", billingCacheHitTokens, cacheHitRatio)
 	}
-	if cacheWriteTokens > 0 {
-		logContent += fmt.Sprintf("（缓存写入 %d，加价 %.2f）", cacheWriteTokens, cacheWriteRatio)
+	if billingCacheWriteTokens > 0 {
+		logContent += fmt.Sprintf("（缓存写入 %d，加价 %.2f）", billingCacheWriteTokens, cacheWriteRatio)
 	}
+	// 首字延迟(ms)：仅流式且确有首字时有效，否则 0
+	firstTokenMs := int64(0)
+	if meta.IsStream && !meta.FirstTokenTime.IsZero() {
+		firstTokenMs = meta.FirstTokenTime.Sub(meta.StartTime).Milliseconds()
+	}
+	// 结构化计费明细（钳制后值，供公式反查与前端展示）
+	billingDetail := model.BillingDetail{
+		ModelRatio:        modelRatio,
+		GroupRatio:        groupRatio,
+		CompletionRatio:   completionRatio,
+		CacheHitRatio:     cacheHitRatio,
+		CacheWriteRatio:   cacheWriteRatio,
+		ChannelType:       meta.ChannelType,
+		PromptTokens:      promptTokens,
+		CompletionTokens:  completionTokens,
+		CacheHitTokens:    cacheHitTokens,
+		CacheWriteTokens:  cacheWriteTokens,
+		BillingCacheHit:   billingCacheHitTokens,
+		BillingCacheWrite: billingCacheWriteTokens,
+		NormalPrompt:      normalPromptTokens,
+		Quota:             int(quota),
+	}
+	billingDetailJSON, _ := json.Marshal(billingDetail)
 	model.RecordConsumeLog(ctx, &model.Log{
 		UserId:            meta.UserId,
 		ChannelId:         meta.ChannelId,
+		Group:             meta.Group,
+		Ip:                meta.Ip,
 		PromptTokens:      promptTokens,
 		CompletionTokens:  completionTokens,
 		CacheHitTokens:    cacheHitTokens,
@@ -180,6 +207,8 @@ func postConsumeQuota(ctx context.Context, usage *relaymodel.Usage, meta *meta.M
 		Content:           logContent,
 		IsStream:          meta.IsStream,
 		ElapsedTime:       helper.CalcElapsedTime(meta.StartTime),
+		FirstTokenTime:    firstTokenMs,
+		BillingDetail:     string(billingDetailJSON),
 		SystemPromptReset: systemPromptReset,
 	})
 	model.UpdateUserUsedQuotaAndRequestCount(meta.UserId, quota)
@@ -241,4 +270,24 @@ func setSystemPrompt(ctx context.Context, request *relaymodel.GeneralOpenAIReque
 	}}, request.Messages...)
 	logger.Infof(ctx, "add system prompt")
 	return true
+}
+
+// VerifyBillingDetail 用计费明细反推 quota，返回 (反推值, 是否匹配)。
+// 注意与 postConsumeQuota 的两处兜底一致：
+//   (1) ratio!=0 && quota<=0 → 强制 1；
+//   (2) totalTokens==0 → quota 强制 0。
+// 可用于：管理后台「校验日志计费一致性」脚本、或前端展示「反推值 vs 实际值」的一致性标识。
+func VerifyBillingDetail(d model.BillingDetail) (int64, bool) {
+	if d.PromptTokens+d.CompletionTokens == 0 {
+		return 0, d.Quota == 0
+	}
+	raw := (float64(d.NormalPrompt) +
+		float64(d.BillingCacheHit)*d.CacheHitRatio +
+		float64(d.BillingCacheWrite)*d.CacheWriteRatio +
+		float64(d.CompletionTokens)*d.CompletionRatio) * d.ModelRatio * d.GroupRatio
+	recomputed := int64(math.Ceil(raw))
+	if d.ModelRatio*d.GroupRatio != 0 && recomputed <= 0 {
+		recomputed = 1
+	}
+	return recomputed, recomputed == int64(d.Quota)
 }

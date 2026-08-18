@@ -16,6 +16,7 @@ import (
 	"github.com/songquanpeng/one-api/common/logger"
 	"github.com/songquanpeng/one-api/relay/adaptor/coze/constant/messagetype"
 	"github.com/songquanpeng/one-api/relay/adaptor/openai"
+	"github.com/songquanpeng/one-api/relay/meta"
 	"github.com/songquanpeng/one-api/relay/model"
 )
 
@@ -142,6 +143,14 @@ func StreamHandler(c *gin.Context, resp *http.Response) (*model.ErrorWithStatusC
 		response.Model = modelName
 		response.Created = createdTime
 
+		// 首字延迟捕获（MarkFirstToken 内部判空+仅首次）
+		if m, ok := c.Get("relay_meta"); ok {
+			if mm, ok2 := m.(*meta.Meta); ok2 {
+				for _, choice := range response.Choices {
+					mm.MarkFirstToken(conv.AsString(choice.Delta.Content))
+				}
+			}
+		}
 		err = render.ObjectData(c, response)
 		if err != nil {
 			logger.SysError(err.Error())

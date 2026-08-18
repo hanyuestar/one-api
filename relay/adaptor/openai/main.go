@@ -14,6 +14,7 @@ import (
 	"github.com/songquanpeng/one-api/common"
 	"github.com/songquanpeng/one-api/common/conv"
 	"github.com/songquanpeng/one-api/common/logger"
+	"github.com/songquanpeng/one-api/relay/meta"
 	"github.com/songquanpeng/one-api/relay/model"
 	"github.com/songquanpeng/one-api/relay/relaymode"
 )
@@ -59,6 +60,14 @@ func StreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*model.E
 				// but for empty choice and no usage, we should not pass it to client, this is for azure
 				continue // just ignore empty choice
 			}
+			// 首字延迟捕获（MarkFirstToken 内部判空+仅首次，可对多个 choice 逐个调用）
+			if m, ok := c.Get("relay_meta"); ok {
+				if mm, ok2 := m.(*meta.Meta); ok2 {
+					for _, choice := range streamResponse.Choices {
+						mm.MarkFirstToken(conv.AsString(choice.Delta.Content))
+					}
+				}
+			}
 			render.StringData(c, data)
 			for _, choice := range streamResponse.Choices {
 				responseText += conv.AsString(choice.Delta.Content)
@@ -73,6 +82,14 @@ func StreamHandler(c *gin.Context, resp *http.Response, relayMode int) (*model.E
 			if err != nil {
 				logger.SysError("error unmarshalling stream response: " + err.Error())
 				continue
+			}
+			// 首字延迟捕获（Completions 分支先透传再解析，此处对首个非空文本记一次，时间差为同迭代内微秒级）
+			if m, ok := c.Get("relay_meta"); ok {
+				if mm, ok2 := m.(*meta.Meta); ok2 {
+					for _, choice := range streamResponse.Choices {
+						mm.MarkFirstToken(choice.Text)
+					}
+				}
 			}
 			for _, choice := range streamResponse.Choices {
 				responseText += choice.Text

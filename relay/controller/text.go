@@ -25,6 +25,8 @@ import (
 func RelayTextHelper(c *gin.Context) *model.ErrorWithStatusCode {
 	ctx := c.Request.Context()
 	meta := meta.GetByContext(c)
+	// 挂回 gin context，供各 adaptor 的 StreamHandler 取回（首字延迟 TTFT 捕获用，键名统一 "relay_meta"）
+	c.Set("relay_meta", meta)
 	// get & validate textRequest
 	textRequest, err := getAndValidateTextRequest(c, meta.Mode)
 	if err != nil {

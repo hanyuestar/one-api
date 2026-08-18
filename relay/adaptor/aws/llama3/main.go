@@ -18,10 +18,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"github.com/songquanpeng/one-api/common"
+	"github.com/songquanpeng/one-api/common/conv"
 	"github.com/songquanpeng/one-api/common/helper"
 	"github.com/songquanpeng/one-api/common/logger"
 	"github.com/songquanpeng/one-api/relay/adaptor/aws/utils"
 	"github.com/songquanpeng/one-api/relay/adaptor/openai"
+	"github.com/songquanpeng/one-api/relay/meta"
 	relaymodel "github.com/songquanpeng/one-api/relay/model"
 )
 
@@ -193,11 +195,19 @@ func StreamHandler(c *gin.Context, awsCli *bedrockruntime.Client) (*relaymodel.E
 				usage.CompletionTokens = llamaResp.GenerationTokenCount
 				usage.TotalTokens = usage.PromptTokens + usage.CompletionTokens
 			}
-			response := StreamResponseLlama2OpenAI(&llamaResp)
-			response.Id = fmt.Sprintf("chatcmpl-%s", random.GetUUID())
-			response.Model = c.GetString(ctxkey.OriginalModel)
-			response.Created = createdTime
-			jsonStr, err := json.Marshal(response)
+		response := StreamResponseLlama2OpenAI(&llamaResp)
+		response.Id = fmt.Sprintf("chatcmpl-%s", random.GetUUID())
+		response.Model = c.GetString(ctxkey.OriginalModel)
+		response.Created = createdTime
+		// 首字延迟捕获（MarkFirstToken 内部判空+仅首次；c.Stream 闭包同 goroutine 串行，c.Get 安全）
+		if m, ok := c.Get("relay_meta"); ok {
+			if mm, ok2 := m.(*meta.Meta); ok2 {
+				for _, choice := range response.Choices {
+					mm.MarkFirstToken(conv.AsString(choice.Delta.Content))
+				}
+			}
+		}
+		jsonStr, err := json.Marshal(response)
 			if err != nil {
 				logger.SysError("error marshalling stream response: " + err.Error())
 				return true

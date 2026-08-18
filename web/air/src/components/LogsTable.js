@@ -54,6 +54,25 @@ function renderUseTime(type) {
   }
 }
 
+// 解析并渲染结构化计费明细（billing_detail JSON）；解析失败/为空则回退到 content 字符串
+function renderBillingDetail(record) {
+  let bd = null;
+  try {
+    if (record.billing_detail) bd = JSON.parse(record.billing_detail);
+  } catch (e) { bd = null; }
+  if (!bd || typeof bd !== 'object') {
+    return <div><b>计费明细：</b>{record.content || '—'}</div>;
+  }
+  const r2 = (v) => (typeof v === 'number' ? v.toFixed(2) : (v ?? '—'));
+  return (
+    <div>
+      <div><b>计费公式：</b>(正常输入 {bd.normal_prompt} + 缓存命中 {bd.billing_cache_hit}×{r2(bd.cache_hit_ratio)} + 缓存写入 {bd.billing_cache_write}×{r2(bd.cache_write_ratio)} + 输出 {bd.completion_tokens}×{r2(bd.completion_ratio)}) × 模型倍率 {r2(bd.model_ratio)} × 分组倍率 {r2(bd.group_ratio)} = {bd.quota}</div>
+      <div><b>分量：</b>原始输入 {bd.prompt_tokens} / 正常输入 {bd.normal_prompt}；缓存命中 原始 {bd.cache_hit_tokens} / 计费 {bd.billing_cache_hit}；缓存写入 原始 {bd.cache_write_tokens} / 计费 {bd.billing_cache_write}；输出 {bd.completion_tokens}</div>
+      <div><b>比率：</b>模型 {r2(bd.model_ratio)} × 分组 {r2(bd.group_ratio)} × 输出 {r2(bd.completion_ratio)}；缓存命中 {r2(bd.cache_hit_ratio)}、缓存写入 {r2(bd.cache_write_ratio)}；渠道类型 {bd.channel_type}</div>
+    </div>
+  );
+}
+
 const LogsTable = () => {
   const columns = [{
     title: '时间', dataIndex: 'timestamp2string'
@@ -102,16 +121,16 @@ const LogsTable = () => {
       </div> : <></>);
     }
   },
-  // {
-  //   title: '用时', dataIndex: 'use_time', render: (text, record, index) => {
-  //     return (<div>
-  //       <Space>
-  //         {renderUseTime(text)}
-  //         {renderIsStream(record.is_stream)}
-  //       </Space>
-  //     </div>);
-  //   }
-  // },
+  {
+    title: '用时', dataIndex: 'elapsed_time', render: (text, record, index) => {
+      return (<div>{text ? (text / 1000).toFixed(1) + ' s' : ''}</div>);
+    }
+  },
+  {
+    title: '首字', dataIndex: 'first_token_time', render: (text, record, index) => {
+      return (record.type === 0 || record.type === 2 ? <div>{text ? (text / 1000).toFixed(1) + ' s' : '—'}</div> : <></>);
+    }
+  },
   {
     title: '输入', dataIndex: 'prompt_tokens', render: (text, record, index) => {
       return (record.type === 0 || record.type === 2 ? <div>
@@ -124,11 +143,19 @@ const LogsTable = () => {
         {<span> {text} </span>}
       </div> : <></>);
     }
-  }, {
+  },   {
     title: '花费', dataIndex: 'quota', render: (text, record, index) => {
       return (record.type === 0 || record.type === 2 ? <div>
         {renderQuota(text, 6)}
       </div> : <></>);
+    }
+  }, {
+    title: '分组', dataIndex: 'group', render: (text, record, index) => {
+      return (record.type === 0 || record.type === 2 ? <div>{text || ''}</div> : <></>);
+    }
+  }, {
+    title: 'IP', dataIndex: 'ip', render: (text, record, index) => {
+      return (record.type === 0 || record.type === 2 ? <div>{text || ''}</div> : <></>);
     }
   }, {
     title: '详情', dataIndex: 'content', render: (text, record, index) => {
@@ -163,7 +190,7 @@ const LogsTable = () => {
   const { username, token_name, model_name, start_timestamp, end_timestamp, channel } = inputs;
 
   const [stat, setStat] = useState({
-    quota: 0, token: 0
+    quota: 0, token: 0, count: 0
   });
 
   const handleInputChange = (value, name) => {
@@ -309,6 +336,11 @@ const LogsTable = () => {
       .catch((reason) => {
         showError(reason);
       });
+    if (isAdminUser) {
+      getLogStat();
+    } else {
+      getLogSelfStat();
+    }
   }, []);
 
   const searchLogs = async () => {
@@ -334,12 +366,25 @@ const LogsTable = () => {
     <Layout>
       <Header>
         <Spin spinning={loadingStat}>
-          <h3>使用明细（总消耗额度：
-            <span onClick={handleEyeClick} style={{
-              cursor: 'pointer', color: 'gray'
-            }}>{showStat ? renderQuota(stat.quota) : '点击查看'}</span>
-            ）
-          </h3>
+          <h3>使用明细</h3>
+          <div style={{ display: 'flex', gap: 24, marginTop: 8 }}>
+            <div>
+              <div style={{ fontSize: 12, color: 'var(--semi-color-text-1)' }}>总消耗额度</div>
+              <div style={{ fontSize: 20, fontWeight: 600 }}>{renderQuota(stat.quota)}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 12, color: 'var(--semi-color-text-1)' }}>总 Token</div>
+              <div style={{ fontSize: 20, fontWeight: 600 }}>{renderNumber(stat.token)}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 12, color: 'var(--semi-color-text-1)' }}>请求数</div>
+              <div style={{ fontSize: 20, fontWeight: 600 }}>{renderNumber(stat.count)}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 12, color: 'var(--semi-color-text-1)' }}>平均首字延迟</div>
+              <div style={{ fontSize: 20, fontWeight: 600 }}>{stat.avg_first_token_time ? (stat.avg_first_token_time / 1000).toFixed(2) + ' s' : '—'}</div>
+            </div>
+          </div>
         </Spin>
       </Header>
       <Form layout="horizontal" style={{ marginTop: 10 }}>
@@ -375,7 +420,15 @@ const LogsTable = () => {
           </Form.Section>
         </>
       </Form>
-      <Table style={{ marginTop: 5 }} columns={columns} dataSource={pageData} pagination={{
+      <Table style={{ marginTop: 5 }} columns={columns} dataSource={pageData}
+        expandedRowRender={(record) => (
+          <div style={{ padding: '8px 12px', lineHeight: 1.9 }}>
+            <div><b>Request ID：</b>{record.request_id || '—'}</div>
+            <div><b>缓存命中：</b>{record.cache_hit_tokens || 0}　<b>缓存写入：</b>{record.cache_write_tokens || 0}　<b>首字延迟：</b>{record.first_token_time ? (record.first_token_time / 1000).toFixed(2) + ' s' : '—'}　<b>总耗时：</b>{record.elapsed_time ? (record.elapsed_time / 1000).toFixed(2) + ' s' : '—'}</div>
+            {renderBillingDetail(record)}
+          </div>
+        )}
+        pagination={{
         currentPage: activePage,
         pageSize: pageSize,
         total: logCount,

@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/songquanpeng/one-api/common"
+	"github.com/songquanpeng/one-api/common/conv"
 	"github.com/songquanpeng/one-api/common/helper"
 	"github.com/songquanpeng/one-api/relay/adaptor/openai"
 	"github.com/songquanpeng/one-api/relay/constant"
 	"github.com/songquanpeng/one-api/relay/constant/finishreason"
 	"github.com/songquanpeng/one-api/relay/constant/role"
+	"github.com/songquanpeng/one-api/relay/meta"
 	"github.com/songquanpeng/one-api/relay/model"
 	"io"
 	"net/http"
@@ -87,6 +89,14 @@ func StreamHandler(c *gin.Context, resp *http.Response, modelName string) *model
 		return openai.ErrorWrapper(err, "marshal_response_body_failed", http.StatusInternalServerError)
 	}
 	common.SetEventStreamHeaders(c)
+	// 首字延迟捕获（deepl 为一次性整体渲染、非逐 chunk 流式，TTFT≈整体耗时；MarkFirstToken 内部判空+仅首次）
+	if m, ok := c.Get("relay_meta"); ok {
+		if mm, ok2 := m.(*meta.Meta); ok2 {
+			if len(fullTextResponse.Choices) > 0 {
+				mm.MarkFirstToken(conv.AsString(fullTextResponse.Choices[0].Delta.Content))
+			}
+		}
+	}
 	c.Stream(func(w io.Writer) bool {
 		if jsonData != nil {
 			c.Render(-1, common.CustomEvent{Data: "data: " + string(jsonData)})

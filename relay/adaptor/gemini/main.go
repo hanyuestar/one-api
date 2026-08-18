@@ -18,6 +18,7 @@ import (
 	"github.com/songquanpeng/one-api/common/random"
 	"github.com/songquanpeng/one-api/relay/adaptor/openai"
 	"github.com/songquanpeng/one-api/relay/constant"
+	"github.com/songquanpeng/one-api/relay/meta"
 	"github.com/songquanpeng/one-api/relay/model"
 
 	"github.com/gin-gonic/gin"
@@ -332,6 +333,15 @@ func StreamHandler(c *gin.Context, resp *http.Response) (*model.ErrorWithStatusC
 		response := streamResponseGeminiChat2OpenAI(&geminiResponse)
 		if response == nil {
 			continue
+		}
+
+		// 首字延迟捕获（先判 len(Choices)>0 防越界；MarkFirstToken 内部判空+仅首次）
+		if m, ok := c.Get("relay_meta"); ok {
+			if mm, ok2 := m.(*meta.Meta); ok2 {
+				for _, choice := range response.Choices {
+					mm.MarkFirstToken(choice.Delta.StringContent())
+				}
+			}
 		}
 
 		responseText += response.Choices[0].Delta.StringContent()

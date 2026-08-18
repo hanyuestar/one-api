@@ -10,12 +10,12 @@ import LinearProgress from '@mui/material/LinearProgress';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Toolbar from '@mui/material/Toolbar';
 
-import { Button, Card, Stack, Container, Typography, Box } from '@mui/material';
+import { Button, Card, Stack, Container, Typography, Box, Grid } from '@mui/material';
 import LogTableRow from './component/TableRow';
 import LogTableHead from './component/TableHead';
 import TableToolBar from './component/TableToolBar';
 import { API } from 'utils/api';
-import { isAdmin } from 'utils/common';
+import { isAdmin, renderNumber, renderQuota } from 'utils/common';
 import { ITEMS_PER_PAGE } from 'constants';
 import { IconRefresh, IconSearch } from '@tabler/icons-react';
 
@@ -31,6 +31,7 @@ export default function Log() {
     channel: ''
   };
   const [logs, setLogs] = useState([]);
+  const [stat, setStat] = useState({ quota: 0, token: 0, count: 0, avg_first_token_time: 0 });
   const [activePage, setActivePage] = useState(0);
   const [searching, setSearching] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState(originalKeyword);
@@ -61,6 +62,15 @@ export default function Log() {
       showError(message);
     }
     setSearching(false);
+  };
+
+  const loadStat = async () => {
+    const url = userIsAdmin ? '/api/log/stat' : '/api/log/self/stat';
+    const res = await API.get(url);
+    const { success, data } = res.data;
+    if (success && data) {
+      setStat({ quota: data.quota || 0, token: data.token || 0, count: data.count || 0, avg_first_token_time: data.avg_first_token_time || 0 });
+    }
   };
 
   const onPaginationChange = (event, activePage) => {
@@ -97,6 +107,9 @@ export default function Log() {
       .catch((reason) => {
         showError(reason);
       });
+    loadStat().catch((reason) => {
+      showError(reason);
+    });
     setInitPage(false);
   }, [initPage]);
 
@@ -105,6 +118,32 @@ export default function Log() {
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2.5}>
         <Typography variant="h4">日志</Typography>
       </Stack>
+      <Grid container spacing={2} mb={2.5}>
+        <Grid item xs={12} sm={3}>
+          <Card sx={{ p: 2 }}>
+            <Typography variant="subtitle2" color="text.secondary">总消耗额度</Typography>
+            <Typography variant="h4">{renderQuota(stat.quota)}</Typography>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={3}>
+          <Card sx={{ p: 2 }}>
+            <Typography variant="subtitle2" color="text.secondary">总 Token</Typography>
+            <Typography variant="h4">{renderNumber(stat.token)}</Typography>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={3}>
+          <Card sx={{ p: 2 }}>
+            <Typography variant="subtitle2" color="text.secondary">请求数</Typography>
+            <Typography variant="h4">{renderNumber(stat.count)}</Typography>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={3}>
+          <Card sx={{ p: 2 }}>
+            <Typography variant="subtitle2" color="text.secondary">平均首字延迟</Typography>
+            <Typography variant="h4">{stat.avg_first_token_time ? (stat.avg_first_token_time / 1000).toFixed(2) + ' s' : '—'}</Typography>
+          </Card>
+        </Grid>
+      </Grid>
       <Card>
         <Box component="form" onSubmit={searchLogs} noValidate sx={{marginTop: 2}}>
           <TableToolBar filterName={searchKeyword} handleFilterName={handleSearchKeyword} userIsAdmin={userIsAdmin} />

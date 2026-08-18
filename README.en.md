@@ -61,6 +61,16 @@ _✨ Open-source OpenAI API management & distribution system with image generati
 
 ## Changelog
 
+### v1.0.7 (2026-08-18)
+
+**Improvements**
+
+- **Log module upgraded (aligned with professional API platforms)**: All three themes (default/air/berry) now show summary cards on the logs page (total quota / total tokens / request count / average time-to-first-token), plus new "Elapsed", "TTFT", "Group" and "IP" columns, and expandable rows with request details (request ID, cache hit/write, TTFT, total elapsed time, structured billing detail).
+- **Homepage dashboard summary cards**: Four summary card groups (Account / Usage / Resource / Performance) are now shown for a quick overview.
+- **Time-to-first-token (TTFT) tracking**: Streaming requests record the arrival time of the first non-empty content token (ms); displayed as a "TTFT" column in logs and as average TTFT on the dashboard. Non-streaming and pure tool-call requests are excluded.
+- **Structured billing detail & reverse verification**: Every consumption log now stores a structured billing breakdown (model ratio / group ratio / completion ratio / cache-hit discount / cache-write premium / channel type / per-part token counts); the expanded row shows the full billing formula for reconciliation and consistency checks. Also fixes the mismatch between displayed cache-hit counts and the actual billing.
+- **Model analysis dashboard**: Aggregates request count, quota, tokens, average TTFT and average elapsed time per model; admins see all users, normal users see their own (`/api/log/model-analysis` and `/api/log/self/model-analysis`).
+
 ### v1.0.6 (2026-08-17)
 
 **Bug Fixes**

@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Card, Grid} from 'semantic-ui-react';
+import {Card, Grid, Table} from 'semantic-ui-react';
 import {
   Bar,
   BarChart,
@@ -14,6 +14,8 @@ import {
   YAxis,
 } from 'recharts';
 import axios from 'axios';
+import { renderNumber, renderQuota } from '../../helpers/render';
+import { isAdmin } from '../../helpers';
 import './Dashboard.css';
 
 // 在 Dashboard 组件内添加自定义配置
@@ -56,6 +58,8 @@ const chartConfig = {
 const Dashboard = () => {
   const { t } = useTranslation();
   const [data, setData] = useState([]);
+  const [self, setSelf] = useState({ quota: 0, used_quota: 0, request_count: 0 });
+  const [modelAnalysis, setModelAnalysis] = useState([]);
   const [summaryData, setSummaryData] = useState({
     todayRequests: 0,
     todayQuota: 0,
@@ -64,7 +68,21 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
+    loadModelAnalysis();
   }, []);
+
+  // C3 模型分析：按模型聚合（管理员全域 / 普通用户自身）
+  const loadModelAnalysis = async () => {
+    try {
+      const url = isAdmin() ? '/api/log/model-analysis' : '/api/log/self/model-analysis';
+      const res = await axios.get(url);
+      if (res.data.success) {
+        setModelAnalysis(Array.isArray(res.data.data) ? res.data.data : []);
+      }
+    } catch (e) {
+      setModelAnalysis([]);
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -73,6 +91,10 @@ const Dashboard = () => {
         const dashboardData = response.data.data || [];
         setData(dashboardData);
         calculateSummary(dashboardData);
+      }
+      const selfRes = await axios.get('/api/user/self');
+      if (selfRes.data.success) {
+        setSelf(selfRes.data.data || { quota: 0, used_quota: 0, request_count: 0 });
       }
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
@@ -203,6 +225,14 @@ const Dashboard = () => {
   const modelData = processModelData();
   const models = getUniqueModels();
 
+  const totalQuotaRaw = data.reduce((sum, item) => sum + item.Quota, 0);
+  const totalTokens = data.reduce((sum, item) => sum + item.PromptTokens + item.CompletionTokens, 0);
+  const daysCount = data.length ? new Set(data.map((item) => item.Day)).size : 1;
+  const minutes = daysCount * 1440;
+  const totalRequests = data.reduce((sum, item) => sum + item.RequestCount, 0);
+  const avgRPM = minutes ? totalRequests / minutes : 0;
+  const avgTPM = minutes ? totalTokens / minutes : 0;
+
   // 生成随机颜色
   const getRandomColor = (index) => {
     return chartConfig.barColors[index % chartConfig.barColors.length];
@@ -235,6 +265,52 @@ const Dashboard = () => {
 
   return (
     <div className='dashboard-container'>
+      {/* 四组摘要卡：账户数据 / 使用统计 / 资源消耗 / 性能指标 */}
+      <Grid columns={4} stackable className='charts-grid' style={{ marginBottom: 16 }}>
+        <Grid.Column>
+          <Card fluid className='chart-card'>
+            <Card.Content>
+              <Card.Header>账户数据</Card.Header>
+              <div style={{ marginTop: 8, lineHeight: 2 }}>
+                <div>当前余额：{renderQuota(self.quota, t)}</div>
+                <div>历史消耗：{renderQuota(self.used_quota, t)}</div>
+              </div>
+            </Card.Content>
+          </Card>
+        </Grid.Column>
+        <Grid.Column>
+          <Card fluid className='chart-card'>
+            <Card.Content>
+              <Card.Header>使用统计</Card.Header>
+              <div style={{ marginTop: 8, lineHeight: 2 }}>
+                <div>请求次数：{renderNumber(self.request_count)}</div>
+              </div>
+            </Card.Content>
+          </Card>
+        </Grid.Column>
+        <Grid.Column>
+          <Card fluid className='chart-card'>
+            <Card.Content>
+              <Card.Header>资源消耗</Card.Header>
+              <div style={{ marginTop: 8, lineHeight: 2 }}>
+                <div>统计额度：{renderQuota(totalQuotaRaw, t)}</div>
+                <div>统计 Tokens：{renderNumber(totalTokens)}</div>
+              </div>
+            </Card.Content>
+          </Card>
+        </Grid.Column>
+        <Grid.Column>
+          <Card fluid className='chart-card'>
+            <Card.Content>
+              <Card.Header>性能指标</Card.Header>
+              <div style={{ marginTop: 8, lineHeight: 2 }}>
+                <div>平均 RPM：{avgRPM.toFixed(3)}</div>
+                <div>平均 TPM：{renderNumber(Math.round(avgTPM))}</div>
+              </div>
+            </Card.Content>
+          </Card>
+        </Grid.Column>
+      </Grid>
       {/* 三个并排的折线图 */}
       <Grid columns={3} stackable className='charts-grid'>
         <Grid.Column>
@@ -450,6 +526,51 @@ const Dashboard = () => {
                 ))}
               </BarChart>
             </ResponsiveContainer>
+          </div>
+        </Card.Content>
+      </Card>
+
+      {/* 模型分析（C3）：按模型聚合的请求/额度/Token/首字延迟/耗时 */}
+      <Card fluid className='chart-card' style={{ marginTop: 16 }}>
+        <Card.Content>
+          <Card.Header>模型分析</Card.Header>
+          <div style={{ marginTop: 12, overflowX: 'auto' }}>
+            <Table basic='very' compact size='small'>
+              <Table.Header>
+                <Table.Row>
+                  <Table.HeaderCell>模型</Table.HeaderCell>
+                  <Table.HeaderCell>请求数</Table.HeaderCell>
+                  <Table.HeaderCell>消耗额度</Table.HeaderCell>
+                  <Table.HeaderCell>Token 数</Table.HeaderCell>
+                  <Table.HeaderCell>平均首字延迟</Table.HeaderCell>
+                  <Table.HeaderCell>平均耗时</Table.HeaderCell>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {modelAnalysis.length === 0 ? (
+                  <Table.Row>
+                    <Table.Cell colSpan={6} textAlign='center'>
+                      暂无数据
+                    </Table.Cell>
+                  </Table.Row>
+                ) : (
+                  modelAnalysis.map((row) => (
+                    <Table.Row key={row.model_name}>
+                      <Table.Cell>{row.model_name}</Table.Cell>
+                      <Table.Cell>{renderNumber(row.request_count)}</Table.Cell>
+                      <Table.Cell>{renderQuota(row.quota, t)}</Table.Cell>
+                      <Table.Cell>{renderNumber((row.prompt_tokens || 0) + (row.completion_tokens || 0))}</Table.Cell>
+                      <Table.Cell>
+                        {row.avg_first_token_time ? (row.avg_first_token_time / 1000).toFixed(2) + ' s' : '—'}
+                      </Table.Cell>
+                      <Table.Cell>
+                        {row.avg_elapsed_time ? (row.avg_elapsed_time / 1000).toFixed(2) + ' s' : '—'}
+                      </Table.Cell>
+                    </Table.Row>
+                  ))
+                )}
+              </Table.Body>
+            </Table>
           </div>
         </Card.Content>
       </Card>

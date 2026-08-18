@@ -17,6 +17,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/songquanpeng/one-api/common"
+	"github.com/songquanpeng/one-api/common/conv"
 	"github.com/songquanpeng/one-api/common/helper"
 	"github.com/songquanpeng/one-api/common/logger"
 	"github.com/songquanpeng/one-api/common/random"
@@ -168,6 +169,10 @@ func StreamHandler(c *gin.Context, meta *meta.Meta, textRequest model.GeneralOpe
 			usage.CompletionTokens += xunfeiResponse.Payload.Usage.Text.CompletionTokens
 			usage.TotalTokens += xunfeiResponse.Payload.Usage.Text.TotalTokens
 			response := streamResponseXunfei2OpenAI(&xunfeiResponse)
+			// 首字延迟捕获（本函数签名已持有 meta，直接调用；MarkFirstToken 内部判空+仅首次）
+			for _, choice := range response.Choices {
+				meta.MarkFirstToken(conv.AsString(choice.Delta.Content))
+			}
 			jsonResponse, err := json.Marshal(response)
 			if err != nil {
 				logger.SysError("error marshalling stream response: " + err.Error())

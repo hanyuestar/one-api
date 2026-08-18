@@ -15,12 +15,14 @@ import (
 	"github.com/jinzhu/copier"
 	"github.com/pkg/errors"
 	"github.com/songquanpeng/one-api/common"
+	"github.com/songquanpeng/one-api/common/conv"
 	"github.com/songquanpeng/one-api/common/ctxkey"
 	"github.com/songquanpeng/one-api/common/helper"
 	"github.com/songquanpeng/one-api/common/logger"
 	"github.com/songquanpeng/one-api/relay/adaptor/anthropic"
 	"github.com/songquanpeng/one-api/relay/adaptor/aws/utils"
 	"github.com/songquanpeng/one-api/relay/adaptor/openai"
+	relaymeta "github.com/songquanpeng/one-api/relay/meta"
 	relaymodel "github.com/songquanpeng/one-api/relay/model"
 )
 
@@ -188,12 +190,20 @@ func StreamHandler(c *gin.Context, awsCli *bedrockruntime.Client) (*relaymodel.E
 			response.Model = c.GetString(ctxkey.OriginalModel)
 			response.Created = createdTime
 
-			for _, choice := range response.Choices {
-				if len(choice.Delta.ToolCalls) > 0 {
-					lastToolCallChoice = choice
+		for _, choice := range response.Choices {
+			if len(choice.Delta.ToolCalls) > 0 {
+				lastToolCallChoice = choice
+			}
+		}
+		// 首字延迟捕获（MarkFirstToken 内部判空+仅首次；c.Stream 闭包同 goroutine 串行，c.Get 安全；局部变量 meta 遮蔽包名，故用 relaymeta 别名）
+		if m, ok := c.Get("relay_meta"); ok {
+			if mm, ok2 := m.(*relaymeta.Meta); ok2 {
+				for _, choice := range response.Choices {
+					mm.MarkFirstToken(conv.AsString(choice.Delta.Content))
 				}
 			}
-			jsonStr, err := json.Marshal(response)
+		}
+		jsonStr, err := json.Marshal(response)
 			if err != nil {
 				logger.SysError("error marshalling stream response: " + err.Error())
 				return true

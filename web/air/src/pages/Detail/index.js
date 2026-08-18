@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Button, Col, Form, Layout, Row, Spin} from "@douyinfe/semi-ui";
+import {Button, Col, Form, Layout, Row, Spin, Table} from "@douyinfe/semi-ui";
 import VChart from '@visactor/vchart';
 import {API, isAdmin, showError, timestamp2string, timestamp2string1} from "../../helpers";
 import {
@@ -31,6 +31,9 @@ const Detail = (props) => {
     const [quotaData, setQuotaData] = useState([]);
     const [consumeQuota, setConsumeQuota] = useState(0);
     const [times, setTimes] = useState(0);
+    const [self, setSelf] = useState({ quota: 0, used_quota: 0, request_count: 0 });
+    const [tokenTotal, setTokenTotal] = useState(0);
+    const [modelAnalysis, setModelAnalysis] = useState([]);
     const [dataExportDefaultTime, setDataExportDefaultTime] = useState(localStorage.getItem('data_export_default_time') || 'hour');
 
     const handleInputChange = (value, name) => {
@@ -284,24 +287,70 @@ const Detail = (props) => {
     }
 
     useEffect(() => {
-        // setDataExportDefaultTime(localStorage.getItem('data_export_default_time'));
-        // if (dataExportDefaultTime === 'day') {
-        //     // 设置开始时间为7天前
-        //     let st = timestamp2string(now.getTime() / 1000 - 86400 * 7)
-        //     inputs.start_timestamp = st;
-        //     formRef.current.formApi.setValue('start_timestamp', st);
-        // }
         if (!initialized.current) {
             initialized.current = true;
             initChart();
         }
+        API.get('/api/user/self').then((res) => {
+            const { success, data } = res.data;
+            if (success && data) {
+                setSelf({ quota: data.quota || 0, used_quota: data.used_quota || 0, request_count: data.request_count || 0 });
+            }
+        }).catch(() => {});
+        API.get('/api/user/dashboard').then((res) => {
+            const { success, data } = res.data;
+            if (success && Array.isArray(data)) {
+                const tk = data.reduce((s, d) => s + (d.PromptTokens || 0) + (d.CompletionTokens || 0), 0);
+                setTokenTotal(tk);
+            }
+        }).catch(() => {});
+        // C3 模型分析：按模型聚合（管理员全域 / 普通用户自身）
+        API.get(isAdminUser ? '/api/log/model-analysis' : '/api/log/self/model-analysis').then((res) => {
+            const { success, data } = res.data;
+            if (success) setModelAnalysis(Array.isArray(data) ? data : []);
+        }).catch(() => {});
     }, []);
+
+    const modelAnalysisColumns = [
+        { title: '模型', dataIndex: 'model_name' },
+        { title: '请求数', dataIndex: 'request_count', render: (t) => renderNumber(t) },
+        { title: '消耗额度', dataIndex: 'quota', render: (t) => renderQuota(t) },
+        { title: 'Token 数', dataIndex: 'tokens', render: (text, record) => renderNumber((record.prompt_tokens || 0) + (record.completion_tokens || 0)) },
+        { title: '平均首字延迟', dataIndex: 'avg_first_token_time', render: (t) => (t ? (t / 1000).toFixed(2) + ' s' : '—') },
+        { title: '平均耗时', dataIndex: 'avg_elapsed_time', render: (t) => (t ? (t / 1000).toFixed(2) + ' s' : '—') },
+    ];
 
     return (
         <>
             <Layout>
                 <Layout.Header>
                     <h3>数据看板</h3>
+                    <div style={{ display: 'flex', gap: 24, marginTop: 8, flexWrap: 'wrap' }}>
+                        <div>
+                            <div style={{ fontSize: 12, color: 'var(--semi-color-text-1)' }}>账户余额</div>
+                            <div style={{ fontSize: 20, fontWeight: 600 }}>{renderQuota(self.quota)}</div>
+                        </div>
+                        <div>
+                            <div style={{ fontSize: 12, color: 'var(--semi-color-text-1)' }}>历史消耗</div>
+                            <div style={{ fontSize: 20, fontWeight: 600 }}>{renderQuota(self.used_quota)}</div>
+                        </div>
+                        <div>
+                            <div style={{ fontSize: 12, color: 'var(--semi-color-text-1)' }}>请求次数</div>
+                            <div style={{ fontSize: 20, fontWeight: 600 }}>{renderNumber(self.request_count)}</div>
+                        </div>
+                        <div>
+                            <div style={{ fontSize: 12, color: 'var(--semi-color-text-1)' }}>统计额度</div>
+                            <div style={{ fontSize: 20, fontWeight: 600 }}>{renderQuota(consumeQuota)}</div>
+                        </div>
+                        <div>
+                            <div style={{ fontSize: 12, color: 'var(--semi-color-text-1)' }}>平均 RPM</div>
+                            <div style={{ fontSize: 20, fontWeight: 600 }}>{renderNumber(Math.round(times / Math.max(1, (Date.parse(end_timestamp) - Date.parse(start_timestamp)) / 60000)))}</div>
+                        </div>
+                        <div>
+                            <div style={{ fontSize: 12, color: 'var(--semi-color-text-1)' }}>平均 TPM</div>
+                            <div style={{ fontSize: 20, fontWeight: 600 }}>{renderNumber(Math.round(tokenTotal / (7 * 1440)))}</div>
+                        </div>
+                    </div>
                 </Layout.Header>
                 <Layout.Content>
                     <Form ref={formRef} layout='horizontal' style={{marginTop: 10}}>
@@ -349,6 +398,10 @@ const Detail = (props) => {
                             <div id="model_data" style={{width: '100%', minWidth: 100}}></div>
                         </div>
                     </Spin>
+                    <div style={{marginTop: 16}}>
+                        <h4>模型分析</h4>
+                        <Table columns={modelAnalysisColumns} dataSource={modelAnalysis} pagination={false} />
+                    </div>
                 </Layout.Content>
             </Layout>
         </>

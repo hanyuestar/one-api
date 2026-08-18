@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Fragment } from 'react';
 import {
   Button,
   Form,
@@ -8,6 +8,7 @@ import {
   Segment,
   Select,
   Table,
+  Card,
   Popup,
 } from 'semantic-ui-react';
 import {
@@ -22,7 +23,7 @@ import {
 import { useTranslation } from 'react-i18next';
 
 import { ITEMS_PER_PAGE } from '../constants';
-import { renderColorLabel, renderQuota } from '../helpers/render';
+import { renderColorLabel, renderNumber, renderQuota } from '../helpers/render';
 import { Link } from 'react-router-dom';
 
 function renderTimestamp(timestamp, request_id) {
@@ -97,6 +98,42 @@ function getColorByElapsedTime(elapsedTime) {
   return 'red';
 }
 
+function renderElapsedTime(elapsedTime) {
+  if (!elapsedTime) return '';
+  const seconds = elapsedTime / 1000;
+  return seconds.toFixed(1) + ' s';
+}
+
+// 解析并渲染结构化计费明细（billing_detail JSON）；解析失败/为空则回退到 content 字符串
+function renderBillingDetail(record) {
+  let bd = null;
+  try {
+    if (record.billing_detail) bd = JSON.parse(record.billing_detail);
+  } catch (e) { bd = null; }
+  if (!bd || typeof bd !== 'object') {
+    return (
+      <div>
+        <b>计费明细：</b>
+        {record.content || '—'}
+      </div>
+    );
+  }
+  const r2 = (v) => (typeof v === 'number' ? v.toFixed(2) : v ?? '—');
+  return (
+    <div>
+      <div>
+        <b>计费公式：</b>(正常输入 {bd.normal_prompt} + 缓存命中 {bd.billing_cache_hit}×{r2(bd.cache_hit_ratio)} + 缓存写入 {bd.billing_cache_write}×{r2(bd.cache_write_ratio)} + 输出 {bd.completion_tokens}×{r2(bd.completion_ratio)}) × 模型倍率 {r2(bd.model_ratio)} × 分组倍率 {r2(bd.group_ratio)} = {bd.quota}
+      </div>
+      <div>
+        <b>分量：</b>原始输入 {bd.prompt_tokens} / 正常输入 {bd.normal_prompt}；缓存命中 原始 {bd.cache_hit_tokens} / 计费 {bd.billing_cache_hit}；缓存写入 原始 {bd.cache_write_tokens} / 计费 {bd.billing_cache_write}；输出 {bd.completion_tokens}
+      </div>
+      <div>
+        <b>比率：</b>模型 {r2(bd.model_ratio)} × 分组 {r2(bd.group_ratio)} × 输出 {r2(bd.completion_ratio)}；缓存命中 {r2(bd.cache_hit_ratio)}、缓存写入 {r2(bd.cache_write_ratio)}；渠道类型 {bd.channel_type}
+      </div>
+    </div>
+  );
+}
+
 function renderDetail(log) {
   return (
     <>
@@ -160,7 +197,9 @@ const LogsTable = () => {
   const [stat, setStat] = useState({
     quota: 0,
     token: 0,
+    count: 0,
   });
+  const [expandedId, setExpandedId] = useState(null);
 
   const LOG_OPTIONS = [
     { key: '0', text: t('log.type.all'), value: 0 },
@@ -257,6 +296,11 @@ const LogsTable = () => {
     setLoading(true);
     setActivePage(1);
     await loadLogs(0);
+    if (isAdminUser) {
+      await getLogStat();
+    } else {
+      await getLogSelfStat();
+    }
   };
 
   useEffect(() => {
@@ -310,19 +354,37 @@ const LogsTable = () => {
 
   return (
     <>
-      <Header as='h3'>
-        {t('log.usage_details')}（{t('log.total_quota')}：
-        {showStat && renderQuota(stat.quota, t)}
-        {!showStat && (
-          <span
-            onClick={handleEyeClick}
-            style={{ cursor: 'pointer', color: 'gray' }}
-          >
-            {t('log.click_to_view')}
-          </span>
-        )}
-        ）
-      </Header>
+      <Header as='h3'>{t('log.usage_details')}</Header>
+      <Card.Group style={{ marginBottom: '12px' }} itemsPerRow={4}>
+        <Card color='blue'>
+          <Card.Content>
+            <Card.Meta>总消耗额度</Card.Meta>
+            <Card.Header>{renderQuota(stat.quota, t)}</Card.Header>
+          </Card.Content>
+        </Card>
+        <Card color='teal'>
+          <Card.Content>
+            <Card.Meta>总 Token</Card.Meta>
+            <Card.Header>{renderNumber(stat.token)}</Card.Header>
+          </Card.Content>
+        </Card>
+        <Card color='purple'>
+          <Card.Content>
+            <Card.Meta>请求数</Card.Meta>
+            <Card.Header>{renderNumber(stat.count)}</Card.Header>
+          </Card.Content>
+        </Card>
+        <Card color='orange'>
+          <Card.Content>
+            <Card.Meta>平均首字延迟</Card.Meta>
+            <Card.Header>
+              {stat.avg_first_token_time
+                ? (stat.avg_first_token_time / 1000).toFixed(2) + ' s'
+                : '—'}
+            </Card.Header>
+          </Card.Content>
+        </Card>
+      </Card.Group>
       <Form>
         <Form.Group>
           <Form.Input
@@ -449,6 +511,44 @@ const LogsTable = () => {
             >
               {t('log.table.model')}
             </Table.HeaderCell>
+            <Table.HeaderCell
+              style={{ cursor: 'pointer' }}
+              onClick={() => {
+                sortLog('elapsed_time');
+              }}
+              width={1}
+            >
+              用时
+            </Table.HeaderCell>
+            <Table.HeaderCell
+              style={{ cursor: 'pointer' }}
+              onClick={() => {
+                sortLog('first_token_time');
+              }}
+              width={1}
+            >
+              首字
+            </Table.HeaderCell>
+            <Table.HeaderCell
+              style={{ cursor: 'pointer' }}
+              onClick={() => {
+                sortLog('group');
+              }}
+              width={1}
+            >
+              分组
+            </Table.HeaderCell>
+            {isAdminUser && (
+              <Table.HeaderCell
+                style={{ cursor: 'pointer' }}
+                onClick={() => {
+                  sortLog('ip');
+                }}
+                width={2}
+              >
+                IP
+              </Table.HeaderCell>
+            )}
             {showUserTokenQuota() && (
               <>
                 {isAdminUser && (
@@ -513,8 +613,18 @@ const LogsTable = () => {
             .map((log, idx) => {
               if (log.deleted) return <></>;
               return (
+                <Fragment key={log.id}>
                 <Table.Row key={log.id}>
                   <Table.Cell>
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedId(expandedId === log.id ? null : log.id);
+                      }}
+                      style={{ cursor: 'pointer', marginRight: '6px', color: '#2185d0' }}
+                    >
+                      {expandedId === log.id ? '▼' : '▶'}
+                    </span>
                     {renderTimestamp(log.created_at, log.request_id)}
                   </Table.Cell>
                   {isAdminUser && (
@@ -536,6 +646,26 @@ const LogsTable = () => {
                   <Table.Cell>
                     {log.model_name ? renderColorLabel(log.model_name) : ''}
                   </Table.Cell>
+                  <Table.Cell>
+                    <Label
+                      basic
+                      size={'mini'}
+                      color={getColorByElapsedTime(log.elapsed_time)}
+                    >
+                      {renderElapsedTime(log.elapsed_time)}
+                    </Label>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Label basic size={'mini'} color='blue'>
+                      {log.first_token_time
+                        ? (log.first_token_time / 1000).toFixed(1) + ' s'
+                        : '—'}
+                    </Label>
+                  </Table.Cell>
+                  <Table.Cell>{log.group ? log.group : ''}</Table.Cell>
+                  {isAdminUser && (
+                    <Table.Cell>{log.ip ? log.ip : ''}</Table.Cell>
+                  )}
                   {showUserTokenQuota() && (
                     <>
                       {isAdminUser && (
@@ -575,6 +705,32 @@ const LogsTable = () => {
 
                   <Table.Cell>{renderDetail(log)}</Table.Cell>
                 </Table.Row>
+                {expandedId === log.id && (
+                  <Table.Row key={log.id + '_expanded'}>
+                    <Table.Cell colSpan={14} style={{ background: '#f7f8fa' }}>
+                      <div style={{ lineHeight: 1.9 }}>
+                        <div>
+                          <b>Request ID：</b>
+                          {log.request_id || '—'}
+                        </div>
+                        <div>
+                          <b>缓存命中：</b>
+                          {log.cache_hit_tokens || 0}　<b>缓存写入：</b>
+                          {log.cache_write_tokens || 0}　<b>首字延迟：</b>
+                          {log.first_token_time
+                            ? (log.first_token_time / 1000).toFixed(2) + ' s'
+                            : '—'}
+                          　<b>总耗时：</b>
+                          {log.elapsed_time
+                            ? (log.elapsed_time / 1000).toFixed(2) + ' s'
+                            : '—'}
+                        </div>
+                        {renderBillingDetail(log)}
+                      </div>
+                    </Table.Cell>
+                  </Table.Row>
+                )}
+                </Fragment>
               );
             })}
         </Table.Body>

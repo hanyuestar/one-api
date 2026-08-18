@@ -11,9 +11,13 @@ const LogTableHead = ({ userIsAdmin }) => {
         <TableCell>令牌</TableCell>
         <TableCell>类型</TableCell>
         <TableCell>模型</TableCell>
+        <TableCell>用时</TableCell>
+        <TableCell>首字</TableCell>
+        <TableCell>分组</TableCell>
         <TableCell>输入</TableCell>
         <TableCell>输出</TableCell>
         <TableCell>额度</TableCell>
+        {userIsAdmin && <TableCell>IP</TableCell>}
         <TableCell>详情</TableCell>
       </TableRow>
     </TableHead>

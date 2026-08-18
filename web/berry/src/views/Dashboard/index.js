@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Grid, Typography } from '@mui/material';
+import { Grid, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import { gridSpacing } from 'store/constant';
 import StatisticalLineChartCard from './component/StatisticalLineChartCard';
 import StatisticalBarChart from './component/StatisticalBarChart';
 import { generateChartOptions, getLastSevenDays } from 'utils/chart';
 import { API } from 'utils/api';
-import { showError, calculateQuota, renderNumber } from 'utils/common';
+import { showError, calculateQuota, renderNumber, isAdmin } from 'utils/common';
 import UserCard from 'ui-component/cards/UserCard';
+import MainCard from 'ui-component/cards/MainCard';
 
 const Dashboard = () => {
   const [isLoading, setLoading] = useState(true);
@@ -15,6 +16,17 @@ const Dashboard = () => {
   const [quotaChart, setQuotaChart] = useState(null);
   const [tokenChart, setTokenChart] = useState(null);
   const [users, setUsers] = useState([]);
+  const [rawData, setRawData] = useState([]);
+  const [modelAnalysis, setModelAnalysis] = useState([]);
+
+  // C3 模型分析：按模型聚合（管理员全域 / 普通用户自身）
+  const loadModelAnalysis = async () => {
+    const res = await API.get(isAdmin() ? '/api/log/model-analysis' : '/api/log/self/model-analysis');
+    const { success, data } = res.data;
+    if (success) {
+      setModelAnalysis(Array.isArray(data) ? data : []);
+    }
+  };
 
   const userDashboard = async () => {
     const res = await API.get('/api/user/dashboard');
@@ -26,6 +38,7 @@ const Dashboard = () => {
         setQuotaChart(getLineCardOption(lineData, 'Quota'));
         setTokenChart(getLineCardOption(lineData, 'PromptTokens'));
         setStatisticalData(getBarDataGroup(data));
+        setRawData(data);
       }
     } else {
       showError(message);
@@ -46,10 +59,46 @@ const Dashboard = () => {
   useEffect(() => {
     userDashboard();
     loadUser();
+    loadModelAnalysis();
   }, []);
+
+  const totalQuota = rawData.reduce((sum, item) => sum + (item.Quota || 0), 0);
+  const totalTokens = rawData.reduce((sum, item) => sum + (item.PromptTokens || 0) + (item.CompletionTokens || 0), 0);
+  const daysCount = rawData.length ? new Set(rawData.map((item) => item.Day)).size : 1;
+  const minutes = daysCount * 1440;
+  const totalRequests = rawData.reduce((sum, item) => sum + (item.RequestCount || 0), 0);
+  const avgRPM = minutes ? totalRequests / minutes : 0;
+  const avgTPM = minutes ? totalTokens / minutes : 0;
 
   return (
     <Grid container spacing={gridSpacing}>
+      <Grid item xs={12}>
+        <Grid container spacing={gridSpacing}>
+          <Grid item lg={3} xs={6}>
+            <MainCard title="账户数据">
+              <Typography variant="h4">余额：{users?.quota ? '$' + calculateQuota(users.quota) : '未知'}</Typography>
+              <Typography variant="subtitle2" color="text.secondary">历史消耗：{users?.used_quota ? '$' + calculateQuota(users.used_quota) : '未知'}</Typography>
+            </MainCard>
+          </Grid>
+          <Grid item lg={3} xs={6}>
+            <MainCard title="使用统计">
+              <Typography variant="h4">请求次数：{users?.request_count || '未知'}</Typography>
+            </MainCard>
+          </Grid>
+          <Grid item lg={3} xs={6}>
+            <MainCard title="资源消耗">
+              <Typography variant="h4">统计额度：{'$' + calculateQuota(totalQuota, 2)}</Typography>
+              <Typography variant="subtitle2" color="text.secondary">统计 Tokens：{renderNumber(totalTokens)}</Typography>
+            </MainCard>
+          </Grid>
+          <Grid item lg={3} xs={6}>
+            <MainCard title="性能指标">
+              <Typography variant="h4">平均 RPM：{avgRPM.toFixed(3)}</Typography>
+              <Typography variant="subtitle2" color="text.secondary">平均 TPM：{renderNumber(Math.round(avgTPM))}</Typography>
+            </MainCard>
+          </Grid>
+        </Grid>
+      </Grid>
       <Grid item xs={12}>
         <Grid container spacing={gridSpacing}>
           <Grid item lg={4} xs={12}>
@@ -108,6 +157,43 @@ const Dashboard = () => {
             </UserCard>
           </Grid>
         </Grid>
+      </Grid>
+      {/* 模型分析（C3）：按模型聚合的请求/额度/Token/首字延迟/耗时 */}
+      <Grid item xs={12}>
+        <MainCard title="模型分析">
+          <TableContainer>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>模型</TableCell>
+                  <TableCell align="right">请求数</TableCell>
+                  <TableCell align="right">消耗额度</TableCell>
+                  <TableCell align="right">Token 数</TableCell>
+                  <TableCell align="right">平均首字延迟</TableCell>
+                  <TableCell align="right">平均耗时</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {modelAnalysis.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} align="center">暂无数据</TableCell>
+                  </TableRow>
+                ) : (
+                  modelAnalysis.map((row) => (
+                    <TableRow key={row.model_name}>
+                      <TableCell>{row.model_name}</TableCell>
+                      <TableCell align="right">{renderNumber(row.request_count)}</TableCell>
+                      <TableCell align="right">${calculateQuota(row.quota, 2)}</TableCell>
+                      <TableCell align="right">{renderNumber((row.prompt_tokens || 0) + (row.completion_tokens || 0))}</TableCell>
+                      <TableCell align="right">{row.avg_first_token_time ? (row.avg_first_token_time / 1000).toFixed(2) + ' s' : '—'}</TableCell>
+                      <TableCell align="right">{row.avg_elapsed_time ? (row.avg_elapsed_time / 1000).toFixed(2) + ' s' : '—'}</TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </MainCard>
       </Grid>
     </Grid>
   );
