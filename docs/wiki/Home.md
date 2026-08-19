@@ -41,10 +41,19 @@
 - 渠道返回缓存字段（OpenAI `cached_tokens`、DeepSeek `prompt_cache_hit_tokens`、Anthropic `cache_read/cache_creation_input_tokens`）时自动生效；渠道不支持时按正常输入计费兜底。
 - 日志「输入」列会标注缓存命中部分，如 `1000（缓存命中 200）`。
 
+### 日志与分析增强（v1.0.7）
+
+- **日志模块全面增强**：三套主题（default/air/berry）日志页新增顶部摘要卡（总消耗额度 / 总 Token / 请求数 / 平均首字延迟），新增「用时」「首字」「分组」「IP」列；行展开可查看请求详情（Request ID、缓存命中/写入、首字延迟、总耗时、结构化计费明细）。
+- **首页数据看板**：首页新增「账户数据 / 使用统计 / 资源消耗 / 性能指标」四组摘要卡。
+- **首字延迟（TTFT）统计**：流式请求记录首个非空内容 token 到达时刻（毫秒），日志页「首字」列与看板平均首字延迟展示；非流式与纯工具调用请求不记录，避免语义混淆。
+- **计费明细结构化与公式反查**：消费日志新增结构化计费明细（模型倍率 / 分组倍率 / 输出倍率 / 缓存命中折扣 / 缓存写入加价 / 渠道类型 / 各计费分量），日志展开可查看完整计费公式，支持对账与一致性校验。
+- **模型分析看板**：按模型聚合请求数、消耗额度、Token、平均首字延迟、平均耗时；管理员查看全域、普通用户查看自身（`/api/log/model-analysis` 与 `/api/log/self/model-analysis`）。
+
 ### Bug 修复
 
 | 版本 | 修复内容 |
 |------|---------|
+| v1.0.7 | 日志模块增强与 TTFT 首字延迟统计；新增计费明细反查与模型分析看板；修正缓存命中展示与真实计费口径不一致的问题 |
 | v1.0.6 | 修复 Anthropic/Bedrock Claude 缓存计费少计约 60%；修复普通用户经 proxy 路由越权指定渠道；修复配额预扣并发竞态；令牌 Key 改用 crypto/rand；修复会话类型断言 panic；Air 主题恢复渠道「分组」列；清理 /chat 死路由 |
 | v1.0.5 | 移除令牌聊天功能；新增缓存命中/写入计费；日志「提示/补全」更名「输入/输出」 |
 | v1.0.4 | 修复无限制额度令牌 `used_quota` 不累计的问题 |
@@ -89,5 +98,5 @@ docker compose up -d
 ## 相关链接
 
 - 上游原始项目：[songquanpeng/one-api](https://github.com/songquanpeng/one-api)
-- 发布版本：[v1.0.6](https://github.com/hanyuestar/one-api/releases/tag/v1.0.6)（[查看更新日志](https://github.com/hanyuestar/one-api#%E6%9B%B4%E6%96%B0%E6%97%A5%E5%BF%97)）
+- 发布版本：[v1.0.7](https://github.com/hanyuestar/one-api/releases/tag/v1.0.7)（[查看更新日志](https://github.com/hanyuestar/one-api#%E6%9B%B4%E6%96%B0%E6%97%A5%E5%BF%97)）
 - Docker 镜像：[GitHub Packages](https://github.com/hanyuestar/one-api/pkgs/container/one-api) | [Docker Hub](https://hub.docker.com/r/kyson666/one-api)
