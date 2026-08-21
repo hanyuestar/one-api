@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Button, Col, Form, Layout, Row, Spin, Table} from "@douyinfe/semi-ui";
 import VChart from '@visactor/vchart';
-import {API, isAdmin, showError, timestamp2string, timestamp2string1} from "../../helpers";
+import {API, isAdmin, showError, timestamp2string} from "../../helpers";
 import {
     getQuotaWithUnit, modelColorMap,
     renderNumber,
@@ -28,7 +28,6 @@ const Detail = (props) => {
     const [modelDataChart, setModelDataChart] = useState(null);
     const [modelDataPieChart, setModelDataPieChart] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [quotaData, setQuotaData] = useState([]);
     const [consumeQuota, setConsumeQuota] = useState(0);
     const [times, setTimes] = useState(0);
     const [self, setSelf] = useState({ quota: 0, used_quota: 0, request_count: 0 });
@@ -52,10 +51,10 @@ const Detail = (props) => {
                 values: []
             }
         ],
-        xField: 'Time',
+        xField: 'Model',
         yField: 'Usage',
         seriesField: 'Model',
-        stack: true,
+        stack: false,
         legends: {
             visible: true
         },
@@ -176,34 +175,27 @@ const Detail = (props) => {
         let url = '';
         let localStartTimestamp = Date.parse(start_timestamp) / 1000;
         let localEndTimestamp = Date.parse(end_timestamp) / 1000;
+        // 修复：旧 /api/data/ 路由已不存在，统一使用模型分析接口（按模型聚合）
         if (isAdminUser) {
-            url = `/api/data/?username=${username}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}&default_time=${dataExportDefaultTime}`;
+            url = `/api/log/model-analysis?username=${username}&start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}`;
         } else {
-            url = `/api/data/self/?start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}&default_time=${dataExportDefaultTime}`;
+            url = `/api/log/self/model-analysis?start_timestamp=${localStartTimestamp}&end_timestamp=${localEndTimestamp}`;
         }
         const res = await API.get(url);
         const {success, message, data} = res.data;
         if (success) {
-            setQuotaData(data);
-            if (data.length === 0) {
-                data.push({
-                    'count': 0,
-                    'model_name': '无数据',
-                    'quota': 0,
-                    'created_at': now.getTime() / 1000
-                })
+            let list = Array.isArray(data) ? data : [];
+            setModelAnalysis(list);
+            if (list.length === 0) {
+                list = [{
+                    request_count: 0,
+                    model_name: '无数据',
+                    quota: 0,
+                    prompt_tokens: 0,
+                    completion_tokens: 0
+                }];
             }
-            // 根据dataExportDefaultTime重制时间粒度
-            let timeGranularity = 3600;
-            if (dataExportDefaultTime === 'day') {
-                timeGranularity = 86400;
-            } else if (dataExportDefaultTime === 'week') {
-                timeGranularity = 604800;
-            }
-            data.forEach(item => {
-                item['created_at'] = Math.floor(item['created_at'] / timeGranularity) * timeGranularity;
-            });
-            updateChart(lineChart, pieChart, data);
+            updateChart(lineChart, pieChart, list);
         } else {
             showError(message);
         }
@@ -232,9 +224,6 @@ const Detail = (props) => {
     }
 
     const updateChart = (lineChart, pieChart, data) => {
-        if (isAdminUser) {
-            // 将所有用户合并
-        }
         let pieData = [];
         let lineData = [];
         let consumeQuota = 0;
@@ -242,30 +231,17 @@ const Detail = (props) => {
         for (let i = 0; i < data.length; i++) {
             const item = data[i];
             consumeQuota += item.quota;
-            times += item.count;
-            // 合并model_name
-            let pieItem = pieData.find(it => it.type === item.model_name);
-            if (pieItem) {
-                pieItem.value += item.count;
-            } else {
-                pieData.push({
-                    "type": item.model_name,
-                    "value": item.count
-                });
-            }
-            // 合并created_at和model_name 为 lineData, created_at 数据类型是小时的时间戳
-            // 转换日期格式
-            let createTime = timestamp2string1(item.created_at, dataExportDefaultTime);
-            let lineItem = lineData.find(it => it.Time === createTime && it.Model === item.model_name);
-            if (lineItem) {
-                lineItem.Usage += parseFloat(getQuotaWithUnit(item.quota));
-            } else {
-                lineData.push({
-                    "Time": createTime,
-                    "Model": item.model_name,
-                    "Usage": parseFloat(getQuotaWithUnit(item.quota))
-                });
-            }
+            times += item.request_count;
+            // 饼图：按模型汇总请求数
+            pieData.push({
+                "type": item.model_name,
+                "value": item.request_count
+            });
+            // 柱状图：按模型展示消耗额度
+            lineData.push({
+                "Model": item.model_name,
+                "Usage": parseFloat(getQuotaWithUnit(item.quota))
+            });
         }
         setConsumeQuota(consumeQuota);
         setTimes(times);
@@ -275,13 +251,16 @@ const Detail = (props) => {
         spec_pie.title.subtext = `总计：${renderNumber(times)}`;
         spec_pie.data[0].values = pieData;
 
+        spec_line.title.text = '模型消耗分布';
         spec_line.title.subtext = `总计：${renderQuota(consumeQuota, 2)}`;
+        spec_line.xField = 'Model';
+        spec_line.yField = 'Usage';
+        spec_line.seriesField = 'Model';
+        spec_line.stack = false;
         spec_line.data[0].values = lineData;
         pieChart.updateSpec(spec_pie);
         lineChart.updateSpec(spec_line);
 
-        // pieChart.updateData('id0', pieData);
-        // lineChart.updateData('barData', lineData);
         pieChart.reLayout();
         lineChart.reLayout();
     }
@@ -304,11 +283,7 @@ const Detail = (props) => {
                 setTokenTotal(tk);
             }
         }).catch(() => {});
-        // C3 模型分析：按模型聚合（管理员全域 / 普通用户自身）
-        API.get(isAdminUser ? '/api/log/model-analysis' : '/api/log/self/model-analysis').then((res) => {
-            const { success, data } = res.data;
-            if (success) setModelAnalysis(Array.isArray(data) ? data : []);
-        }).catch(() => {});
+        // 模型分析表格由 initChart / refresh 统一加载，避免无时间参数请求覆盖带参结果
     }, []);
 
     const modelAnalysisColumns = [
