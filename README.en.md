@@ -65,19 +65,19 @@ _✨ Open-source OpenAI API management & distribution system with image generati
 
 **Bug Fixes**
 
-- **Fix concurrent map read/write panic for global ratio maps (H1)**: Admin runtime updates to model/cache ratios (`CompletionRatio`/`CacheHitRatio`/`CacheWriteRatio`) mutate global maps concurrently with billing reads, causing a Go map panic. Added a RWMutex protecting all Get/Update/JSON serialization paths.
-- **Fix PostgreSQL TTFT stat type conversion failure (M1)**: `AvgFirstTokenTime`'s `AVG` returns numeric on PostgreSQL and failed to scan into int64. Now uses a cross-DB compatible AVG expression (PG `::bigint`, MySQL/SQLite `ROUND` then CAST).
-- **Fix missing frontend version (M3)**: The VERSION file is now passed through the Docker multi-stage build so `REACT_APP_VERSION` shows the correct version.
-- **Fix streaming async billing lost on request cancel (L6)**: Streaming billing ran in a goroutine using the request ctx; after the request ended the ctx was cancelled and billing was lost. Switched to `context.WithoutCancel`.
-- **Fix SQLite/MySQL average truncation inconsistency (L3)**: Unified `ROUND` for rounding, eliminating the difference between SQLite's direct float truncation and MySQL.
-- **Fix deepl adapter response body close (L4)**: Corrected `resp.Body.Close()` placement to ensure the body is closed properly.
-- **Fix missing billing detail in image generation logs (L7)**: `BillingDetail` for image logs now includes the `Model` field and ratio/quota breakdown for reverse verification.
+- **Fix concurrent map read/write panic for global ratio maps**: Admin runtime updates to model/cache ratios (`CompletionRatio`/`CacheHitRatio`/`CacheWriteRatio`) mutate global maps concurrently with billing reads, causing a Go map panic. Added a RWMutex protecting all Get/Update/JSON serialization paths.
+- **Fix PostgreSQL TTFT stat type conversion failure**: `AvgFirstTokenTime`'s `AVG` returns numeric on PostgreSQL and failed to scan into int64. Now uses a cross-DB compatible AVG expression (PG `::bigint`, MySQL/SQLite `ROUND` then CAST).
+- **Fix missing frontend version**: The VERSION file is now passed through the Docker multi-stage build so `REACT_APP_VERSION` shows the correct version.
+- **Fix streaming async billing lost on request cancel**: Streaming billing ran in a goroutine using the request ctx; after the request ended the ctx was cancelled and billing was lost. Switched to `context.WithoutCancel`.
+- **Fix SQLite/MySQL average truncation inconsistency**: Unified `ROUND` for rounding, eliminating the difference between SQLite's direct float truncation and MySQL.
+- **Fix deepl adapter response body close**: Corrected `resp.Body.Close()` placement to ensure the body is closed properly.
+- **Fix missing billing detail in image generation logs**: `BillingDetail` for image logs now includes the `Model` field and ratio/quota breakdown for reverse verification.
 
 **Improvements**
 
-- **Statistics support channel filtering (M2)**: `SumUsedToken`/`SumUsedQuota`/`CountConsumeLogs`/`SearchLogsByModel`/`AvgFirstTokenTime` now accept a `channel` parameter for accurate per-channel stats.
-- **Air theme "Data Dashboard" menu always visible (M4)**: Decoupled from the "data export" switch so the model analysis entry is no longer hidden.
-- **Force password reset on first login (L1)**: After an admin creates or resets a password, the user must change it on first login (force-reset modal in all three themes), improving account security.
+- **Statistics support channel filtering**: `SumUsedToken`/`SumUsedQuota`/`CountConsumeLogs`/`SearchLogsByModel`/`AvgFirstTokenTime` now accept a `channel` parameter for accurate per-channel stats.
+- **Air theme "Data Dashboard" menu always visible**: Decoupled from the "data export" switch so the model analysis entry is no longer hidden.
+- **Force password reset on first login**: After an admin creates or resets a password, the user must change it on first login (force-reset modal in all three themes), improving account security.
 - **Log table horizontal layout & scroll (UI)**: Log tables support horizontal scroll with min column widths; expanded row details are laid out horizontally so long fields no longer squeeze the layout.
 - **Air theme UI unification**: Migrated 14 files from semantic-ui-react to Semi Design, removing cross-library mixing (admin settings pages keep Semantic UI Form controls; only the outer layout is unified).
 
