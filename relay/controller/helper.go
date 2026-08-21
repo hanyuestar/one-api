@@ -176,6 +176,7 @@ func postConsumeQuota(ctx context.Context, usage *relaymodel.Usage, meta *meta.M
 	}
 	// 结构化计费明细（钳制后值，供公式反查与前端展示）
 	billingDetail := model.BillingDetail{
+		Model:             meta.OriginModelName,
 		ModelRatio:        modelRatio,
 		GroupRatio:        groupRatio,
 		CompletionRatio:   completionRatio,

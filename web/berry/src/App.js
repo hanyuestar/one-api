@@ -17,6 +17,7 @@ import NavigationScroll from 'layout/NavigationScroll';
 import UserProvider from 'contexts/UserContext';
 import StatusProvider from 'contexts/StatusContext';
 import { SnackbarProvider } from 'notistack';
+import ForceResetPasswordDialog from 'ui-component/ForceResetPasswordDialog';
 
 // ==============================|| APP ||============================== //
 
@@ -39,6 +40,7 @@ const App = () => {
           <SnackbarProvider autoHideDuration={5000} maxSnack={3} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
             <UserProvider>
               <StatusProvider>
+                <ForceResetPasswordDialog />
                 <Routes />
               </StatusProvider>
             </UserProvider>

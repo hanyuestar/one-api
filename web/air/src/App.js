@@ -22,6 +22,7 @@ import Log from './pages/Log';
 import { Layout } from '@douyinfe/semi-ui';
 import Midjourney from './pages/Midjourney';
 import Detail from './pages/Detail';
+import ForceResetPasswordModal from './components/ForceResetPasswordModal';
 
 const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
@@ -55,6 +56,7 @@ function App() {
 
   return (
     <Layout>
+      <ForceResetPasswordModal />
       <Layout.Content>
         <Routes>
           <Route

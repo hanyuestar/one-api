@@ -8,6 +8,7 @@ import {
     Button,
     Checkbox,
     DatePicker,
+    Divider,
     Input,
     Select,
     SideSheet,
@@ -16,7 +17,6 @@ import {
     Typography
 } from '@douyinfe/semi-ui';
 import Title from '@douyinfe/semi-ui/lib/es/typography/title';
-import { Divider } from 'semantic-ui-react';
 
 const EditToken = (props) => {
   const [isEdit, setIsEdit] = useState(false);

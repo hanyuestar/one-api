@@ -25,6 +25,7 @@ import TopUp from './pages/TopUp';
 import Log from './pages/Log';
 import LarkOAuth from './components/LarkOAuth';
 import Dashboard from './pages/Dashboard';
+import ForceResetPasswordModal from './components/ForceResetPasswordModal';
 
 const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
@@ -87,7 +88,9 @@ function App() {
   }, []);
 
   return (
-    <Routes>
+    <>
+      <ForceResetPasswordModal />
+      <Routes>
       <Route
         path='/'
         element={
@@ -293,7 +296,8 @@ function App() {
         }
       />
       <Route path='*' element={<NotFound />} />
-    </Routes>
+      </Routes>
+    </>
   );
 }
 

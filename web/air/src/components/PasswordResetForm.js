@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Form, Grid, Header, Image, Segment } from 'semantic-ui-react';
+import { Button, Form, Typography } from '@douyinfe/semi-ui';
+import { IconMail } from '@douyinfe/semi-icons';
 import { API, showError, showInfo, showSuccess } from '../helpers';
 import Turnstile from 'react-turnstile';
 
@@ -29,9 +30,8 @@ const PasswordResetForm = () => {
     return () => clearInterval(countdownInterval);
   }, [disableButton, countdown]);
 
-  function handleChange(e) {
-    const { name, value } = e.target;
-    setInputs(inputs => ({ ...inputs, [name]: value }));
+  function handleChange(value) {
+    setInputs(inputs => ({ ...inputs, email: value }));
   }
 
   async function handleSubmit(e) {
@@ -56,46 +56,44 @@ const PasswordResetForm = () => {
   }
 
   return (
-    <Grid textAlign="center" style={{ marginTop: '48px' }}>
-      <Grid.Column style={{ maxWidth: 450 }}>
-        <Header as="h2" color="" textAlign="center">
-          <Image src="/logo.png" /> 密码重置
-        </Header>
-        <Form size="large">
-          <Segment>
-            <Form.Input
-              fluid
-              icon="mail"
-              iconPosition="left"
-              placeholder="邮箱地址"
-              name="email"
-              value={email}
-              onChange={handleChange}
-            />
-            {turnstileEnabled ? (
-              <Turnstile
-                sitekey={turnstileSiteKey}
-                onVerify={(token) => {
-                  setTurnstileToken(token);
-                }}
-              />
-            ) : (
-              <></>
-            )}
-            <Button
-              color="green"
-              fluid
-              size="large"
-              onClick={handleSubmit}
-              loading={loading}
-              disabled={disableButton}
-            >
-              {disableButton ? `重试 (${countdown})` : '提交'}
-            </Button>
-          </Segment>
-        </Form>
-      </Grid.Column>
-    </Grid>
+    <div style={{ maxWidth: 450, margin: '48px auto', padding: '0 16px' }}>
+      <Typography.Title heading={3} style={{ textAlign: 'center', marginBottom: 24 }}>
+        <img src="/logo.png" alt="logo" style={{ height: 32, marginRight: 8, verticalAlign: 'middle' }} />
+        密码重置
+      </Typography.Title>
+      <Form size="large">
+        <Form.Input
+          prefix={<IconMail />}
+          placeholder="邮箱地址"
+          name="email"
+          value={email}
+          onChange={handleChange}
+          field="email"
+        />
+        {turnstileEnabled ? (
+          <Turnstile
+            sitekey={turnstileSiteKey}
+            onVerify={(token) => {
+              setTurnstileToken(token);
+            }}
+          />
+        ) : (
+          <></>
+        )}
+        <Button
+          theme="solid"
+          type="primary"
+          block
+          size="large"
+          onClick={handleSubmit}
+          loading={loading}
+          disabled={disableButton}
+          style={{ marginTop: 12 }}
+        >
+          {disableButton ? `重试 (${countdown})` : '提交'}
+        </Button>
+      </Form>
+    </div>
   );
 };
 

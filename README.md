@@ -61,6 +61,26 @@ _✨ 开源 OpenAI 接口管理 & 分发系统，支持生图接口 ✨_
 
 ## 更新日志
 
+### v1.0.8（2026-08-21）
+
+**Bug 修复**
+
+- **修复全局倍率 map 并发读写 panic（H1）**：运行时管理员更新模型/缓存倍率（`CompletionRatio`/`CacheHitRatio`/`CacheWriteRatio`）会并发修改全局 map，而计费路径并发读取，Go map 并发读写直接 panic。新增读写锁保护所有 Get/Update/JSON 序列化路径。
+- **修复 PostgreSQL 首字延迟统计类型转换失败（M1）**：`AvgFirstTokenTime` 的 `AVG` 在 PostgreSQL 返回 numeric，Scan 到 int64 失败。改为跨库兼容的 AVG 表达式（PG `::bigint`、MySQL/SQLite `ROUND` 后 CAST）。
+- **修复前端版本号缺失（M3）**：VERSION 文件纳入 Docker 多阶段构建传递，前端 `REACT_APP_VERSION` 正确显示当前版本。
+- **修复流式异步计费因请求取消而失败（L6）**：流式计费在 goroutine 中使用请求 ctx，请求结束后 ctx 被取消导致计费丢失。改用 `context.WithoutCancel` 脱离取消链。
+- **修复 SQLite/MySQL 统计均值截断不一致（L3）**：统一使用 `ROUND` 四舍五入，消除 SQLite 浮点直接截断与 MySQL 的差异。
+- **修复 deepl 适配器响应体关闭逻辑（L4）**：修正 `resp.Body.Close()` 的调用，确保响应体正确关闭。
+- **修复图片生成日志缺计费明细（L7）**：图片生成日志 `BillingDetail` 补全 `Model` 字段及倍率/额度明细，计费反查可读。
+
+**功能优化**
+
+- **统计接口支持按渠道筛选（M2）**：`SumUsedToken`/`SumUsedQuota`/`CountConsumeLogs`/`SearchLogsByModel`/`AvgFirstTokenTime` 统一增加 `channel` 参数，按渠道统计更精准。
+- **air 主题「数据看板」菜单对所有用户常驻（M4）**：解耦「数据导出」开关，模型分析入口不再被隐藏。
+- **新增强制改密（L1）**：管理员创建或重置密码后，用户首次登录必须修改密码（三主题强制改密弹窗），提升账号安全。
+- **三主题日志列表横排与横向滚动（UI）**：日志表格支持横向滚动与最小列宽，行展开详情改为横排，长字段不再挤压布局。
+- **air 主题 UI 风格统一**：14 个文件从 semantic-ui-react 迁移至 Semi Design，消除跨库混用（管理员设置页保留 Semantic UI Form 控件，仅外层布局统一）。
+
 ### v1.0.7（2026-08-18）
 
 **功能优化**

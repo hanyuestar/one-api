@@ -1,4 +1,3 @@
-import {Label} from 'semantic-ui-react';
 import {Tag} from "@douyinfe/semi-ui";
 
 export function renderText(text, limit) {

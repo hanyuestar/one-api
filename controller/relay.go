@@ -84,6 +84,11 @@ func Relay(c *gin.Context) {
 		if bizErr == nil {
 			return
 		}
+		// 流式响应一旦开始向客户端写入 body，重试会导致客户端收到重复/混乱数据，此时不再重试
+		if c.Writer.Size() > 0 {
+			logger.Errorf(ctx, "relay error after response body started writing, won't retry: %s", bizErr.Error.Message)
+			break
+		}
 		channelId := c.GetInt(ctxkey.ChannelId)
 		lastFailedChannelId = channelId
 		channelName := c.GetString(ctxkey.ChannelName)

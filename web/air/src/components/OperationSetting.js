@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Divider, Form, Grid, Header } from 'semantic-ui-react';
+import { Form } from 'semantic-ui-react';
+import { Divider, Typography } from '@douyinfe/semi-ui';
 import { API, showError, showSuccess, timestamp2string, verifyJSON } from '../helpers';
 
 const OperationSetting = () => {
@@ -168,12 +169,9 @@ const OperationSetting = () => {
   };
 
   return (
-    <Grid columns={1}>
-      <Grid.Column>
+    <div>
         <Form loading={loading}>
-          <Header as='h3'>
-            通用设置
-          </Header>
+          <Typography.Title heading={4}>通用设置</Typography.Title>
           <Form.Group widths={4}>
             <Form.Input
               label='充值链接'
@@ -230,9 +228,7 @@ const OperationSetting = () => {
             submitConfig('general').then();
           }}>保存通用设置</Form.Button>
           <Divider />
-          <Header as='h3'>
-            日志设置
-          </Header>
+          <Typography.Title heading={4}>日志设置</Typography.Title>
           <Form.Group inline>
             <Form.Checkbox
               checked={inputs.LogConsumeEnabled === 'true'}
@@ -252,9 +248,7 @@ const OperationSetting = () => {
             deleteHistoryLogs().then();
           }}>清理历史日志</Form.Button>
           <Divider />
-          <Header as='h3'>
-            监控设置
-          </Header>
+          <Typography.Title heading={4}>监控设置</Typography.Title>
           <Form.Group widths={3}>
             <Form.Input
               label='最长响应时间'
@@ -295,9 +289,7 @@ const OperationSetting = () => {
             submitConfig('monitor').then();
           }}>保存监控设置</Form.Button>
           <Divider />
-          <Header as='h3'>
-            额度设置
-          </Header>
+          <Typography.Title heading={4}>额度设置</Typography.Title>
           <Form.Group widths={4}>
             <Form.Input
               label='新用户初始额度'
@@ -344,9 +336,7 @@ const OperationSetting = () => {
             submitConfig('quota').then();
           }}>保存额度设置</Form.Button>
           <Divider />
-          <Header as='h3'>
-            倍率设置
-          </Header>
+          <Typography.Title heading={4}>倍率设置</Typography.Title>
           <Form.Group widths='equal'>
             <Form.TextArea
               label='模型倍率'
@@ -406,8 +396,7 @@ const OperationSetting = () => {
             submitConfig('ratio').then();
           }}>保存倍率设置</Form.Button>
         </Form>
-      </Grid.Column>
-    </Grid>
+    </div>
   );
 };
 

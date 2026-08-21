@@ -51,6 +51,8 @@ type User struct {
 	Group            string `json:"group" gorm:"type:varchar(32);default:'default'"`
 	AffCode          string `json:"aff_code" gorm:"type:varchar(32);column:aff_code;uniqueIndex"`
 	InviterId        int    `json:"inviter_id" gorm:"type:int;column:inviter_id;index"`
+	// ForceReset 标记用户下次登录必须修改密码（管理员创建/重置密码后置 true，用户改密后清除）
+	ForceReset bool `json:"force_reset" gorm:"type:bool;default:false"`
 }
 
 func GetMaxUserId() int {
@@ -305,7 +307,10 @@ func ResetUserPasswordByEmail(email string, password string) error {
 	if err != nil {
 		return err
 	}
-	err = DB.Model(&User{}).Where("email = ?", email).Update("password", hashedPassword).Error
+	err = DB.Model(&User{}).Where("email = ?", email).Updates(map[string]interface{}{
+		"password":    hashedPassword,
+		"force_reset": true,
+	}).Error
 	return err
 }
 

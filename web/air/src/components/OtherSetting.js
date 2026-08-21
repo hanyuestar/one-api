@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Divider, Form, Grid, Header, Message, Modal } from 'semantic-ui-react';
+import { Form } from 'semantic-ui-react';
+import { Button, Divider, Modal, Typography, Banner } from '@douyinfe/semi-ui';
 import { API, showError, showSuccess } from '../helpers';
 import { marked } from 'marked';
 import { Link } from 'react-router-dom';
@@ -110,10 +111,9 @@ const OtherSetting = () => {
   };
 
   return (
-    <Grid columns={1}>
-      <Grid.Column>
+    <div>
         <Form loading={loading}>
-          <Header as='h3'>通用设置</Header>
+          <Typography.Title heading={4}>通用设置</Typography.Title>
           <Form.Button onClick={checkUpdate}>检查更新</Form.Button>
           <Form.Group widths='equal'>
             <Form.TextArea
@@ -127,7 +127,7 @@ const OtherSetting = () => {
           </Form.Group>
           <Form.Button onClick={submitNotice}>保存公告</Form.Button>
           <Divider />
-          <Header as='h3'>个性化设置</Header>
+          <Typography.Title heading={4}>个性化设置</Typography.Title>
           <Form.Group widths='equal'>
             <Form.Input
               label='系统名称'
@@ -182,8 +182,7 @@ const OtherSetting = () => {
             />
           </Form.Group>
           <Form.Button onClick={submitAbout}>保存关于</Form.Button>
-          <Message>移除 One API
-            的版权标识必须首先获得授权，项目维护需要花费大量精力，如果本项目对你有意义，请主动支持本项目。</Message>
+          <Banner fullMode={false} type="info" description="移除 One API 的版权标识必须首先获得授权，项目维护需要花费大量精力，如果本项目对你有意义，请主动支持本项目。" style={{ margin: '12px 0' }} />
           <Form.Group widths='equal'>
             <Form.Input
               label='页脚'
@@ -195,30 +194,23 @@ const OtherSetting = () => {
           </Form.Group>
           <Form.Button onClick={submitFooter}>设置页脚</Form.Button>
         </Form>
-      </Grid.Column>
       <Modal
-        onClose={() => setShowUpdateModal(false)}
-        onOpen={() => setShowUpdateModal(true)}
-        open={showUpdateModal}
-      >
-        <Modal.Header>新版本：{updateData.tag_name}</Modal.Header>
-        <Modal.Content>
-          <Modal.Description>
-            <div dangerouslySetInnerHTML={{ __html: updateData.content }}></div>
-          </Modal.Description>
-        </Modal.Content>
-        <Modal.Actions>
-          <Button onClick={() => setShowUpdateModal(false)}>关闭</Button>
-          <Button
-            content='详情'
-            onClick={() => {
+        onCancel={() => setShowUpdateModal(false)}
+        visible={showUpdateModal}
+        title={`新版本：${updateData.tag_name}`}
+        footer={
+          <>
+            <Button onClick={() => setShowUpdateModal(false)}>关闭</Button>
+            <Button theme="solid" type="primary" onClick={() => {
               setShowUpdateModal(false);
               openGitHubRelease();
-            }}
-          />
-        </Modal.Actions>
+            }}>详情</Button>
+          </>
+        }
+      >
+        <div dangerouslySetInnerHTML={{ __html: updateData.content }}></div>
       </Modal>
-    </Grid>
+    </div>
   );
 };
 

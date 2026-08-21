@@ -4,7 +4,7 @@ import { API, downloadTextAsFile, isMobile, showError, showSuccess } from '../..
 import { renderQuotaWithPrompt } from '../../helpers/render';
 import { AutoComplete, Button, Input, Modal, SideSheet, Space, Spin, Typography } from '@douyinfe/semi-ui';
 import Title from '@douyinfe/semi-ui/lib/es/typography/title';
-import { Divider } from 'semantic-ui-react';
+import { Divider } from '@douyinfe/semi-ui';
 
 const EditRedemption = (props) => {
   const isEdit = props.editingRedemption.id !== undefined;

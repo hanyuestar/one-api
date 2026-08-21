@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Form, Grid, Header, Image, Segment } from 'semantic-ui-react';
+import { Button, Form, Typography } from '@douyinfe/semi-ui';
+import { IconMail, IconLock } from '@douyinfe/semi-icons';
 import { API, copy, showError, showNotice } from '../helpers';
 import { useSearchParams } from 'react-router-dom';
 
@@ -61,52 +62,47 @@ const PasswordResetConfirm = () => {
   }
 
   return (
-    <Grid textAlign="center" style={{ marginTop: '48px' }}>
-      <Grid.Column style={{ maxWidth: 450 }}>
-        <Header as="h2" color="" textAlign="center">
-          <Image src="/logo.png" /> 密码重置确认
-        </Header>
-        <Form size="large">
-          <Segment>
-            <Form.Input
-              fluid
-              icon="mail"
-              iconPosition="left"
-              placeholder="邮箱地址"
-              name="email"
-              value={email}
-              readOnly
-            />
-            {newPassword && (
-              <Form.Input
-                fluid
-                icon="lock"
-                iconPosition="left"
-                placeholder="新密码"
-                name="newPassword"
-                value={newPassword}
-                readOnly
-                onClick={(e) => {
-                  e.target.select();
-                  navigator.clipboard.writeText(newPassword);
-                  showNotice(`密码已复制到剪贴板：${newPassword}`);
-                }}
-              />
-            )}
-            <Button
-              color="green"
-              fluid
-              size="large"
-              onClick={handleSubmit}
-              loading={loading}
-              disabled={disableButton}
-            >
-              {disableButton ? `密码重置完成` : '提交'}
-            </Button>
-          </Segment>
-        </Form>
-      </Grid.Column>
-    </Grid>
+    <div style={{ maxWidth: 450, margin: '48px auto', padding: '0 16px' }}>
+      <Typography.Title heading={3} style={{ textAlign: 'center', marginBottom: 24 }}>
+        <img src="/logo.png" alt="logo" style={{ height: 32, marginRight: 8, verticalAlign: 'middle' }} />
+        密码重置确认
+      </Typography.Title>
+      <Form size="large">
+        <Form.Input
+          prefix={<IconMail />}
+          placeholder="邮箱地址"
+          name="email"
+          value={email}
+          readonly
+        />
+        {newPassword && (
+          <Form.Input
+            prefix={<IconLock />}
+            placeholder="新密码"
+            name="newPassword"
+            value={newPassword}
+            readonly
+            onClick={(e) => {
+              e.target.select();
+              navigator.clipboard.writeText(newPassword);
+              showNotice(`密码已复制到剪贴板：${newPassword}`);
+            }}
+          />
+        )}
+        <Button
+          theme="solid"
+          type="primary"
+          block
+          size="large"
+          onClick={handleSubmit}
+          loading={loading}
+          disabled={disableButton}
+          style={{ marginTop: 12 }}
+        >
+          {disableButton ? `密码重置完成` : '提交'}
+        </Button>
+      </Form>
+    </div>
   );
 };
 

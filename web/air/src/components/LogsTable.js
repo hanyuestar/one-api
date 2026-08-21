@@ -75,10 +75,11 @@ function renderBillingDetail(record) {
 
 const LogsTable = () => {
   const columns = [{
-    title: '时间', dataIndex: 'timestamp2string'
+    title: '时间', dataIndex: 'timestamp2string', width: 160
   }, {
     title: '渠道',
     dataIndex: 'channel',
+    width: 80,
     className: isAdmin() ? 'tableShow' : 'tableHiddle',
     render: (text, record, index) => {
       return (isAdminUser ? record.type === 0 || record.type === 2 ? <div>
@@ -88,6 +89,7 @@ const LogsTable = () => {
   }, {
     title: '用户',
     dataIndex: 'username',
+    width: 120,
     className: isAdmin() ? 'tableShow' : 'tableHiddle',
     render: (text, record, index) => {
       return (isAdminUser ? <div>
@@ -99,7 +101,7 @@ const LogsTable = () => {
       </div> : <></>);
     }
   }, {
-    title: '令牌', dataIndex: 'token_name', render: (text, record, index) => {
+    title: '令牌', dataIndex: 'token_name', width: 120, render: (text, record, index) => {
       return (record.type === 0 || record.type === 2 ? <div>
         <Tag color="grey" size="large" onClick={() => {
           copyText(text);
@@ -107,13 +109,13 @@ const LogsTable = () => {
       </div> : <></>);
     }
   }, {
-    title: '类型', dataIndex: 'type', render: (text, record, index) => {
+    title: '类型', dataIndex: 'type', width: 80, render: (text, record, index) => {
       return (<div>
         {renderType(text)}
       </div>);
     }
   }, {
-    title: '模型', dataIndex: 'model_name', render: (text, record, index) => {
+    title: '模型', dataIndex: 'model_name', width: 160, render: (text, record, index) => {
       return (record.type === 0 || record.type === 2 ? <div>
         <Tag color={stringToColor(text)} size="large" onClick={() => {
           copyText(text);
@@ -122,43 +124,43 @@ const LogsTable = () => {
     }
   },
   {
-    title: '用时', dataIndex: 'elapsed_time', render: (text, record, index) => {
+    title: '用时', dataIndex: 'elapsed_time', width: 90, render: (text, record, index) => {
       return (<div>{text ? (text / 1000).toFixed(1) + ' s' : ''}</div>);
     }
   },
   {
-    title: '首字', dataIndex: 'first_token_time', render: (text, record, index) => {
+    title: '首字', dataIndex: 'first_token_time', width: 90, render: (text, record, index) => {
       return (record.type === 0 || record.type === 2 ? <div>{text ? (text / 1000).toFixed(1) + ' s' : '—'}</div> : <></>);
     }
   },
   {
-    title: '输入', dataIndex: 'prompt_tokens', render: (text, record, index) => {
+    title: '输入', dataIndex: 'prompt_tokens', width: 120, render: (text, record, index) => {
       return (record.type === 0 || record.type === 2 ? <div>
         {<span> {text}{record.cache_hit_tokens ? `（缓存命中 ${record.cache_hit_tokens}）` : ''} </span>}
       </div> : <></>);
     }
   }, {
-    title: '输出', dataIndex: 'completion_tokens', render: (text, record, index) => {
+    title: '输出', dataIndex: 'completion_tokens', width: 100, render: (text, record, index) => {
       return (parseInt(text) > 0 && (record.type === 0 || record.type === 2) ? <div>
         {<span> {text} </span>}
       </div> : <></>);
     }
   },   {
-    title: '花费', dataIndex: 'quota', render: (text, record, index) => {
+    title: '花费', dataIndex: 'quota', width: 110, render: (text, record, index) => {
       return (record.type === 0 || record.type === 2 ? <div>
         {renderQuota(text, 6)}
       </div> : <></>);
     }
   }, {
-    title: '分组', dataIndex: 'group', render: (text, record, index) => {
+    title: '分组', dataIndex: 'group', width: 90, render: (text, record, index) => {
       return (record.type === 0 || record.type === 2 ? <div>{text || ''}</div> : <></>);
     }
   }, {
-    title: 'IP', dataIndex: 'ip', render: (text, record, index) => {
+    title: 'IP', dataIndex: 'ip', width: 130, render: (text, record, index) => {
       return (record.type === 0 || record.type === 2 ? <div>{text || ''}</div> : <></>);
     }
   }, {
-    title: '详情', dataIndex: 'content', render: (text, record, index) => {
+    title: '详情', dataIndex: 'content', width: 240, render: (text, record, index) => {
       return <Paragraph ellipsis={{ rows: 2, showTooltip: { type: 'popover', opts: { style: { width: 240 } } } }}
         style={{ maxWidth: 240 }}>
         {text}
@@ -421,10 +423,16 @@ const LogsTable = () => {
         </>
       </Form>
       <Table style={{ marginTop: 5 }} columns={columns} dataSource={pageData}
+        scroll={{ x: 1500 }}
         expandedRowRender={(record) => (
           <div style={{ padding: '8px 12px', lineHeight: 1.9 }}>
-            <div><b>Request ID：</b>{record.request_id || '—'}</div>
-            <div><b>缓存命中：</b>{record.cache_hit_tokens || 0}　<b>缓存写入：</b>{record.cache_write_tokens || 0}　<b>首字延迟：</b>{record.first_token_time ? (record.first_token_time / 1000).toFixed(2) + ' s' : '—'}　<b>总耗时：</b>{record.elapsed_time ? (record.elapsed_time / 1000).toFixed(2) + ' s' : '—'}</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
+              <span><b>Request ID：</b>{record.request_id || '—'}</span>
+              <span><b>缓存命中：</b>{record.cache_hit_tokens || 0}</span>
+              <span><b>缓存写入：</b>{record.cache_write_tokens || 0}</span>
+              <span><b>首字延迟：</b>{record.first_token_time ? (record.first_token_time / 1000).toFixed(2) + ' s' : '—'}</span>
+              <span><b>总耗时：</b>{record.elapsed_time ? (record.elapsed_time / 1000).toFixed(2) + ' s' : '—'}</span>
+            </div>
             {renderBillingDetail(record)}
           </div>
         )}

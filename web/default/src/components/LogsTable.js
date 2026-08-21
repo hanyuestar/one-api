@@ -470,7 +470,8 @@ const LogsTable = () => {
           onChange={(e, { value }) => setSearchKeyword(value)}
         />
       </Form>
-      <Table basic={'very'} compact size='small'>
+      <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+      <Table basic={'very'} compact size='small' style={{ minWidth: '1500px' }}>
         <Table.Header>
           <Table.Row>
             <Table.HeaderCell
@@ -708,25 +709,14 @@ const LogsTable = () => {
                 {expandedId === log.id && (
                   <Table.Row key={log.id + '_expanded'}>
                     <Table.Cell colSpan={14} style={{ background: '#f7f8fa' }}>
-                      <div style={{ lineHeight: 1.9 }}>
-                        <div>
-                          <b>Request ID：</b>
-                          {log.request_id || '—'}
-                        </div>
-                        <div>
-                          <b>缓存命中：</b>
-                          {log.cache_hit_tokens || 0}　<b>缓存写入：</b>
-                          {log.cache_write_tokens || 0}　<b>首字延迟：</b>
-                          {log.first_token_time
-                            ? (log.first_token_time / 1000).toFixed(2) + ' s'
-                            : '—'}
-                          　<b>总耗时：</b>
-                          {log.elapsed_time
-                            ? (log.elapsed_time / 1000).toFixed(2) + ' s'
-                            : '—'}
-                        </div>
-                        {renderBillingDetail(log)}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', lineHeight: 1.9 }}>
+                        <span><b>Request ID：</b>{log.request_id || '—'}</span>
+                        <span><b>缓存命中：</b>{log.cache_hit_tokens || 0}</span>
+                        <span><b>缓存写入：</b>{log.cache_write_tokens || 0}</span>
+                        <span><b>首字延迟：</b>{log.first_token_time ? (log.first_token_time / 1000).toFixed(2) + ' s' : '—'}</span>
+                        <span><b>总耗时：</b>{log.elapsed_time ? (log.elapsed_time / 1000).toFixed(2) + ' s' : '—'}</span>
                       </div>
+                      {renderBillingDetail(log)}
                     </Table.Cell>
                   </Table.Row>
                 )}
@@ -766,6 +756,7 @@ const LogsTable = () => {
           </Table.Row>
         </Table.Footer>
       </Table>
+      </div>
     </>
   );
 };

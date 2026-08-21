@@ -690,12 +690,15 @@ var ModelRatio = map[string]float64{
 	"xwin-lm/xwin-lm-70b":                             1.875,
 }
 
-var CompletionRatio = map[string]float64{
-	// aws llama3
-	"llama3-8b-8192(33)":  0.0006 / 0.0003,
-	"llama3-70b-8192(33)": 0.0035 / 0.00265,
-	// whisper
-	"whisper-1": 0, // only count input tokens
+var (
+	completionRatioLock sync.RWMutex
+	// CompletionRatio 输出倍率（可由管理员在运行时通过系统设置更新，必须用 completionRatioLock 保护）
+	CompletionRatio = map[string]float64{
+		// aws llama3
+		"llama3-8b-8192(33)":  0.0006 / 0.0003,
+		"llama3-70b-8192(33)": 0.0035 / 0.00265,
+		// whisper
+		"whisper-1": 0, // only count input tokens
 	// deepseek (deprecated names, keep for compat)
 	"deepseek-chat":     0.28 / 0.14,
 	"deepseek-reasoner": 2.19 / 0.55,
@@ -721,16 +724,18 @@ var CompletionRatio = map[string]float64{
 	"gemini-3-pro-preview":          12.0 / 2.0,
 	"gemini-3.1-pro-preview":        12.0 / 2.0,
 	"gemini-3.1-flash-lite-preview": 1.5 / 0.25,
-}
+	}
 
-// CacheHitRatio 缓存命中（读缓存）折扣系数：缓存命中的输入 token 按输入价格的该比例计费。
+	cacheRatioLock sync.RWMutex
+	// CacheHitRatio 缓存命中（读缓存）折扣系数：缓存命中的输入 token 按输入价格的该比例计费。
 // 例如 0.1 表示打 1 折、0.5 表示打 5 折。默认 1.0 表示不享受折扣（按正常输入计费）。
 // 各模型官方缓存命中价 / 正常输入价：
 //   - OpenAI（cached input）：多为 0.5（如 gpt-4o $2.50 → $1.25），gpt-4.1 系列 0.25
 //   - Anthropic（cache read）：0.1（claude 系列缓存读取为输入的 1/10）
 //   - DeepSeek（cache hit）：0.1（v4 系列缓存命中为未命中的 1/10），chat/reasoner 为 0.25
 //   - Google Gemini（context caching）：0.25
-var CacheHitRatio = map[string]float64{
+	// CacheHitRatio / CacheWriteRatio 可由管理员运行时更新，必须用 cacheRatioLock 保护
+	CacheHitRatio = map[string]float64{
 	// OpenAI
 	"gpt-4o":             0.5,
 	"gpt-4o-2024-05-13":  0.5,
@@ -781,7 +786,7 @@ var CacheHitRatio = map[string]float64{
 
 // CacheWriteRatio 缓存写入加价系数：写入缓存的输入 token 按输入价格的该比例计费。
 // Anthropic 缓存写入（cache write）为输入的 1.25 倍。默认 1.0 表示不加价（按正常输入计费）。
-var CacheWriteRatio = map[string]float64{
+	CacheWriteRatio = map[string]float64{
 	// Anthropic（cache write = 1.25x input）
 	"claude-3-5-haiku-20241022":  1.25,
 	"claude-3-5-haiku-latest":    1.25,
@@ -796,7 +801,8 @@ var CacheWriteRatio = map[string]float64{
 	"claude-opus-4.1":            1.25,
 	"claude-opus-4.5":            1.25,
 	"claude-haiku-4.5":           1.25,
-}
+	}
+)
 
 var (
 	DefaultModelRatio      map[string]float64
@@ -886,6 +892,8 @@ func GetModelRatio(name string, channelType int) float64 {
 }
 
 func CompletionRatio2JSONString() string {
+	completionRatioLock.RLock()
+	defer completionRatioLock.RUnlock()
 	jsonBytes, err := json.Marshal(CompletionRatio)
 	if err != nil {
 		logger.SysError("error marshalling completion ratio: " + err.Error())
@@ -894,11 +902,15 @@ func CompletionRatio2JSONString() string {
 }
 
 func UpdateCompletionRatioByJSONString(jsonStr string) error {
+	completionRatioLock.Lock()
+	defer completionRatioLock.Unlock()
 	CompletionRatio = make(map[string]float64)
 	return json.Unmarshal([]byte(jsonStr), &CompletionRatio)
 }
 
 func GetCompletionRatio(name string, channelType int) float64 {
+	completionRatioLock.RLock()
+	defer completionRatioLock.RUnlock()
 	if strings.HasPrefix(name, "qwen-") && strings.HasSuffix(name, "-internet") {
 		name = strings.TrimSuffix(name, "-internet")
 	}
@@ -1011,6 +1023,8 @@ func GetCompletionRatio(name string, channelType int) float64 {
 }
 
 func CacheHitRatio2JSONString() string {
+	cacheRatioLock.RLock()
+	defer cacheRatioLock.RUnlock()
 	jsonBytes, err := json.Marshal(CacheHitRatio)
 	if err != nil {
 		logger.SysError("error marshalling cache hit ratio: " + err.Error())
@@ -1019,12 +1033,16 @@ func CacheHitRatio2JSONString() string {
 }
 
 func UpdateCacheHitRatioByJSONString(jsonStr string) error {
+	cacheRatioLock.Lock()
+	defer cacheRatioLock.Unlock()
 	CacheHitRatio = make(map[string]float64)
 	return json.Unmarshal([]byte(jsonStr), &CacheHitRatio)
 }
 
 // GetCacheHitRatio 返回模型缓存命中折扣系数；未配置时默认 1.0（即不享受折扣，等价于按正常输入计费）。
 func GetCacheHitRatio(name string, channelType int) float64 {
+	cacheRatioLock.RLock()
+	defer cacheRatioLock.RUnlock()
 	if strings.HasPrefix(name, "qwen-") && strings.HasSuffix(name, "-internet") {
 		name = strings.TrimSuffix(name, "-internet")
 	}
@@ -1045,6 +1063,8 @@ func GetCacheHitRatio(name string, channelType int) float64 {
 }
 
 func CacheWriteRatio2JSONString() string {
+	cacheRatioLock.RLock()
+	defer cacheRatioLock.RUnlock()
 	jsonBytes, err := json.Marshal(CacheWriteRatio)
 	if err != nil {
 		logger.SysError("error marshalling cache write ratio: " + err.Error())
@@ -1053,12 +1073,16 @@ func CacheWriteRatio2JSONString() string {
 }
 
 func UpdateCacheWriteRatioByJSONString(jsonStr string) error {
+	cacheRatioLock.Lock()
+	defer cacheRatioLock.Unlock()
 	CacheWriteRatio = make(map[string]float64)
 	return json.Unmarshal([]byte(jsonStr), &CacheWriteRatio)
 }
 
 // GetCacheWriteRatio 返回模型缓存写入加价系数；未配置时默认 1.0（即不加价，等价于按正常输入计费）。
 func GetCacheWriteRatio(name string, channelType int) float64 {
+	cacheRatioLock.RLock()
+	defer cacheRatioLock.RUnlock()
 	if strings.HasPrefix(name, "qwen-") && strings.HasSuffix(name, "-internet") {
 		name = strings.TrimSuffix(name, "-internet")
 	}

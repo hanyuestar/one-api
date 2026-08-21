@@ -1,13 +1,11 @@
 import React from 'react';
-import { Dimmer, Loader, Segment } from 'semantic-ui-react';
+import { Spin } from '@douyinfe/semi-ui';
 
 const Loading = ({ prompt: name = 'page' }) => {
   return (
-    <Segment style={{ height: 100 }}>
-      <Dimmer active inverted>
-        <Loader indeterminate>加载{name}中...</Loader>
-      </Dimmer>
-    </Segment>
+    <div style={{ height: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Spin size="large" tip={`加载${name}中...`} />
+    </div>
   );
 };
 

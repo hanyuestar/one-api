@@ -171,8 +171,8 @@ export default function Log() {
         </Toolbar>
         {searching && <LinearProgress />}
         <PerfectScrollbar component="div">
-          <TableContainer sx={{ overflow: 'unset' }}>
-            <Table sx={{ minWidth: 800 }}>
+          <TableContainer sx={{ overflowX: 'auto' }}>
+            <Table sx={{ minWidth: 1500 }} stickyHeader>
               <LogTableHead userIsAdmin={userIsAdmin} />
               <TableBody>
                 {logs.slice(activePage * ITEMS_PER_PAGE, (activePage + 1) * ITEMS_PER_PAGE).map((row, index) => (

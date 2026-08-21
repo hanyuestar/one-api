@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Divider, Form, Grid, Header, Modal, Message } from 'semantic-ui-react';
+import { Form } from 'semantic-ui-react';
+import { Button, Divider, Modal, Typography, Banner } from '@douyinfe/semi-ui';
 import { API, removeTrailingSlash, showError } from '../helpers';
 
 const SystemSetting = () => {
@@ -241,10 +242,9 @@ const SystemSetting = () => {
   }
 
   return (
-    <Grid columns={1}>
-      <Grid.Column>
+    <div>
         <Form loading={loading}>
-          <Header as='h3'>通用设置</Header>
+          <Typography.Title heading={4}>通用设置</Typography.Title>
           <Form.Group widths='equal'>
             <Form.Input
               label='服务器地址'
@@ -258,7 +258,7 @@ const SystemSetting = () => {
             更新服务器地址
           </Form.Button>
           <Divider />
-          <Header as='h3'>配置登录注册</Header>
+          <Typography.Title heading={4}>配置登录注册</Typography.Title>
           <Form.Group inline>
             <Form.Checkbox
               checked={inputs.PasswordLoginEnabled === 'true'}
@@ -269,27 +269,21 @@ const SystemSetting = () => {
             {
               showPasswordWarningModal &&
               <Modal
-                open={showPasswordWarningModal}
-                onClose={() => setShowPasswordWarningModal(false)}
-                size={'tiny'}
-                style={{ maxWidth: '450px' }}
-              >
-                <Modal.Header>警告</Modal.Header>
-                <Modal.Content>
-                  <p>取消密码登录将导致所有未绑定其他登录方式的用户（包括管理员）无法通过密码登录，确认取消？</p>
-                </Modal.Content>
-                <Modal.Actions>
-                  <Button onClick={() => setShowPasswordWarningModal(false)}>取消</Button>
-                  <Button
-                    color='yellow'
-                    onClick={async () => {
+                visible={showPasswordWarningModal}
+                onCancel={() => setShowPasswordWarningModal(false)}
+                title="警告"
+                width={450}
+                footer={
+                  <>
+                    <Button onClick={() => setShowPasswordWarningModal(false)}>取消</Button>
+                    <Button type="warning" onClick={async () => {
                       setShowPasswordWarningModal(false);
                       await updateOption('PasswordLoginEnabled', 'false');
-                    }}
-                  >
-                    确定
-                  </Button>
-                </Modal.Actions>
+                    }}>确定</Button>
+                  </>
+                }
+              >
+                <p>取消密码登录将导致所有未绑定其他登录方式的用户（包括管理员）无法通过密码登录，确认取消？</p>
               </Modal>
             }
             <Form.Checkbox
@@ -332,10 +326,8 @@ const SystemSetting = () => {
             />
           </Form.Group>
           <Divider />
-          <Header as='h3'>
-            配置邮箱域名白名单
-            <Header.Subheader>用以防止恶意用户利用临时邮箱批量注册</Header.Subheader>
-          </Header>
+          <Typography.Title heading={4} style={{ marginBottom: 0 }}>配置邮箱域名白名单</Typography.Title>
+          <Typography.Text type="tertiary" size="small">用以防止恶意用户利用临时邮箱批量注册</Typography.Text>
           <Form.Group widths={3}>
             <Form.Checkbox
               label='启用邮箱域名白名单'
@@ -380,10 +372,8 @@ const SystemSetting = () => {
           </Form.Group>
           <Form.Button onClick={submitEmailDomainWhitelist}>保存邮箱域名白名单设置</Form.Button>
           <Divider />
-          <Header as='h3'>
-            配置 SMTP
-            <Header.Subheader>用以支持系统的邮件发送</Header.Subheader>
-          </Header>
+          <Typography.Title heading={4} style={{ marginBottom: 0 }}>配置 SMTP</Typography.Title>
+          <Typography.Text type="tertiary" size="small">用以支持系统的邮件发送</Typography.Text>
           <Form.Group widths={3}>
             <Form.Input
               label='SMTP 服务器地址'
@@ -431,21 +421,9 @@ const SystemSetting = () => {
           </Form.Group>
           <Form.Button onClick={submitSMTP}>保存 SMTP 设置</Form.Button>
           <Divider />
-          <Header as='h3'>
-            配置 GitHub OAuth App
-            <Header.Subheader>
-              用以支持通过 GitHub 进行登录注册，
-              <a href='https://github.com/settings/developers' target='_blank'>
-                点击此处
-              </a>
-              管理你的 GitHub OAuth App
-            </Header.Subheader>
-          </Header>
-          <Message>
-            Homepage URL 填 <code>{inputs.ServerAddress}</code>
-            ，Authorization callback URL 填{' '}
-            <code>{`${inputs.ServerAddress}/oauth/github`}</code>
-          </Message>
+          <Typography.Title heading={4} style={{ marginBottom: 0 }}>配置 GitHub OAuth App</Typography.Title>
+          <Typography.Text type="tertiary" size="small">用以支持通过 GitHub 进行登录注册，<a href='https://github.com/settings/developers' target='_blank'>点击此处</a>管理你的 GitHub OAuth App</Typography.Text>
+          <Banner fullMode={false} type="info" style={{ margin: '8px 0' }} description={<>Homepage URL 填 <code>{inputs.ServerAddress}</code>，Authorization callback URL 填 <code>{`${inputs.ServerAddress}/oauth/github`}</code></>} />
           <Form.Group widths={3}>
             <Form.Input
               label='GitHub Client ID'
@@ -469,19 +447,8 @@ const SystemSetting = () => {
             保存 GitHub OAuth 设置
           </Form.Button>
           <Divider />
-          <Header as='h3'>
-            配置 WeChat Server
-            <Header.Subheader>
-              用以支持通过微信进行登录注册，
-              <a
-                href='https://github.com/songquanpeng/wechat-server'
-                target='_blank'
-              >
-                点击此处
-              </a>
-              了解 WeChat Server
-            </Header.Subheader>
-          </Header>
+          <Typography.Title heading={4} style={{ marginBottom: 0 }}>配置 WeChat Server</Typography.Title>
+          <Typography.Text type="tertiary" size="small">用以支持通过微信进行登录注册，<a href='https://github.com/songquanpeng/wechat-server' target='_blank'>点击此处</a>了解 WeChat Server</Typography.Text>
           <Form.Group widths={3}>
             <Form.Input
               label='WeChat Server 服务器地址'
@@ -513,19 +480,8 @@ const SystemSetting = () => {
             保存 WeChat Server 设置
           </Form.Button>
           <Divider />
-          <Header as='h3'>
-            配置 Message Pusher
-            <Header.Subheader>
-              用以推送报警信息，
-              <a
-                href='https://github.com/songquanpeng/message-pusher'
-                target='_blank'
-              >
-                点击此处
-              </a>
-              了解 Message Pusher
-            </Header.Subheader>
-          </Header>
+          <Typography.Title heading={4} style={{ marginBottom: 0 }}>配置 Message Pusher</Typography.Title>
+          <Typography.Text type="tertiary" size="small">用以推送报警信息，<a href='https://github.com/songquanpeng/message-pusher' target='_blank'>点击此处</a>了解 Message Pusher</Typography.Text>
           <Form.Group widths={3}>
             <Form.Input
               label='Message Pusher 推送地址'
@@ -549,16 +505,8 @@ const SystemSetting = () => {
             保存 Message Pusher 设置
           </Form.Button>
           <Divider />
-          <Header as='h3'>
-            配置 Turnstile
-            <Header.Subheader>
-              用以支持用户校验，
-              <a href='https://dash.cloudflare.com/' target='_blank'>
-                点击此处
-              </a>
-              管理你的 Turnstile Sites，推荐选择 Invisible Widget Type
-            </Header.Subheader>
-          </Header>
+          <Typography.Title heading={4} style={{ marginBottom: 0 }}>配置 Turnstile</Typography.Title>
+          <Typography.Text type="tertiary" size="small">用以支持用户校验，<a href='https://dash.cloudflare.com/' target='_blank'>点击此处</a>管理你的 Turnstile Sites，推荐选择 Invisible Widget Type</Typography.Text>
           <Form.Group widths={3}>
             <Form.Input
               label='Turnstile Site Key'
@@ -582,8 +530,7 @@ const SystemSetting = () => {
             保存 Turnstile 设置
           </Form.Button>
         </Form>
-      </Grid.Column>
-    </Grid>
+    </div>
   );
 };
 

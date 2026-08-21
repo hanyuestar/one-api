@@ -85,6 +85,7 @@ func SetupLogin(user *model.User, c *gin.Context) {
 		DisplayName: user.DisplayName,
 		Role:        user.Role,
 		Status:      user.Status,
+		ForceReset:  user.ForceReset,
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"message": "",
@@ -412,6 +413,10 @@ func UpdateUser(c *gin.Context) {
 		updatedUser.Password = "" // rollback to what it should be
 	}
 	updatePassword := updatedUser.Password != ""
+	if updatePassword {
+		// 管理员重置用户密码后，该用户下次登录必须修改密码
+		updatedUser.ForceReset = true
+	}
 	if err := updatedUser.Update(updatePassword); err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -467,6 +472,10 @@ func UpdateSelf(c *gin.Context) {
 			"message": err.Error(),
 		})
 		return
+	}
+	// 用户自行修改密码后，清除强制改密标记
+	if updatePassword {
+		_ = model.DB.Model(&model.User{}).Where("id = ?", cleanUser.Id).Update("force_reset", false).Error
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -572,6 +581,7 @@ func CreateUser(c *gin.Context) {
 		Username:    user.Username,
 		Password:    user.Password,
 		DisplayName: user.DisplayName,
+		ForceReset:  true, // 管理员创建的用户首次登录必须修改密码
 	}
 	if err := cleanUser.Insert(ctx, 0); err != nil {
 		c.JSON(http.StatusOK, gin.H{

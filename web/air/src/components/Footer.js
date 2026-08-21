@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 
-import { Container, Segment } from 'semantic-ui-react';
 import { getFooterHTML, getSystemName } from '../helpers';
 
 const Footer = () => {
@@ -28,8 +27,8 @@ const Footer = () => {
   }, []);
 
   return (
-    <Segment vertical>
-      <Container textAlign='center'>
+    <div style={{ padding: '16px 0', textAlign: 'center', borderTop: '1px solid var(--semi-color-border)' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 16px' }}>
         {footer ? (
           <div
             className='custom-footer'
@@ -56,8 +55,8 @@ const Footer = () => {
             </a>
           </div>
         )}
-      </Container>
-    </Segment>
+      </div>
+    </div>
   );
 };
 

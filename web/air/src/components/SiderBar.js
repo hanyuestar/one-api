@@ -84,7 +84,7 @@ const SiderBar = () => {
       itemKey: 'detail',
       to: '/detail',
       icon: <IconCalendarClock />,
-      className: localStorage.getItem('enable_data_export') === 'true' ? 'semi-navigation-item-normal' : 'tableHiddle'
+      className: 'semi-navigation-item-normal'
     },
     {
       text: '绘图',
@@ -105,7 +105,7 @@ const SiderBar = () => {
     //     to: '/about',
     //     icon: <IconAt/>
     // }
-  ], [localStorage.getItem('enable_data_export'), localStorage.getItem('enable_drawing'), isAdmin()]);
+  ], [localStorage.getItem('enable_drawing'), isAdmin()]);
 
   const loadStatus = async () => {
     const res = await API.get('/api/status');

@@ -110,7 +110,7 @@ func GetLogsStat(c *gin.Context) {
 	modelName := c.Query("model_name")
 	channel, _ := strconv.Atoi(c.Query("channel"))
 	quotaNum := model.SumUsedQuota(logType, startTimestamp, endTimestamp, modelName, username, tokenName, channel)
-	tokenNum := model.SumUsedToken(logType, startTimestamp, endTimestamp, modelName, username, tokenName)
+	tokenNum := model.SumUsedToken(logType, startTimestamp, endTimestamp, modelName, username, tokenName, channel)
 	countNum := model.CountConsumeLogs(logType, startTimestamp, endTimestamp, modelName, username, tokenName, channel)
 	avgFirstTokenTime := model.AvgFirstTokenTime(logType, startTimestamp, endTimestamp, modelName, username, tokenName, channel)
 	c.JSON(http.StatusOK, gin.H{
@@ -135,7 +135,7 @@ func GetLogsSelfStat(c *gin.Context) {
 	modelName := c.Query("model_name")
 	channel, _ := strconv.Atoi(c.Query("channel"))
 	quotaNum := model.SumUsedQuota(logType, startTimestamp, endTimestamp, modelName, username, tokenName, channel)
-	tokenNum := model.SumUsedToken(logType, startTimestamp, endTimestamp, modelName, username, tokenName)
+	tokenNum := model.SumUsedToken(logType, startTimestamp, endTimestamp, modelName, username, tokenName, channel)
 	countNum := model.CountConsumeLogs(logType, startTimestamp, endTimestamp, modelName, username, tokenName, channel)
 	avgFirstTokenTime := model.AvgFirstTokenTime(logType, startTimestamp, endTimestamp, modelName, username, tokenName, channel)
 	c.JSON(http.StatusOK, gin.H{

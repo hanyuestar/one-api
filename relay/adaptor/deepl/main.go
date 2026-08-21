@@ -106,7 +106,6 @@ func StreamHandler(c *gin.Context, resp *http.Response, modelName string) *model
 		c.Render(-1, common.CustomEvent{Data: "data: [DONE]"})
 		return false
 	})
-	_ = resp.Body.Close()
 	return nil
 }
 

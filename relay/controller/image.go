@@ -211,7 +211,14 @@ func RelayImageHelper(c *gin.Context, relayMode int) *relaymodel.ErrorWithStatus
 		}
 		if quota != 0 {
 			tokenName := c.GetString(ctxkey.TokenName)
-			logContent := fmt.Sprintf("倍率：%.2f × %.2f", modelRatio, groupRatio)
+			logContent := fmt.Sprintf("图片数量：%d，倍率：%.2f × %.2f", imageRequest.N, modelRatio, groupRatio)
+			billingDetail := model.BillingDetail{
+				Model:       imageModel,
+				ModelRatio:  modelRatio,
+				GroupRatio:  groupRatio,
+				Quota:       int(quota),
+			}
+			billingDetailJSON, _ := json.Marshal(billingDetail)
 			model.RecordConsumeLog(ctx, &model.Log{
 				UserId:           meta.UserId,
 				ChannelId:        meta.ChannelId,
@@ -221,6 +228,7 @@ func RelayImageHelper(c *gin.Context, relayMode int) *relaymodel.ErrorWithStatus
 				TokenName:        tokenName,
 				Quota:            int(quota),
 				Content:          logContent,
+				BillingDetail:    string(billingDetailJSON),
 			})
 			model.UpdateUserUsedQuotaAndRequestCount(meta.UserId, quota)
 			channelId := c.GetInt(ctxkey.ChannelId)

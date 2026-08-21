@@ -117,16 +117,12 @@ export default function LogTableRow({ item, userIsAdmin }) {
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={userIsAdmin ? 14 : 11}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ margin: 1, lineHeight: 1.9 }}>
-              <div>
-                <b>Request ID：</b>
-                {item.request_id || '—'}
-              </div>
-              <div>
-                <b>缓存命中：</b>
-                {item.cache_hit_tokens || 0}　<b>缓存写入：</b>
-                {item.cache_write_tokens || 0}　<b>首字延迟：</b>
-                {item.first_token_time ? (item.first_token_time / 1000).toFixed(2) + ' s' : '—'}　<b>总耗时：</b>
-                {item.elapsed_time ? (item.elapsed_time / 1000).toFixed(2) + ' s' : '—'}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
+                <span><b>Request ID：</b>{item.request_id || '—'}</span>
+                <span><b>缓存命中：</b>{item.cache_hit_tokens || 0}</span>
+                <span><b>缓存写入：</b>{item.cache_write_tokens || 0}</span>
+                <span><b>首字延迟：</b>{item.first_token_time ? (item.first_token_time / 1000).toFixed(2) + ' s' : '—'}</span>
+                <span><b>总耗时：</b>{item.elapsed_time ? (item.elapsed_time / 1000).toFixed(2) + ' s' : '—'}</span>
               </div>
               {renderBillingDetail(item)}
             </Box>

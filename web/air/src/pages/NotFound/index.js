@@ -1,13 +1,15 @@
 import React from 'react';
-import { Message } from 'semantic-ui-react';
+import { Banner } from '@douyinfe/semi-ui';
 
 const NotFound = () => (
-  <>
-    <Message negative>
-      <Message.Header>页面不存在</Message.Header>
-      <p>请检查你的浏览器地址是否正确</p>
-    </Message>
-  </>
+  <div style={{ padding: 24 }}>
+    <Banner
+      type="danger"
+      title="页面不存在"
+      description="请检查你的浏览器地址是否正确"
+      fullMode={false}
+    />
+  </div>
 );
 
 export default NotFound;

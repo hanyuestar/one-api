@@ -41,6 +41,7 @@ type Log struct {
 
 // BillingDetail 计费明细（结构化，用于公式反查与前端展示）。所有比率即 postConsumeQuota 实际使用值。
 type BillingDetail struct {
+	Model            string  `json:"model"`
 	ModelRatio      float64 `json:"model_ratio"`
 	GroupRatio      float64 `json:"group_ratio"`
 	CompletionRatio float64 `json:"completion_ratio"`
@@ -182,6 +183,9 @@ func SearchUserLogs(userId int, keyword string) (logs []*Log, err error) {
 }
 
 func SumUsedQuota(logType int, startTimestamp int64, endTimestamp int64, modelName string, username string, tokenName string, channel int) (quota int64) {
+	if logType <= 0 {
+		logType = LogTypeConsume
+	}
 	ifnull := "ifnull"
 	if common.UsingPostgreSQL {
 		ifnull = "COALESCE"
@@ -205,11 +209,14 @@ func SumUsedQuota(logType int, startTimestamp int64, endTimestamp int64, modelNa
 	if channel != 0 {
 		tx = tx.Where("channel_id = ?", channel)
 	}
-	tx.Where("type = ?", LogTypeConsume).Scan(&quota)
+	tx.Where("type = ?", logType).Scan(&quota)
 	return quota
 }
 
-func SumUsedToken(logType int, startTimestamp int64, endTimestamp int64, modelName string, username string, tokenName string) (token int) {
+func SumUsedToken(logType int, startTimestamp int64, endTimestamp int64, modelName string, username string, tokenName string, channel int) (token int) {
+	if logType <= 0 {
+		logType = LogTypeConsume
+	}
 	ifnull := "ifnull"
 	if common.UsingPostgreSQL {
 		ifnull = "COALESCE"
@@ -230,12 +237,18 @@ func SumUsedToken(logType int, startTimestamp int64, endTimestamp int64, modelNa
 	if modelName != "" {
 		tx = tx.Where("model_name = ?", modelName)
 	}
-	tx.Where("type = ?", LogTypeConsume).Scan(&token)
+	if channel != 0 {
+		tx = tx.Where("channel_id = ?", channel)
+	}
+	tx.Where("type = ?", logType).Scan(&token)
 	return token
 }
 
 func CountConsumeLogs(logType int, startTimestamp int64, endTimestamp int64, modelName string, username string, tokenName string, channel int) (count int64) {
-	tx := LOG_DB.Model(&Log{}).Where("type = ?", LogTypeConsume)
+	if logType <= 0 {
+		logType = LogTypeConsume
+	}
+	tx := LOG_DB.Model(&Log{}).Where("type = ?", logType)
 	if username != "" {
 		tx = tx.Where("username = ?", username)
 	}
@@ -311,21 +324,24 @@ type ModelAnalysisRow struct {
 	AvgElapsedTime    int64  `gorm:"column:avg_elapsed_time" json:"avg_elapsed_time"`         // ms
 }
 
-// avgExprFor 返回跨库兼容的 AVG 表达式（PG AVG(int)→numeric 需 ::bigint；MySQL/SQLite 用 CAST）。
+// avgExprFor 返回跨库兼容的 AVG 表达式，统一四舍五入取整（PG ::bigint、MySQL/SQLite ROUND 后 CAST）。
 func avgExprFor(colExpr string) string {
 	if common.UsingPostgreSQL {
 		return colExpr + "::bigint"
 	}
 	if common.UsingSQLite {
-		return "CAST(" + colExpr + " AS INTEGER)"
+		return "CAST(ROUND(" + colExpr + ") AS INTEGER)"
 	}
-	return "CAST(" + colExpr + " AS SIGNED)" // MySQL
+	return "CAST(ROUND(" + colExpr + ") AS SIGNED)" // MySQL
 }
 
 // SearchLogsByModel 按模型聚合消费日志（请求数/额度/token/平均首字延迟/平均耗时）。
 // logType 形参与 SumUsedQuota 同款：形参保留（接口形状与 stat 系列一致），内部固定 LogTypeConsume（type=2）。
 func SearchLogsByModel(logType int, startTimestamp, endTimestamp int64, modelName, username, tokenName string, channel int) (rows []*ModelAnalysisRow, err error) {
-	tx := LOG_DB.Model(&Log{}).Where("type = ?", LogTypeConsume)
+	if logType <= 0 {
+		logType = LogTypeConsume
+	}
+	tx := LOG_DB.Model(&Log{}).Where("type = ?", logType)
 	if username != "" {
 		tx = tx.Where("username = ?", username)
 	}
@@ -357,11 +373,14 @@ func SearchLogsByModel(logType int, startTimestamp, endTimestamp int64, modelNam
 // AvgFirstTokenTime 全局平均首字延迟(ms)，仅对 first_token_time>0 的记录求均（非流式/未触发首字不计入）。
 // 无首字记录时 COALESCE/IFNULL 兜底为 0。过滤条件与 SumUsedQuota 系列一致。
 func AvgFirstTokenTime(logType int, startTimestamp, endTimestamp int64, modelName, username, tokenName string, channel int) (avg int64) {
+	if logType <= 0 {
+		logType = LogTypeConsume
+	}
 	ifnull := "ifnull"
 	if common.UsingPostgreSQL {
 		ifnull = "COALESCE"
 	}
-	tx := LOG_DB.Model(&Log{}).Where("type = ?", LogTypeConsume)
+	tx := LOG_DB.Model(&Log{}).Where("type = ?", logType)
 	if username != "" {
 		tx = tx.Where("username = ?", username)
 	}
@@ -380,6 +399,7 @@ func AvgFirstTokenTime(logType int, startTimestamp, endTimestamp int64, modelNam
 	if channel != 0 {
 		tx = tx.Where("channel_id = ?", channel)
 	}
-	tx.Select(fmt.Sprintf("%s(AVG(CASE WHEN first_token_time > 0 THEN first_token_time END), 0)", ifnull)).Scan(&avg)
+	avgExpr := avgExprFor("AVG(CASE WHEN first_token_time > 0 THEN first_token_time END)")
+	tx.Select(fmt.Sprintf("%s(%s, 0)", ifnull, avgExpr)).Scan(&avg)
 	return avg
 }

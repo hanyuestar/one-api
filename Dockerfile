@@ -58,6 +58,9 @@ COPY . .
 # 复制前端构建产物
 COPY --from=frontend-builder /web/build ./web/build
 
+# 复用 frontend 阶段解析出的版本号（本地构建时 .git 被 .dockerignore 排除，go-builder 阶段的 VERSION 可能为空）
+COPY --from=frontend-builder /web/VERSION ./VERSION
+
 # 读取版本（前端阶段已写入 VERSION 文件）
 RUN VERSION_CONTENT=$(cat VERSION) && \
     go build -trimpath -ldflags "-s -w -X 'github.com/songquanpeng/one-api/common.Version=$VERSION_CONTENT' -linkmode external -extldflags '-static'" -o one-api

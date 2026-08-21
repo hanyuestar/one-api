@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Header, Segment } from 'semantic-ui-react';
+import { Typography } from '@douyinfe/semi-ui';
 import { API, showError } from '../../helpers';
 import { marked } from 'marked';
 
@@ -33,14 +33,14 @@ const About = () => {
     <>
       {
         aboutLoaded && about === '' ? <>
-          <Segment>
-            <Header as='h3'>关于</Header>
+          <div style={{ padding: 24, background: 'var(--semi-color-bg-1)', borderRadius: 8, border: '1px solid var(--semi-color-border)' }}>
+            <Typography.Title heading={3}>关于</Typography.Title>
             <p>可在设置页面设置关于内容，支持 HTML & Markdown</p>
             项目仓库地址：
             <a href='https://github.com/hanyuestar/one-api'>
               https://github.com/hanyuestar/one-api
             </a>
-          </Segment>
+          </div>
         </> : <>
           {
             about.startsWith('https://') ? <iframe
