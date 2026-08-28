@@ -253,3 +253,20 @@ func CacheGetRandomSatisfiedChannel(group string, model string, ignoreFirstPrior
 	}
 	return channels[idx], nil
 }
+
+// CacheGetCandidateChannels 返回 group+model 的全部候选渠道（按优先级降序），供 F-004 智能路由选择器使用。
+// 返回的是缓存切片的副本，调用方可安全过滤/排除。
+func CacheGetCandidateChannels(group string, model string) ([]*Channel, error) {
+	if !config.MemoryCacheEnabled {
+		return GetCandidateChannels(group, model)
+	}
+	channelSyncLock.RLock()
+	defer channelSyncLock.RUnlock()
+	channels := group2model2channels[group][model]
+	if len(channels) == 0 {
+		return nil, errors.New("channel not found")
+	}
+	out := make([]*Channel, len(channels))
+	copy(out, channels)
+	return out, nil
+}

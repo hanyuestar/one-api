@@ -4,6 +4,7 @@ import {isRoot} from '../../helpers';
 import OtherSetting from '../../components/OtherSetting';
 import PersonalSetting from '../../components/PersonalSetting';
 import OperationSetting from '../../components/OperationSetting';
+import RoutingSetting from '../../components/RoutingSetting';
 import {Layout, TabPane, Tabs} from "@douyinfe/semi-ui";
 
 const Setting = () => {
@@ -16,6 +17,11 @@ const Setting = () => {
     ];
 
     if (isRoot()) {
+        panes.push({
+            tab: '智能路由',
+            content: <RoutingSetting/>,
+            itemKey: '5'
+        });
         panes.push({
             tab: '运营设置',
             content: <OperationSetting/>,

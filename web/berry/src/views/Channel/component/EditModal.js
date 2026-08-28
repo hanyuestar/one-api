@@ -31,6 +31,18 @@ import { defaultConfig, typeConfig } from '../type/Config'; //typeConfig
 import { createFilterOptions } from '@mui/material/Autocomplete';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Stack,
+  Alert,
+  Typography
+} from '@mui/material';
+import { IconPlus, IconEdit, IconTrash } from '@tabler/icons-react';
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" />;
@@ -259,12 +271,124 @@ const EditModal = ({ open, channelId, onCancel, onOk }) => {
     setBatchAdd(false);
     if (channelId) {
       loadChannel().then();
+      loadKeys().then();
+      loadHealth().then();
     } else {
       initChannel(1);
       setInitialInput({ ...defaultConfig.input, is_edit: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [channelId]);
+
+  // v1.1 F-006 多 Key / F-012 健康诊断
+  const [keys, setKeys] = useState([]);
+  const [health, setHealth] = useState(null);
+  const [keyModal, setKeyModal] = useState(false);
+  const [keyForm, setKeyForm] = useState({ key: '', name: '', weight: 1 });
+  const [editingKeyId, setEditingKeyId] = useState(0);
+  const [deleteKeyId, setDeleteKeyId] = useState(0);
+
+  const loadKeys = async () => {
+    if (!channelId) return;
+    try {
+      const res = await API.get(`/api/channel/${channelId}/keys`);
+      if (res.data.success) {
+        setKeys(res.data.data || []);
+      }
+    } catch (error) {
+      showError(error.message);
+    }
+  };
+
+  const loadHealth = async () => {
+    if (!channelId) return;
+    try {
+      const res = await API.get(`/api/channel/${channelId}/health`);
+      if (res.data.success) {
+        setHealth(res.data.data);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const openAddKey = () => {
+    setEditingKeyId(0);
+    setKeyForm({ key: '', name: '', weight: 1 });
+    setKeyModal(true);
+  };
+
+  const openEditKey = (k) => {
+    setEditingKeyId(k.id);
+    setKeyForm({ key: '', name: k.name, weight: k.weight || 1 });
+    setKeyModal(true);
+  };
+
+  const saveKey = async () => {
+    if (editingKeyId === 0 && keyForm.key === '') {
+      showError('Key 不能为空');
+      return;
+    }
+    if (editingKeyId === 0) {
+      const res = await API.post(`/api/channel/${channelId}/keys`, keyForm);
+      if (res.data.success) {
+        showSuccess('操作成功');
+        setKeyModal(false);
+        loadKeys().then();
+      } else {
+        showError(res.data.message);
+      }
+    } else {
+      const res = await API.put(`/api/channel/keys/${editingKeyId}`, {
+        name: keyForm.name,
+        weight: keyForm.weight
+      });
+      if (res.data.success) {
+        showSuccess('操作成功');
+        setKeyModal(false);
+        loadKeys().then();
+      } else {
+        showError(res.data.message);
+      }
+    }
+  };
+
+  const confirmDeleteKey = async () => {
+    const res = await API.delete(`/api/channel/keys/${deleteKeyId}`);
+    if (res.data.success) {
+      showSuccess('操作成功');
+      setDeleteKeyId(0);
+      loadKeys().then();
+    } else {
+      showError(res.data.message);
+    }
+  };
+
+  const recoverKeys = async () => {
+    const res = await API.post(`/api/channel/${channelId}/keys/recover`);
+    if (res.data.success) {
+      showSuccess('操作成功');
+      loadKeys().then();
+    } else {
+      showError(res.data.message);
+    }
+  };
+
+  const keyStatusText = (status) => {
+    switch (status) {
+      case 2:
+        return '禁用';
+      case 3:
+        return '已隔离';
+      default:
+        return '启用';
+    }
+  };
+
+  const formatTime = (ts) => {
+    if (!ts) return '-';
+    return new Date(ts * 1000).toLocaleString();
+  };
 
   return (
     <Dialog open={open} onClose={onCancel} fullWidth maxWidth={'md'}>
@@ -617,6 +741,135 @@ const EditModal = ({ open, channelId, onCancel, onOk }) => {
                   <FormHelperText id="helper-tex-channel-system_prompt-label"> {inputPrompt.system_prompt} </FormHelperText>
                 )}
               </FormControl>
+              {channelId && (
+                <>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="h5" gutterBottom>
+                    渠道 Key 管理（F-006）
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary" gutterBottom>
+                    为渠道配置多个上游 Key 实现负载均衡；Key 加密存储，仅展示脱敏后缀
+                  </Typography>
+                  {health && (
+                    <Alert severity="info" sx={{ mb: 2 }}>
+                      渠道健康状态（F-012）：健康分 <b>{health.health_score ?? '-'}</b>　
+                      熔断状态 <b>{health.circuit?.state ?? '-'}</b>　
+                      Key 数量 <b>{health.key_count ?? '-'}</b>　
+                      最近探测 <b>{formatTime(health.last_probe_at)}</b>
+                    </Alert>
+                  )}
+                  <Stack direction="row" spacing={1} sx={{ my: 2 }}>
+                    <Button size="small" variant="contained" startIcon={<IconPlus />} onClick={openAddKey}>
+                      添加 Key
+                    </Button>
+                    <Button size="small" variant="outlined" onClick={recoverKeys} disabled={!keys.some((k) => k.status === 3)}>
+                      恢复隔离 Key
+                    </Button>
+                  </Stack>
+                  <TableContainer>
+                    <Table size="small" sx={{ minWidth: 600 }}>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>ID</TableCell>
+                          <TableCell>名称</TableCell>
+                          <TableCell>Key</TableCell>
+                          <TableCell>权重</TableCell>
+                          <TableCell>状态</TableCell>
+                          <TableCell>失败次数</TableCell>
+                          <TableCell>最近使用</TableCell>
+                          <TableCell align="right">操作</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {keys.length === 0 && (
+                          <TableRow>
+                            <TableCell colSpan={8} align="center">
+                              <Typography variant="body2" color="textSecondary">
+                                尚未配置多 Key，当前使用渠道主 Key
+                              </Typography>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                        {keys.map((k) => (
+                          <TableRow key={k.id} hover>
+                            <TableCell>{k.id}</TableCell>
+                            <TableCell>{k.name || '-'}</TableCell>
+                            <TableCell>{k.key_hint}</TableCell>
+                            <TableCell>{k.weight || 1}</TableCell>
+                            <TableCell>{keyStatusText(k.status)}</TableCell>
+                            <TableCell>{k.fail_count}</TableCell>
+                            <TableCell>{formatTime(k.last_used_at)}</TableCell>
+                            <TableCell align="right">
+                              <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+                                <Button size="small" onClick={() => openEditKey(k)}>
+                                  <IconEdit size={16} />
+                                </Button>
+                                <Button size="small" color="error" onClick={() => setDeleteKeyId(k.id)}>
+                                  <IconTrash size={16} />
+                                </Button>
+                              </Stack>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                  <Dialog
+                    open={keyModal}
+                    onClose={() => setKeyModal(false)}
+                    maxWidth="xs"
+                    fullWidth
+                  >
+                    <DialogTitle>{editingKeyId > 0 ? '编辑 Key' : '添加 Key'}</DialogTitle>
+                    <DialogContent>
+                      <Stack spacing={2} sx={{ mt: 1 }}>
+                        {editingKeyId === 0 && (
+                          <TextField
+                            label="Key"
+                            value={keyForm.key}
+                            onChange={(e) => setKeyForm((f) => ({ ...f, key: e.target.value }))}
+                            placeholder="请输入上游 API Key"
+                            size="small"
+                            type="password"
+                          />
+                        )}
+                        <TextField
+                          label="名称"
+                          value={keyForm.name}
+                          onChange={(e) => setKeyForm((f) => ({ ...f, name: e.target.value }))}
+                          placeholder="可选，用于标识"
+                          size="small"
+                        />
+                        <TextField
+                          label="权重"
+                          type="number"
+                          value={keyForm.weight}
+                          onChange={(e) => setKeyForm((f) => ({ ...f, weight: parseInt(e.target.value) }))}
+                          size="small"
+                        />
+                      </Stack>
+                    </DialogContent>
+                    <DialogActions>
+                      <Button onClick={() => setKeyModal(false)}>取消</Button>
+                      <Button variant="contained" onClick={saveKey}>
+                        保存
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
+                  <Dialog open={deleteKeyId > 0} onClose={() => setDeleteKeyId(0)} maxWidth="xs" fullWidth>
+                    <DialogTitle>确认</DialogTitle>
+                    <DialogContent>
+                      <Typography variant="body2">确定要删除该项吗？</Typography>
+                    </DialogContent>
+                    <DialogActions>
+                      <Button onClick={() => setDeleteKeyId(0)}>取消</Button>
+                      <Button variant="contained" color="error" onClick={confirmDeleteKey}>
+                        删除
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
+                </>
+              )}
               <DialogActions>
                 <Button onClick={onCancel}>取消</Button>
                 <Button disableElevation disabled={isSubmitting} type="submit" variant="contained" color="primary">

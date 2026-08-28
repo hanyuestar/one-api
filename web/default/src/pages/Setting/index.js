@@ -6,6 +6,7 @@ import { isRoot } from '../../helpers';
 import OtherSetting from '../../components/OtherSetting';
 import PersonalSetting from '../../components/PersonalSetting';
 import OperationSetting from '../../components/OperationSetting';
+import RoutingSetting from '../../components/RoutingSetting';
 
 const Setting = () => {
   const { t } = useTranslation();
@@ -22,6 +23,14 @@ const Setting = () => {
   ];
 
   if (isRoot()) {
+    panes.push({
+      menuItem: t('setting.tabs.routing'),
+      render: () => (
+        <Tab.Pane attached={false}>
+          <RoutingSetting />
+        </Tab.Pane>
+      ),
+    });
     panes.push({
       menuItem: t('setting.tabs.operation'),
       render: () => (

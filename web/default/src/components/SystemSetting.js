@@ -42,6 +42,12 @@ const SystemSetting = () => {
     RegisterEnabled: '',
     EmailDomainRestrictionEnabled: '',
     EmailDomainWhitelist: '',
+    CircuitEnable: '',
+    CircuitFailureThreshold: '',
+    CircuitCooldownSeconds: '',
+    CircuitHalfOpenSuccesses: '',
+    CircuitWindowSeconds: '',
+    MetricsEnabled: '',
   });
   const [originInputs, setOriginInputs] = useState({});
   let [loading, setLoading] = useState(false);
@@ -89,6 +95,8 @@ const SystemSetting = () => {
       case 'TurnstileCheckEnabled':
       case 'EmailDomainRestrictionEnabled':
       case 'RegisterEnabled':
+      case 'CircuitEnable':
+      case 'MetricsEnabled':
         value = inputs[key] === 'true' ? 'false' : 'true';
         break;
       default:
@@ -254,6 +262,20 @@ const SystemSetting = () => {
       inputs.TurnstileSecretKey !== ''
     ) {
       await updateOption('TurnstileSecretKey', inputs.TurnstileSecretKey);
+    }
+  };
+
+  const submitCircuit = async () => {
+    const fields = [
+      'CircuitFailureThreshold',
+      'CircuitCooldownSeconds',
+      'CircuitHalfOpenSuccesses',
+      'CircuitWindowSeconds',
+    ];
+    for (const f of fields) {
+      if (originInputs[f] !== inputs[f] && inputs[f] !== '') {
+        await updateOption(f, inputs[f]);
+      }
     }
   };
 
@@ -653,6 +675,95 @@ const SystemSetting = () => {
           </Form.Group>
           <Form.Button onClick={submitTurnstile}>
             {t('setting.system.turnstile.buttons.save')}
+          </Form.Button>
+
+          <Divider />
+          <Header as='h3'>
+            {t('setting.system.circuit.title')}
+            <Header.Subheader>
+              {t('setting.system.circuit.subtitle')}
+            </Header.Subheader>
+          </Header>
+          <Form.Group inline>
+            <Form.Field>
+              <Form.Checkbox
+                checked={inputs.CircuitEnable === 'true'}
+                label={t('setting.system.circuit.enable')}
+                name='CircuitEnable'
+                onChange={handleInputChange}
+              />
+              <div
+                style={{
+                  fontSize: '12px',
+                  color: 'rgba(0, 0, 0, 0.55)',
+                  marginTop: '4px',
+                }}
+              >
+                {t('setting.system.circuit.enable_desc')}
+              </div>
+            </Form.Field>
+            <Form.Field>
+              <Form.Checkbox
+                checked={inputs.MetricsEnabled === 'true'}
+                label={t('setting.system.circuit.metrics')}
+                name='MetricsEnabled'
+                onChange={handleInputChange}
+              />
+              <div
+                style={{
+                  fontSize: '12px',
+                  color: 'rgba(0, 0, 0, 0.55)',
+                  marginTop: '4px',
+                }}
+              >
+                {t('setting.system.circuit.metrics_desc')}
+              </div>
+            </Form.Field>
+          </Form.Group>
+          <Form.Group widths={4}>
+            <Form.Input
+              label={t('setting.system.circuit.failure_threshold')}
+              name='CircuitFailureThreshold'
+              onChange={handleInputChange}
+              type='number'
+              min='1'
+              value={inputs.CircuitFailureThreshold}
+              placeholder={t(
+                'setting.system.circuit.failure_threshold_placeholder'
+              )}
+            />
+            <Form.Input
+              label={t('setting.system.circuit.cooldown_seconds')}
+              name='CircuitCooldownSeconds'
+              onChange={handleInputChange}
+              type='number'
+              min='0'
+              value={inputs.CircuitCooldownSeconds}
+              placeholder={t('setting.system.circuit.cooldown_seconds_placeholder')}
+            />
+            <Form.Input
+              label={t('setting.system.circuit.half_open_successes')}
+              name='CircuitHalfOpenSuccesses'
+              onChange={handleInputChange}
+              type='number'
+              min='1'
+              value={inputs.CircuitHalfOpenSuccesses}
+              placeholder={t(
+                'setting.system.circuit.half_open_successes_placeholder'
+              )}
+            />
+            <Form.Input
+              label={t('setting.system.circuit.window_seconds')}
+              name='CircuitWindowSeconds'
+              onChange={handleInputChange}
+              type='number'
+              min='1'
+              value={inputs.CircuitWindowSeconds}
+              placeholder={t('setting.system.circuit.window_seconds_placeholder')}
+            />
+          </Form.Group>
+          <Form.Button onClick={submitCircuit}>
+            {t('setting.system.circuit.buttons.save')}
           </Form.Button>
         </Form>
       </Grid.Column>

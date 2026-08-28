@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com/songquanpeng/one-api/common/config"
 	"github.com/songquanpeng/one-api/controller"
 	"github.com/songquanpeng/one-api/controller/auth"
 	"github.com/songquanpeng/one-api/middleware"
@@ -83,6 +84,32 @@ func SetApiRouter(router *gin.Engine) {
 			channelRoute.PUT("/", controller.UpdateChannel)
 			channelRoute.DELETE("/disabled", controller.DeleteDisabledChannel)
 			channelRoute.DELETE("/:id", controller.DeleteChannel)
+			// F-006 多 Key 管理
+			channelRoute.GET("/:id/keys", controller.GetChannelKeys)
+			channelRoute.POST("/:id/keys", controller.CreateChannelKey)
+			channelRoute.PUT("/keys/:kid", controller.UpdateChannelKey)
+			channelRoute.DELETE("/keys/:kid", controller.DeleteChannelKey)
+			channelRoute.POST("/:id/keys/recover", controller.RecoverChannelKeys)
+			// F-012 渠道健康
+			channelRoute.GET("/:id/health", controller.GetChannelHealth)
+		}
+		// F-004 路由策略
+		routingRoute := apiRouter.Group("/routing-policy")
+		routingRoute.Use(middleware.AdminAuth())
+		{
+			routingRoute.GET("/", controller.GetRoutingPolicies)
+			routingRoute.POST("/", controller.CreateRoutingPolicy)
+			routingRoute.PUT("/:id", controller.UpdateRoutingPolicy)
+			routingRoute.DELETE("/:id", controller.DeleteRoutingPolicy)
+		}
+		// F-005 虚拟模型
+		virtualModelRoute := apiRouter.Group("/virtual-models")
+		virtualModelRoute.Use(middleware.AdminAuth())
+		{
+			virtualModelRoute.GET("/", controller.GetVirtualModels)
+			virtualModelRoute.POST("/", controller.CreateVirtualModel)
+			virtualModelRoute.PUT("/:id", controller.UpdateVirtualModel)
+			virtualModelRoute.DELETE("/:id", controller.DeleteVirtualModel)
 		}
 		tokenRoute := apiRouter.Group("/token")
 		tokenRoute.Use(middleware.UserAuth())
@@ -119,5 +146,9 @@ func SetApiRouter(router *gin.Engine) {
 		{
 			groupRoute.GET("/", controller.GetGroups)
 		}
+	}
+	// F-010 Prometheus 指标端点（独立于 /api，不压缩、不限流；METRICS_ENABLED=false 时不注册）
+	if config.MetricsEnabled {
+		router.GET("/metrics", controller.MetricsHandler)
 	}
 }

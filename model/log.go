@@ -21,11 +21,13 @@ type Log struct {
 	Username          string `json:"username" gorm:"index:index_username_model_name,priority:2;default:''"`
 	TokenName         string `json:"token_name" gorm:"index;default:''"`
 	ModelName         string `json:"model_name" gorm:"index;index:index_username_model_name,priority:1;default:''"`
+	VirtualModelName  string `json:"virtual_model_name" gorm:"index;default:''"` // F-005: 命中的虚拟模型名
 	Quota             int    `json:"quota" gorm:"default:0"`
 	PromptTokens      int    `json:"prompt_tokens" gorm:"default:0"`
 	CompletionTokens  int    `json:"completion_tokens" gorm:"default:0"`
 	CacheHitTokens    int    `json:"cache_hit_tokens" gorm:"default:0"`
 	CacheWriteTokens  int    `json:"cache_write_tokens" gorm:"default:0"`
+	ReasoningTokens   int    `json:"reasoning_tokens" gorm:"default:0"` // F-011: 推理 token（completion_tokens 子集）
 	ChannelId         int    `json:"channel" gorm:"index"`
 	RequestId         string `json:"request_id" gorm:"default:''"`
 	Group             string `json:"group" gorm:"index;default:''"`
@@ -55,6 +57,8 @@ type BillingDetail struct {
 	BillingCacheHit  int    `json:"billing_cache_hit"`   // 实际计入计费的缓存命中（已钳制）
 	BillingCacheWrite int   `json:"billing_cache_write"` // 实际计入计费的缓存写入（已钳制）
 	NormalPrompt     int    `json:"normal_prompt"`       // = PromptTokens - BillingCacheHit - BillingCacheWrite
+	ReasoningTokens  int    `json:"reasoning_tokens"`    // F-011: 推理 token（completion_tokens 子集，单独按 ReasoningRatio 计费）
+	ReasoningRatio   float64 `json:"reasoning_ratio"`    // F-011: 推理 token 倍率（未配置时=CompletionRatio）
 	Quota            int    `json:"quota"`
 }
 

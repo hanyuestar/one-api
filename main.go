@@ -72,6 +72,11 @@ func main() {
 		logger.SysLog(fmt.Sprintf("sync frequency: %d seconds", config.SyncFrequency))
 		model.InitChannelCache()
 	}
+	// v1.1 升级：初始化路由策略与虚拟模型缓存（F-004/F-005）
+	model.InitRoutingPolicyCache()
+	model.InitVirtualModelCache()
+	// v1.1 升级：一次性迁移 legacy 单 Key 到 channel_keys（F-006，幂等）
+	model.MigrateAllLegacyChannelKeys()
 	if config.MemoryCacheEnabled {
 		go model.SyncOptions(config.SyncFrequency)
 		go model.SyncChannelCache(config.SyncFrequency)

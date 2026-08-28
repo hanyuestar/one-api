@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/songquanpeng/one-api/common/config"
+	"github.com/songquanpeng/one-api/common/ctxkey"
 	"github.com/songquanpeng/one-api/common/logger"
 	"github.com/songquanpeng/one-api/relay"
 	"github.com/songquanpeng/one-api/relay/adaptor"
@@ -38,8 +39,13 @@ func RelayTextHelper(c *gin.Context) *model.ErrorWithStatusCode {
 
 	// map model name
 	meta.OriginModelName = textRequest.Model
+	// F-005 虚拟模型：用解析后的真实模型名覆盖请求体中的虚拟模型名
+	if actual := c.GetString(ctxkey.ActualModel); actual != "" {
+		textRequest.Model = actual
+	}
 	textRequest.Model, _ = getMappedModelName(textRequest.Model, meta.ModelMapping)
 	meta.ActualModelName = textRequest.Model
+	meta.VirtualModelName = c.GetString(ctxkey.VirtualModelName)
 	// set system prompt if not empty
 	systemPromptReset := setSystemPrompt(ctx, textRequest, meta.ForcedSystemPrompt)
 	// get model ratio & group ratio

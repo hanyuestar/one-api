@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Tabs, Tab, Box, Card } from '@mui/material';
-import { IconSettings2, IconActivity, IconSettings } from '@tabler/icons-react';
+import { IconSettings2, IconActivity, IconSettings, IconRoute } from '@tabler/icons-react';
 import OperationSetting from './component/OperationSetting';
 import SystemSetting from './component/SystemSetting';
 import OtherSetting from './component/OtherSetting';
+import RoutingSetting from './component/RoutingSetting';
 import AdminContainer from 'ui-component/AdminContainer';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -36,9 +37,10 @@ const Setting = () => {
   const navigate = useNavigate();
   const hash = location.hash.replace('#', '');
   const tabMap = {
-    operation: 0,
-    system: 1,
-    other: 2
+    routing: 0,
+    operation: 1,
+    system: 2,
+    other: 3
   };
   const [value, setValue] = useState(tabMap[hash] || 0);
 
@@ -66,18 +68,22 @@ const Setting = () => {
           <Box sx={{ width: '100%' }}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
               <Tabs value={value} onChange={handleChange} variant="scrollable" scrollButtons="auto">
-                <Tab label="运营设置" {...a11yProps(0)} icon={<IconActivity />} iconPosition="start" />
-                <Tab label="系统设置" {...a11yProps(1)} icon={<IconSettings />} iconPosition="start" />
-                <Tab label="其他设置" {...a11yProps(2)} icon={<IconSettings2 />} iconPosition="start" />
+                <Tab label="智能路由" {...a11yProps(0)} icon={<IconRoute />} iconPosition="start" />
+                <Tab label="运营设置" {...a11yProps(1)} icon={<IconActivity />} iconPosition="start" />
+                <Tab label="系统设置" {...a11yProps(2)} icon={<IconSettings />} iconPosition="start" />
+                <Tab label="其他设置" {...a11yProps(3)} icon={<IconSettings2 />} iconPosition="start" />
               </Tabs>
             </Box>
             <CustomTabPanel value={value} index={0}>
-              <OperationSetting />
+              <RoutingSetting />
             </CustomTabPanel>
             <CustomTabPanel value={value} index={1}>
-              <SystemSetting />
+              <OperationSetting />
             </CustomTabPanel>
             <CustomTabPanel value={value} index={2}>
+              <SystemSetting />
+            </CustomTabPanel>
+            <CustomTabPanel value={value} index={3}>
               <OtherSetting />
             </CustomTabPanel>
           </Box>

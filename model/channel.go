@@ -38,6 +38,11 @@ type Channel struct {
 	Priority           *int64  `json:"priority" gorm:"bigint;default:0"`
 	Config             string  `json:"config"`
 	SystemPrompt       *string `json:"system_prompt" gorm:"type:text"`
+	// F-004 智能路由：有序 fallback 渠道 ID 列表（逗号分隔），主渠道失败时按序重试
+	FallbackOrder string `json:"fallback_order" gorm:"type:varchar(1024);default:''"`
+	// F-012 渠道健康诊断：0-100 健康评分与最近探测时间
+	HealthScore int   `json:"health_score" gorm:"default:0"`
+	LastProbeAt int64 `json:"last_probe_at" gorm:"bigint;default:0"`
 }
 
 type ChannelConfig struct {
@@ -102,6 +107,15 @@ func (channel *Channel) GetPriority() int64 {
 		return 0
 	}
 	return *channel.Priority
+}
+
+// GetWeight 返回渠道权重（F-004）。Weight 为 nil 或 0 时返回 0，
+// 路由选择器将 0 视为等权（权重 1），保持历史行为。
+func (channel *Channel) GetWeight() uint {
+	if channel.Weight == nil {
+		return 0
+	}
+	return *channel.Weight
 }
 
 func (channel *Channel) GetBaseURL() string {

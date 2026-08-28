@@ -8,6 +8,7 @@ import {
   Checkbox,
   Button,
   FormControlLabel,
+  FormHelperText,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -59,7 +60,13 @@ const SystemSetting = () => {
     EmailDomainRestrictionEnabled: '',
     EmailDomainWhitelist: [],
     MessagePusherAddress: '',
-    MessagePusherToken: ''
+    MessagePusherToken: '',
+    CircuitEnable: '',
+    CircuitFailureThreshold: '',
+    CircuitCooldownSeconds: '',
+    CircuitHalfOpenSuccesses: '',
+    CircuitWindowSeconds: '',
+    MetricsEnabled: ''
   });
   const [originInputs, setOriginInputs] = useState({});
   let [loading, setLoading] = useState(false);
@@ -102,6 +109,8 @@ const SystemSetting = () => {
       case 'EmailDomainRestrictionEnabled':
       case 'RegisterEnabled':
       case 'OidcEnabled':
+      case 'CircuitEnable':
+      case 'MetricsEnabled':
         value = inputs[key] === 'true' ? 'false' : 'true';
         break;
       default:
@@ -219,6 +228,20 @@ const SystemSetting = () => {
     }
     if (originInputs['TurnstileSecretKey'] !== inputs.TurnstileSecretKey && inputs.TurnstileSecretKey !== '') {
       await updateOption('TurnstileSecretKey', inputs.TurnstileSecretKey);
+    }
+  };
+
+  const submitCircuit = async () => {
+    const fields = [
+      'CircuitFailureThreshold',
+      'CircuitCooldownSeconds',
+      'CircuitHalfOpenSuccesses',
+      'CircuitWindowSeconds'
+    ];
+    for (const f of fields) {
+      if (originInputs[f] !== inputs[f] && inputs[f] !== '') {
+        await updateOption(f, inputs[f]);
+      }
     }
   };
 
@@ -879,6 +902,110 @@ const SystemSetting = () => {
             <Grid xs={12}>
               <Button variant="contained" onClick={submitTurnstile}>
                 保存 Turnstile 设置
+              </Button>
+            </Grid>
+          </Grid>
+        </SubCard>
+        <SubCard
+          title="智能路由熔断与指标（F-004 / F-010）"
+          subTitle="渠道熔断器与 Prometheus 指标端点开关，保存后即时生效"
+        >
+          <Grid container spacing={{ xs: 3, sm: 2, md: 4 }}>
+            <Grid xs={12}>
+              <FormControl component="fieldset">
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={inputs.CircuitEnable === 'true'}
+                      onChange={handleInputChange}
+                      name="CircuitEnable"
+                    />
+                  }
+                  label="启用渠道熔断"
+                />
+                <FormHelperText sx={{ mt: 0.5 }}>
+                  上游连续失败时临时跳过该渠道，冷却后自动恢复，防止请求雪崩
+                </FormHelperText>
+              </FormControl>
+              <FormControl component="fieldset" sx={{ ml: 4 }}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={inputs.MetricsEnabled === 'true'}
+                      onChange={handleInputChange}
+                      name="MetricsEnabled"
+                    />
+                  }
+                  label="启用 Prometheus 指标端点"
+                />
+                <FormHelperText sx={{ mt: 0.5 }}>
+                  开启后可通过 GET /metrics 抓取 Prometheus 格式的监控指标
+                </FormHelperText>
+              </FormControl>
+            </Grid>
+            <Grid xs={12} md={3}>
+              <FormControl fullWidth>
+                <InputLabel htmlFor="CircuitFailureThreshold">熔断失败阈值</InputLabel>
+                <OutlinedInput
+                  id="CircuitFailureThreshold"
+                  name="CircuitFailureThreshold"
+                  type="number"
+                  value={inputs.CircuitFailureThreshold || ''}
+                  onChange={handleInputChange}
+                  label="熔断失败阈值"
+                  placeholder="窗口内连续失败达到该值触发熔断"
+                  disabled={loading}
+                />
+              </FormControl>
+            </Grid>
+            <Grid xs={12} md={3}>
+              <FormControl fullWidth>
+                <InputLabel htmlFor="CircuitCooldownSeconds">冷却时间（秒）</InputLabel>
+                <OutlinedInput
+                  id="CircuitCooldownSeconds"
+                  name="CircuitCooldownSeconds"
+                  type="number"
+                  value={inputs.CircuitCooldownSeconds || ''}
+                  onChange={handleInputChange}
+                  label="冷却时间（秒）"
+                  placeholder="熔断后等待时长，随后进入半开状态"
+                  disabled={loading}
+                />
+              </FormControl>
+            </Grid>
+            <Grid xs={12} md={3}>
+              <FormControl fullWidth>
+                <InputLabel htmlFor="CircuitHalfOpenSuccesses">半开恢复成功数</InputLabel>
+                <OutlinedInput
+                  id="CircuitHalfOpenSuccesses"
+                  name="CircuitHalfOpenSuccesses"
+                  type="number"
+                  value={inputs.CircuitHalfOpenSuccesses || ''}
+                  onChange={handleInputChange}
+                  label="半开恢复成功数"
+                  placeholder="半开状态连续成功达到该值即恢复"
+                  disabled={loading}
+                />
+              </FormControl>
+            </Grid>
+            <Grid xs={12} md={3}>
+              <FormControl fullWidth>
+                <InputLabel htmlFor="CircuitWindowSeconds">失败统计窗口（秒）</InputLabel>
+                <OutlinedInput
+                  id="CircuitWindowSeconds"
+                  name="CircuitWindowSeconds"
+                  type="number"
+                  value={inputs.CircuitWindowSeconds || ''}
+                  onChange={handleInputChange}
+                  label="失败统计窗口（秒）"
+                  placeholder="该窗口内失败计数用于判断是否熔断"
+                  disabled={loading}
+                />
+              </FormControl>
+            </Grid>
+            <Grid xs={12}>
+              <Button variant="contained" onClick={submitCircuit}>
+                保存熔断参数
               </Button>
             </Grid>
           </Grid>

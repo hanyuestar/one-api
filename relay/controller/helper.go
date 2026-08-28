@@ -18,6 +18,7 @@ import (
 	"github.com/songquanpeng/one-api/common/config"
 	"github.com/songquanpeng/one-api/common/logger"
 	"github.com/songquanpeng/one-api/model"
+	"github.com/songquanpeng/one-api/monitor"
 	"github.com/songquanpeng/one-api/relay/adaptor/openai"
 	billingratio "github.com/songquanpeng/one-api/relay/billing/ratio"
 	"github.com/songquanpeng/one-api/relay/channeltype"
@@ -102,8 +103,22 @@ func postConsumeQuota(ctx context.Context, usage *relaymodel.Usage, meta *meta.M
 	}
 	var quota int64
 	completionRatio := billingratio.GetCompletionRatio(textRequest.Model, meta.ChannelType)
+	reasoningRatio := billingratio.GetReasoningRatio(textRequest.Model, meta.ChannelType) // F-011
 	promptTokens := usage.PromptTokens
 	completionTokens := usage.CompletionTokens
+	// F-011: 推理 token（reasoning_tokens）是 completion_tokens 的子集，按独立倍率计费；
+	// 未配置 reasoningRatio 时 GetReasoningRatio 回退为 completionRatio，历史口径不变。
+	reasoningTokens := 0
+	if usage.CompletionTokensDetails != nil {
+		reasoningTokens = usage.CompletionTokensDetails.ReasoningTokens
+	}
+	if reasoningTokens < 0 {
+		reasoningTokens = 0
+	}
+	if reasoningTokens > completionTokens {
+		reasoningTokens = completionTokens
+	}
+	nonReasoningCompletionTokens := completionTokens - reasoningTokens
 	// 缓存命中/写入 token 数（从 OpenAI 的 prompt_tokens_details.cached_tokens 或 Anthropic 的 cache_* 字段解析得到）
 	cacheHitTokens := usage.CacheHitTokens
 	cacheWriteTokens := usage.CacheWriteTokens
@@ -138,11 +153,12 @@ func postConsumeQuota(ctx context.Context, usage *relaymodel.Usage, meta *meta.M
 	cacheHitRatio := billingratio.GetCacheHitRatio(textRequest.Model, meta.ChannelType)
 	cacheWriteRatio := billingratio.GetCacheWriteRatio(textRequest.Model, meta.ChannelType)
 	normalPromptTokens := promptTokens - billingCacheHitTokens - billingCacheWriteTokens
-	// 计费 = (正常输入 + 缓存命中×折扣 + 缓存写入×加价 + 输出×输出倍率) × 模型倍率 × 分组倍率
+	// 计费 = (正常输入 + 缓存命中×折扣 + 缓存写入×加价 + 普通输出×输出倍率 + 推理输出×推理倍率) × 模型倍率 × 分组倍率
 	quota = int64(math.Ceil((float64(normalPromptTokens) +
 		float64(billingCacheHitTokens)*cacheHitRatio +
 		float64(billingCacheWriteTokens)*cacheWriteRatio +
-		float64(completionTokens)*completionRatio) * ratio))
+		float64(nonReasoningCompletionTokens)*completionRatio +
+		float64(reasoningTokens)*reasoningRatio) * ratio))
 	if ratio != 0 && quota <= 0 {
 		quota = 1
 	}
@@ -169,6 +185,9 @@ func postConsumeQuota(ctx context.Context, usage *relaymodel.Usage, meta *meta.M
 	if billingCacheWriteTokens > 0 {
 		logContent += fmt.Sprintf("（缓存写入 %d，加价 %.2f）", billingCacheWriteTokens, cacheWriteRatio)
 	}
+	if reasoningTokens > 0 {
+		logContent += fmt.Sprintf("（推理 %d，倍率 %.2f）", reasoningTokens, reasoningRatio)
+	}
 	// 首字延迟(ms)：仅流式且确有首字时有效，否则 0
 	firstTokenMs := int64(0)
 	if meta.IsStream && !meta.FirstTokenTime.IsZero() {
@@ -190,6 +209,8 @@ func postConsumeQuota(ctx context.Context, usage *relaymodel.Usage, meta *meta.M
 		BillingCacheHit:   billingCacheHitTokens,
 		BillingCacheWrite: billingCacheWriteTokens,
 		NormalPrompt:      normalPromptTokens,
+		ReasoningTokens:   reasoningTokens,
+		ReasoningRatio:    reasoningRatio,
 		Quota:             int(quota),
 	}
 	billingDetailJSON, _ := json.Marshal(billingDetail)
@@ -202,7 +223,9 @@ func postConsumeQuota(ctx context.Context, usage *relaymodel.Usage, meta *meta.M
 		CompletionTokens:  completionTokens,
 		CacheHitTokens:    cacheHitTokens,
 		CacheWriteTokens:  cacheWriteTokens,
+		ReasoningTokens:   reasoningTokens,
 		ModelName:         textRequest.Model,
+		VirtualModelName:  meta.VirtualModelName,
 		TokenName:         meta.TokenName,
 		Quota:             int(quota),
 		Content:           logContent,
@@ -214,6 +237,13 @@ func postConsumeQuota(ctx context.Context, usage *relaymodel.Usage, meta *meta.M
 	})
 	model.UpdateUserUsedQuotaAndRequestCount(meta.UserId, quota)
 	model.UpdateChannelUsedQuota(meta.ChannelId, quota)
+	// F-010 Prometheus 指标
+	monitor.RecordTokens(meta.ChannelId, textRequest.Model, promptTokens, completionTokens, cacheHitTokens, cacheWriteTokens, reasoningTokens)
+	monitor.RecordCost(meta.ChannelId, textRequest.Model, quota)
+	monitor.ObserveDuration(helper.CalcElapsedTime(meta.StartTime))
+	if firstTokenMs > 0 {
+		monitor.ObserveTTFT(firstTokenMs)
+	}
 }
 
 func getMappedModelName(modelName string, mapping map[string]string) (string, bool) {
@@ -282,10 +312,20 @@ func VerifyBillingDetail(d model.BillingDetail) (int64, bool) {
 	if d.PromptTokens+d.CompletionTokens == 0 {
 		return 0, d.Quota == 0
 	}
+	// F-011: 推理 token 从普通输出中拆出，按 ReasoningRatio 单独计费；未配置时 ReasoningRatio=CompletionRatio
+	nonReasoning := d.CompletionTokens - d.ReasoningTokens
+	if nonReasoning < 0 {
+		nonReasoning = 0
+	}
+	reasoningRatio := d.ReasoningRatio
+	if reasoningRatio == 0 {
+		reasoningRatio = d.CompletionRatio
+	}
 	raw := (float64(d.NormalPrompt) +
 		float64(d.BillingCacheHit)*d.CacheHitRatio +
 		float64(d.BillingCacheWrite)*d.CacheWriteRatio +
-		float64(d.CompletionTokens)*d.CompletionRatio) * d.ModelRatio * d.GroupRatio
+		float64(nonReasoning)*d.CompletionRatio +
+		float64(d.ReasoningTokens)*reasoningRatio) * d.ModelRatio * d.GroupRatio
 	recomputed := int64(math.Ceil(raw))
 	if d.ModelRatio*d.GroupRatio != 0 && recomputed <= 0 {
 		recomputed = 1

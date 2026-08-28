@@ -13,8 +13,6 @@
 
 _✨ 开源 OpenAI 接口管理 & 分发系统，支持生图接口 ✨_
 
-> 本仓库基于 [songquanpeng/one-api](https://github.com/songquanpeng/one-api) 维护，新增阿里百炼 & 火山引擎生图支持，同步推送到 ghcr.io 和 Docker Hub。
-
 </div>
 
 <p align="center">
@@ -53,13 +51,23 @@ _✨ 开源 OpenAI 接口管理 & 分发系统，支持生图接口 ✨_
 > 本仓库 Docker 镜像：
 > - GitHub Container Registry: `ghcr.io/hanyuestar/one-api:latest`
 > - Docker Hub: `kyson666/one-api:latest`
->
-> 上游原版镜像：[justsong/one-api](https://hub.docker.com/repository/docker/justsong/one-api) 或 [ghcr.io/songquanpeng/one-api](https://github.com/songquanpeng/one-api/pkgs/container/one-api)
 
 > [!WARNING]
 > 使用 root 用户初次登录系统后，务必修改默认密码 `123456`！
 
 ## 更新日志
+
+### v1.1.0（2026-08-28）
+
+**功能优化**
+
+- **智能路由与熔断**：支持按「分组 + 模型」配置渠道选择策略（按优先级 / 按权重 / 延迟优先 / 随机），分组与模型均支持 `*` 通配匹配；新增渠道级熔断器，上游连续失败时自动临时跳过该渠道，冷却后自动恢复，防止请求雪崩。
+- **虚拟模型**：将多个真实模型聚合为一个入口，请求按权重自动选择实际模型，便于模型版本灰度与降级。
+- **渠道多 Key 负载均衡**：单个渠道可配置多个上游 API Key，按权重随机分发；认证失败自动隔离问题 Key、渠道测试成功后自动恢复；Key 加密存储，界面仅展示脱敏后缀。
+- **Prometheus 监控指标**：新增 `/metrics` 端点输出标准 Prometheus 格式指标（请求量 / 延迟 / 熔断状态等），可在系统设置中开关。
+- **推理 token 独立计费**：新增「推理倍率」设置项，按模型为推理（reasoning）token 单独配置倍率，未配置的模型自动回退到输出倍率，计费更精确。
+- **渠道健康诊断**：渠道支持 0-100 健康分、熔断状态与最近探测记录展示，编辑页可视化。
+- **管理界面增强（三主题）**：系统设置新增「智能路由」页（路由策略 + 虚拟模型管理），运营设置新增「推理倍率」，渠道编辑页新增「Key 管理」与健康状态；default / air / berry 三套主题同步。
 
 ### v1.0.8（2026-08-21）
 
@@ -222,6 +230,12 @@ _✨ 开源 OpenAI 接口管理 & 分发系统，支持生图接口 ✨_
 25. 🆕 **阿里百炼（通义万相）生图** — 渠道类型 49，支持 wanx-v1 / stable-diffusion 系列。
 26. 🆕 **火山引擎（Seedream）生图** — 渠道类型 40，支持 Seedream 4.0/4.5/5.0 系列。
 27. 🆕 **Air 主题渠道类型补全** — 新增百度V2、讯飞V2、阿里百炼、OpenAI兼容、Gemini OpenAI 五种类型。
+28. 🆕 **智能路由与熔断** — 按「分组 + 模型」配置渠道选择策略（优先级 / 权重 / 延迟优先 / 随机），支持 `*` 通配；渠道熔断器自动跳过连续失败的上游，冷却后自动恢复。
+29. 🆕 **虚拟模型** — 将多个真实模型聚合为一个入口，按权重自动选择实际模型。
+30. 🆕 **渠道多 Key 负载均衡** — 单渠道可配置多个上游 Key 按权重分发，认证失败自动隔离、探活成功后自动恢复；Key 加密存储。
+31. 🆕 **Prometheus 指标** — `/metrics` 端点输出标准 Prometheus 格式指标（可在系统设置中开关）。
+32. 🆕 **推理 token 独立计费** — 按模型配置推理 token 倍率，未配置自动回退到输出倍率。
+33. 🆕 **渠道健康诊断** — 0-100 健康分、熔断状态与最近探测记录，渠道编辑页可视化。
 
 ## 部署
 ### 基于 Docker 进行部署
@@ -240,7 +254,7 @@ docker run --name one-api -d --restart always -p 3000:3000 -e SQL_DSN="root:1234
 
 如果启动失败，请添加 `--privileged=true`，具体参考 https://github.com/songquanpeng/one-api/issues/482 。
 
-如果上面的镜像无法拉取，可以尝试使用 Docker Compose 部署（见下方）或使用上游原版镜像。
+如果上面的镜像无法拉取，可以尝试使用 Docker Compose 部署（见下方）。
 
 如果你的并发量较大，**务必**设置 `SQL_DSN`，详见下面[环境变量](#环境变量)一节。
 
@@ -577,3 +591,5 @@ https://openai.justsong.cn
 同样适用于基于本项目的二开项目。
 
 依据 MIT 协议，使用者需自行承担使用本项目的风险与责任，本开源项目开发者与此无关。
+
+本镜像1.0.0版本基于songquanpeng/one-api 0.6.7版本开发，优化，修复，后续版本独立更新。

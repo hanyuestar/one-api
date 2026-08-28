@@ -3,7 +3,7 @@ import {useNavigate, useParams} from 'react-router-dom';
 import {API, isMobile, showError, showInfo, showSuccess, verifyJSON} from '../../helpers';
 import {CHANNEL_OPTIONS} from '../../constants';
 import Title from "@douyinfe/semi-ui/lib/es/typography/title";
-import {SideSheet, Space, Spin, Button, Input, Typography, Select, TextArea, Checkbox, Banner} from "@douyinfe/semi-ui";
+import {SideSheet, Space, Spin, Button, Input, Typography, Select, TextArea, Checkbox, Banner, Table, Modal, Divider, Toast} from "@douyinfe/semi-ui";
 
 const MODEL_MAPPING_EXAMPLE = {
     'gpt-3.5-turbo-0301': 'gpt-3.5-turbo',
@@ -207,6 +207,8 @@ const EditChannel = (props) => {
 
                 }
             );
+            loadKeys().then();
+            loadHealth().then();
         } else {
             setInputs(originInputs)
         }
@@ -281,6 +283,114 @@ const EditChannel = (props) => {
         });
         setCustomModel('');
         handleInputChange('models', localModels);
+    };
+
+    // v1.1 F-006 多 Key / F-012 健康诊断
+    const [keys, setKeys] = useState([]);
+    const [health, setHealth] = useState(null);
+    const [keyModal, setKeyModal] = useState(false);
+    const [keyForm, setKeyForm] = useState({ key: '', name: '', weight: 1 });
+    const [editingKeyId, setEditingKeyId] = useState(0);
+    const [deleteKeyId, setDeleteKeyId] = useState(0);
+
+    const loadKeys = async () => {
+        try {
+            const res = await API.get(`/api/channel/${channelId}/keys`);
+            if (res.data.success) {
+                setKeys(res.data.data || []);
+            }
+        } catch (error) {
+            showError(error.message);
+        }
+    };
+
+    const loadHealth = async () => {
+        try {
+            const res = await API.get(`/api/channel/${channelId}/health`);
+            if (res.data.success) {
+                setHealth(res.data.data);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const openAddKey = () => {
+        setEditingKeyId(0);
+        setKeyForm({ key: '', name: '', weight: 1 });
+        setKeyModal(true);
+    };
+
+    const openEditKey = (k) => {
+        setEditingKeyId(k.id);
+        setKeyForm({ key: '', name: k.name, weight: k.weight || 1 });
+        setKeyModal(true);
+    };
+
+    const saveKey = async () => {
+        if (editingKeyId === 0 && keyForm.key === '') {
+            showInfo('Key 不能为空');
+            return;
+        }
+        if (editingKeyId === 0) {
+            const res = await API.post(`/api/channel/${channelId}/keys`, keyForm);
+            if (res.data.success) {
+                Toast.success('操作成功');
+                setKeyModal(false);
+                loadKeys().then();
+            } else {
+                showError(res.data.message);
+            }
+        } else {
+            const res = await API.put(`/api/channel/keys/${editingKeyId}`, {
+                name: keyForm.name,
+                weight: keyForm.weight,
+            });
+            if (res.data.success) {
+                Toast.success('操作成功');
+                setKeyModal(false);
+                loadKeys().then();
+            } else {
+                showError(res.data.message);
+            }
+        }
+    };
+
+    const confirmDeleteKey = async () => {
+        const res = await API.delete(`/api/channel/keys/${deleteKeyId}`);
+        if (res.data.success) {
+            Toast.success('操作成功');
+            setDeleteKeyId(0);
+            loadKeys().then();
+        } else {
+            showError(res.data.message);
+        }
+    };
+
+    const recoverKeys = async () => {
+        const res = await API.post(`/api/channel/${channelId}/keys/recover`);
+        if (res.data.success) {
+            Toast.success('操作成功');
+            loadKeys().then();
+        } else {
+            showError(res.data.message);
+        }
+    };
+
+    const keyStatusText = (status) => {
+        switch (status) {
+            case 2:
+                return '禁用';
+            case 3:
+                return '已隔离';
+            default:
+                return '启用';
+        }
+    };
+
+    const formatTime = (ts) => {
+        if (!ts) return '-';
+        return new Date(ts * 1000).toLocaleString();
     };
 
     return (
@@ -632,6 +742,120 @@ const EditChannel = (props) => {
                         </>
                       )
                     }
+                    {isEdit && (
+                        <React.Fragment>
+                            <Divider margin='24px' />
+                            <Typography.Title heading={4} style={{ marginBottom: 0 }}>
+                                渠道 Key 管理（F-006）
+                            </Typography.Title>
+                            <Typography.Text type='tertiary' size='small'>
+                                为渠道配置多个上游 Key 实现负载均衡；Key 加密存储，仅展示脱敏后缀
+                            </Typography.Text>
+                            {health && (
+                                <Banner
+                                    type='info'
+                                    style={{ margin: '12px 0' }}
+                                    description={
+                                        <>
+                                            渠道健康状态（F-012）：健康分 <b>{health.health_score ?? '-'}</b>　
+                                            熔断状态 <b>{health.circuit?.state ?? '-'}</b>　
+                                            Key 数量 <b>{health.key_count ?? '-'}</b>　
+                                            最近探测 <b>{formatTime(health.last_probe_at)}</b>
+                                        </>
+                                    }
+                                />
+                            )}
+                            <div style={{ margin: '12px 0' }}>
+                                <Space>
+                                    <Button theme='solid' type='primary' size='small' onClick={openAddKey}>
+                                        添加 Key
+                                    </Button>
+                                    <Button
+                                        size='small'
+                                        onClick={recoverKeys}
+                                        disabled={!keys.some((k) => k.status === 3)}
+                                    >
+                                        恢复隔离 Key
+                                    </Button>
+                                </Space>
+                            </div>
+                            <Table
+                                dataSource={keys}
+                                rowKey='id'
+                                pagination={false}
+                                empty={<Typography.Text type='tertiary'>尚未配置多 Key，当前使用渠道主 Key</Typography.Text>}
+                                columns={[
+                                    { title: 'ID', dataIndex: 'id', width: 50 },
+                                    { title: '名称', dataIndex: 'name', render: (t) => t || '-' },
+                                    { title: 'Key', dataIndex: 'key_hint' },
+                                    { title: '权重', dataIndex: 'weight', width: 60, render: (t) => t || 1 },
+                                    { title: '状态', dataIndex: 'status', width: 80, render: (t) => keyStatusText(t) },
+                                    { title: '失败次数', dataIndex: 'fail_count', width: 80 },
+                                    { title: '最近使用', dataIndex: 'last_used_at', width: 130, render: (t) => formatTime(t) },
+                                    {
+                                        title: '操作',
+                                        dataIndex: 'ops',
+                                        width: 120,
+                                        render: (_, k) => (
+                                            <Space>
+                                                <Button size='small' theme='borderless' type='primary' onClick={() => openEditKey(k)}>编辑</Button>
+                                                <Button size='small' theme='borderless' type='danger' onClick={() => setDeleteKeyId(k.id)}>删除</Button>
+                                            </Space>
+                                        ),
+                                    },
+                                ]}
+                            />
+                            <Modal
+                                title={editingKeyId > 0 ? '编辑 Key' : '添加 Key'}
+                                visible={keyModal}
+                                onCancel={() => setKeyModal(false)}
+                                footer={
+                                    <>
+                                        <Button onClick={() => setKeyModal(false)}>取消</Button>
+                                        <Button theme='solid' type='primary' onClick={saveKey}>保存</Button>
+                                    </>
+                                }
+                            >
+                                {editingKeyId === 0 && (
+                                    <Input
+                                        label='Key'
+                                        value={keyForm.key}
+                                        placeholder='请输入上游 API Key'
+                                        onChange={(v) => setKeyForm((f) => ({ ...f, key: v }))}
+                                        style={{ marginBottom: 16 }}
+                                        autoComplete='new-password'
+                                    />
+                                )}
+                                <Input
+                                    label='名称'
+                                    value={keyForm.name}
+                                    placeholder='可选，用于标识'
+                                    onChange={(v) => setKeyForm((f) => ({ ...f, name: v }))}
+                                    style={{ marginBottom: 16 }}
+                                />
+                                <Input
+                                    label='权重'
+                                    type='number'
+                                    min={1}
+                                    value={keyForm.weight}
+                                    onChange={(v) => setKeyForm((f) => ({ ...f, weight: parseInt(v) }))}
+                                />
+                            </Modal>
+                            <Modal
+                                title='确认'
+                                visible={deleteKeyId > 0}
+                                onCancel={() => setDeleteKeyId(0)}
+                                footer={
+                                    <>
+                                        <Button onClick={() => setDeleteKeyId(0)}>取消</Button>
+                                        <Button type='danger' theme='solid' onClick={confirmDeleteKey}>删除</Button>
+                                    </>
+                                }
+                            >
+                                <Typography.Text>确定要删除该项吗？</Typography.Text>
+                            </Modal>
+                        </React.Fragment>
+                    )}
 
                 </Spin>
             </SideSheet>

@@ -160,6 +160,19 @@ func migrateDB() error {
 	if err = DB.AutoMigrate(&Channel{}); err != nil {
 		return err
 	}
+	// v1.1 升级新增表（F-004/F-005/F-006/F-012）
+	if err = DB.AutoMigrate(&RoutingPolicy{}); err != nil {
+		return err
+	}
+	if err = DB.AutoMigrate(&ChannelKey{}); err != nil {
+		return err
+	}
+	if err = DB.AutoMigrate(&VirtualModel{}); err != nil {
+		return err
+	}
+	if err = DB.AutoMigrate(&ChannelProbeLog{}); err != nil {
+		return err
+	}
 	return nil
 }
 

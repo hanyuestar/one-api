@@ -125,7 +125,8 @@
         "models_required": "请至少选择一个模型！",
         "model_mapping_invalid": "模型映射必须是合法的 JSON 格式！",
         "update_success": "渠道更新成功！",
-        "create_success": "渠道创建成功！"
+        "create_success": "渠道创建成功！",
+        "key_required": "Key 不能为空"
       },
       "spark_version": "模型版本",
       "spark_version_placeholder": "请输入星火大模型版本，注意是接口地址中的版本号，例如：v2.1",
@@ -153,6 +154,31 @@
         "spark": "按照如下格式输入：APPID|APISecret|APIKey",
         "fastgpt": "按照如下格式输入：APIKey-AppId，例如：fastgpt-0sp2gtvfdgyi4k30jwlgwf1i-64f335d84283f05518e9e041",
         "tencent": "按照如下格式输入：AppId|SecretId|SecretKey"
+      },
+      "keys": {
+        "title": "渠道 Key 管理（F-006）",
+        "subtitle": "为渠道配置多个上游 Key 实现负载均衡；Key 加密存储，仅展示脱敏后缀",
+        "health_title": "渠道健康状态（F-012）",
+        "health_score": "健康分",
+        "circuit_state": "熔断状态",
+        "key_count": "Key 数量",
+        "last_probe": "最近探测",
+        "name": "名称",
+        "key_hint": "Key",
+        "weight": "权重",
+        "status": "状态",
+        "fail_count": "失败次数",
+        "last_used": "最近使用",
+        "actions": "操作",
+        "empty": "尚未配置多 Key，当前使用渠道主 Key",
+        "status_enabled": "启用",
+        "status_disabled": "禁用",
+        "status_quarantined": "已隔离",
+        "buttons": {
+          "add": "添加 Key",
+          "edit": "编辑",
+          "recover": "恢复隔离 Key"
+        }
       }
     }
   },
@@ -234,7 +260,13 @@
       "display": "等价金额：${{amount}}",
       "display_short": "${{amount}}",
       "unit": "$"
-    }
+    },
+    "success": "操作成功",
+    "cancel": "取消",
+    "save": "保存",
+    "confirm": "确认",
+    "delete": "删除",
+    "delete_confirm_message": "确定要删除该项吗？"
   },
   "redemption": {
     "title": "兑换管理",
@@ -431,7 +463,8 @@
       "personal": "个人设置",
       "operation": "运营设置",
       "system": "系统设置",
-      "other": "其他设置"
+      "other": "其他设置",
+      "routing": "智能路由"
     },
     "personal": {
       "general": {
@@ -590,6 +623,25 @@
             "cancel": "取消"
           }
         }
+      },
+      "circuit": {
+        "title": "智能路由熔断与指标（F-004 / F-010）",
+        "subtitle": "渠道熔断器与 Prometheus 指标端点开关，保存后即时生效",
+        "enable": "启用渠道熔断",
+        "enable_desc": "上游连续失败时临时跳过该渠道，冷却后自动恢复，防止请求雪崩",
+        "metrics": "启用 Prometheus 指标端点",
+        "metrics_desc": "开启后可通过 GET /metrics 抓取 Prometheus 格式的监控指标",
+        "failure_threshold": "熔断失败阈值",
+        "failure_threshold_placeholder": "统计窗口内连续失败达到该值触发熔断",
+        "cooldown_seconds": "冷却时间（秒）",
+        "cooldown_seconds_placeholder": "熔断后等待时长，随后进入半开状态",
+        "half_open_successes": "半开恢复成功数",
+        "half_open_successes_placeholder": "半开状态下连续成功达到该值即恢复关闭",
+        "window_seconds": "失败统计窗口（秒）",
+        "window_seconds_placeholder": "该时间窗口内的失败计数用于判断是否熔断",
+        "buttons": {
+          "save": "保存熔断参数"
+        }
       }
     },
     "operation": {
@@ -631,6 +683,10 @@
         },
         "buttons": {
           "save": "保存倍率设置"
+        },
+        "reasoning": {
+          "title": "推理倍率（ReasoningRatio）",
+          "placeholder": "模型未配置时回退到补全倍率（CompletionRatio）"
         }
       },
       "log": {
@@ -717,6 +773,54 @@
       },
       "copyright": {
         "notice": "移除 One API 的版权标识必须首先获得授权，项目维护需要花费大量精力，如果本项目对你有意义，请主动支持本项目。"
+      }
+    },
+    "routing": {
+      "common": {
+        "success": "操作成功",
+        "cancel": "取消",
+        "save": "保存",
+        "confirm": "确认",
+        "delete": "删除",
+        "delete_confirm_message": "确定要删除该项吗？"
+      },
+      "strategy": {
+        "title": "路由策略（F-004）",
+        "subtitle": "按 (分组, 模型) 配置渠道选择策略，支持 * 通配",
+        "group": "分组",
+        "model": "模型",
+        "strategy": "策略",
+        "config": "配置参数",
+        "actions": "操作",
+        "buttons": {
+          "add": "添加策略",
+          "edit": "编辑策略"
+        },
+        "form": {
+          "group_required": "分组不能为空",
+          "model_required": "模型不能为空",
+          "config_invalid": "配置参数不是合法 JSON",
+          "wildcard_tip": "group/model 支持 * 通配；匹配优先级：精确匹配 > 分组通配 > 模型通配 > 全通配（* / *）"
+        }
+      },
+      "virtual": {
+        "title": "虚拟模型（F-005）",
+        "subtitle": "将多个真实模型聚合为一个入口，运行时按权重选择实际模型",
+        "name": "名称",
+        "description": "描述",
+        "strategy": "策略",
+        "enabled": "启用",
+        "enabled_desc": "关闭后该虚拟模型将不参与模型解析与路由",
+        "actions": "操作",
+        "buttons": {
+          "add": "添加虚拟模型",
+          "edit": "编辑虚拟模型"
+        },
+        "form": {
+          "name_required": "名称不能为空",
+          "config_invalid": "候选配置不是合法 JSON",
+          "config_placeholder": "[{\"model\": \"gpt-4o\", \"channel_id\": 0, \"weight\": 3}]"
+        }
       }
     }
   },

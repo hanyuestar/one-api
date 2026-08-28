@@ -13,3 +13,5 @@ cmd.md
 /one-api
 temp
 .DS_Store
+# 本地开发测试文件，禁止推送
+docs/upgrade-prototype/

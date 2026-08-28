@@ -163,3 +163,13 @@ var UserContentRequestTimeout = env.Int("USER_CONTENT_REQUEST_TIMEOUT", 30)
 
 var EnforceIncludeUsage = env.Bool("ENFORCE_INCLUDE_USAGE", false)
 var TestPrompt = env.String("TEST_PROMPT", "Output only your specific model name with no additional text.")
+
+// F-004 智能路由：渠道熔断器参数（内存级，秒级恢复；不写库不发通知）
+var CircuitEnable = env.Bool("CIRCUIT_ENABLE", true)
+var CircuitFailureThreshold = env.Int("CIRCUIT_FAILURE_THRESHOLD", 5)
+var CircuitCooldownSeconds = env.Int("CIRCUIT_COOLDOWN_SECONDS", 30)
+var CircuitHalfOpenSuccesses = env.Int("CIRCUIT_HALF_OPEN_SUCCESSES", 1)
+var CircuitWindowSeconds = env.Int("CIRCUIT_WINDOW_SECONDS", 60)
+
+// F-010 可观测性：Prometheus 指标开关
+var MetricsEnabled = env.Bool("METRICS_ENABLED", true)

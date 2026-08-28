@@ -162,6 +162,17 @@ func ListModels(c *gin.Context) {
 			})
 		}
 	}
+	// F-005 虚拟模型：对所有用户可见（具体可用性由路由/令牌模型权限控制）
+	for _, vm := range model.GetEnabledVirtualModels() {
+		availableOpenAIModels = append(availableOpenAIModels, OpenAIModels{
+			Id:      vm.Name,
+			Object:  "model",
+			Created: int(vm.CreatedAt),
+			OwnedBy: "virtual",
+			Root:    vm.Name,
+			Parent:  nil,
+		})
+	}
 	c.JSON(200, gin.H{
 		"object": "list",
 		"data":   availableOpenAIModels,

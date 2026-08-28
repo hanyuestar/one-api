@@ -30,7 +30,13 @@ const SystemSetting = () => {
     TurnstileSecretKey: '',
     RegisterEnabled: '',
     EmailDomainRestrictionEnabled: '',
-    EmailDomainWhitelist: ''
+    EmailDomainWhitelist: '',
+    CircuitEnable: '',
+    CircuitFailureThreshold: '',
+    CircuitCooldownSeconds: '',
+    CircuitHalfOpenSuccesses: '',
+    CircuitWindowSeconds: '',
+    MetricsEnabled: ''
   });
   const [originInputs, setOriginInputs] = useState({});
   let [loading, setLoading] = useState(false);
@@ -75,6 +81,8 @@ const SystemSetting = () => {
       case 'TurnstileCheckEnabled':
       case 'EmailDomainRestrictionEnabled':
       case 'RegisterEnabled':
+      case 'CircuitEnable':
+      case 'MetricsEnabled':
         value = inputs[key] === 'true' ? 'false' : 'true';
         break;
       default:
@@ -222,6 +230,20 @@ const SystemSetting = () => {
       inputs.TurnstileSecretKey !== ''
     ) {
       await updateOption('TurnstileSecretKey', inputs.TurnstileSecretKey);
+    }
+  };
+
+  const submitCircuit = async () => {
+    const fields = [
+      'CircuitFailureThreshold',
+      'CircuitCooldownSeconds',
+      'CircuitHalfOpenSuccesses',
+      'CircuitWindowSeconds',
+    ];
+    for (const f of fields) {
+      if (originInputs[f] !== inputs[f] && inputs[f] !== '') {
+        await updateOption(f, inputs[f]);
+      }
     }
   };
 
@@ -528,6 +550,74 @@ const SystemSetting = () => {
           </Form.Group>
           <Form.Button onClick={submitTurnstile}>
             保存 Turnstile 设置
+          </Form.Button>
+          <Divider />
+          <Typography.Title heading={4} style={{ marginBottom: 0 }}>智能路由熔断与指标（F-004 / F-010）</Typography.Title>
+          <Typography.Text type="tertiary" size="small">渠道熔断器与 Prometheus 指标端点开关，保存后即时生效</Typography.Text>
+          <Form.Group inline>
+            <Form.Field>
+              <Form.Checkbox
+                checked={inputs.CircuitEnable === 'true'}
+                label='启用渠道熔断'
+                name='CircuitEnable'
+                onChange={handleInputChange}
+              />
+              <Typography.Text type='tertiary' size='small' style={{ display: 'block', marginTop: 4 }}>
+                上游连续失败时临时跳过该渠道，冷却后自动恢复，防止请求雪崩
+              </Typography.Text>
+            </Form.Field>
+            <Form.Field>
+              <Form.Checkbox
+                checked={inputs.MetricsEnabled === 'true'}
+                label='启用 Prometheus 指标端点'
+                name='MetricsEnabled'
+                onChange={handleInputChange}
+              />
+              <Typography.Text type='tertiary' size='small' style={{ display: 'block', marginTop: 4 }}>
+                开启后可通过 GET /metrics 抓取 Prometheus 格式的监控指标
+              </Typography.Text>
+            </Form.Field>
+          </Form.Group>
+          <Form.Group widths={4}>
+            <Form.Input
+              label='熔断失败阈值'
+              name='CircuitFailureThreshold'
+              onChange={handleInputChange}
+              type='number'
+              min='1'
+              value={inputs.CircuitFailureThreshold}
+              placeholder='统计窗口内连续失败达到该值触发熔断'
+            />
+            <Form.Input
+              label='冷却时间（秒）'
+              name='CircuitCooldownSeconds'
+              onChange={handleInputChange}
+              type='number'
+              min='0'
+              value={inputs.CircuitCooldownSeconds}
+              placeholder='熔断后等待时长，随后进入半开状态'
+            />
+            <Form.Input
+              label='半开恢复成功数'
+              name='CircuitHalfOpenSuccesses'
+              onChange={handleInputChange}
+              type='number'
+              min='1'
+              value={inputs.CircuitHalfOpenSuccesses}
+              placeholder='半开状态下连续成功达到该值即恢复关闭'
+            />
+            <Form.Input
+              label='失败统计窗口（秒）'
+              name='CircuitWindowSeconds'
+              onChange={handleInputChange}
+              type='number'
+              min='1'
+              value={inputs.CircuitWindowSeconds}
+              placeholder='该时间窗口内的失败计数用于判断是否熔断'
+            />
+          </Form.Group>
+          <Form.Button onClick={submitCircuit}>
+            保存熔断参数
           </Form.Button>
         </Form>
     </div>

@@ -50,6 +50,39 @@ func GetRandomSatisfiedChannel(group string, model string, ignoreFirstPriority b
 	return &channel, err
 }
 
+// GetCandidateChannels 返回指定 group+model 下所有启用渠道（按优先级降序），供智能路由选择器使用（F-004）。
+func GetCandidateChannels(group string, model string) ([]*Channel, error) {
+	groupCol := "`group`"
+	trueVal := "1"
+	if common.UsingPostgreSQL {
+		groupCol = `"group"`
+		trueVal = "true"
+	}
+	var abilities []Ability
+	err := DB.Where(groupCol+" = ? and model = ? and enabled = "+trueVal, group, model).
+		Order("priority desc").Find(&abilities).Error
+	if err != nil {
+		return nil, err
+	}
+	if len(abilities) == 0 {
+		return nil, gorm.ErrRecordNotFound
+	}
+	ids := make([]int, 0, len(abilities))
+	for _, a := range abilities {
+		ids = append(ids, a.ChannelId)
+	}
+	var channels []*Channel
+	err = DB.Where("id in ? and status = ?", ids, ChannelStatusEnabled).
+		Order("priority desc").Find(&channels).Error
+	if err != nil {
+		return nil, err
+	}
+	if len(channels) == 0 {
+		return nil, gorm.ErrRecordNotFound
+	}
+	return channels, nil
+}
+
 func (channel *Channel) AddAbilities() error {
 	models_ := strings.Split(channel.Models, ",")
 	models_ = utils.DeDuplication(models_)

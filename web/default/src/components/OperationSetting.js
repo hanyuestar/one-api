@@ -23,6 +23,7 @@ const OperationSetting = () => {
     GroupRatio: '',
     CacheHitRatio: '',
     CacheWriteRatio: '',
+    ReasoningRatio: '',
     TopUpLink: '',
     QuotaPerUnit: 0,
     AutomaticDisableChannelEnabled: '',
@@ -51,7 +52,8 @@ const OperationSetting = () => {
           item.key === 'GroupRatio' ||
           item.key === 'CompletionRatio' ||
           item.key === 'CacheHitRatio' ||
-          item.key === 'CacheWriteRatio'
+          item.key === 'CacheWriteRatio' ||
+          item.key === 'ReasoningRatio'
         ) {
           item.value = JSON.stringify(JSON.parse(item.value), null, 2);
         }
@@ -153,6 +155,13 @@ const OperationSetting = () => {
             return;
           }
           await updateOption('CacheWriteRatio', inputs.CacheWriteRatio);
+        }
+        if (originInputs['ReasoningRatio'] !== inputs.ReasoningRatio) {
+          if (!verifyJSON(inputs.ReasoningRatio)) {
+            showError('推理倍率不是合法的 JSON 字符串');
+            return;
+          }
+          await updateOption('ReasoningRatio', inputs.ReasoningRatio);
         }
         break;
       case 'quota':
@@ -309,6 +318,17 @@ const OperationSetting = () => {
               autoComplete='new-password'
               value={inputs.CacheWriteRatio}
               placeholder={t('setting.operation.ratio.cache_write.placeholder')}
+            />
+          </Form.Group>
+          <Form.Group widths='equal'>
+            <Form.TextArea
+              label={t('setting.operation.ratio.reasoning.title')}
+              name='ReasoningRatio'
+              onChange={handleInputChange}
+              style={{ minHeight: 250, fontFamily: 'JetBrains Mono, Consolas' }}
+              autoComplete='new-password'
+              value={inputs.ReasoningRatio}
+              placeholder={t('setting.operation.ratio.reasoning.placeholder')}
             />
           </Form.Group>
           <Form.Button

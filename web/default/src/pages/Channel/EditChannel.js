@@ -1,6 +1,17 @@
 import React, {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Button, Card, Form, Input, Message} from 'semantic-ui-react';
+import {
+  Button,
+  Card,
+  Divider,
+  Form,
+  Header,
+  Icon,
+  Input,
+  Message,
+  Modal,
+  Table,
+} from 'semantic-ui-react';
 import {useNavigate, useParams} from 'react-router-dom';
 import {API, copy, getChannelModels, showError, showInfo, showSuccess, verifyJSON,} from '../../helpers';
 import {CHANNEL_OPTIONS} from '../../constants';
@@ -65,6 +76,115 @@ const EditChannel = () => {
     vertex_ai_project_id: '',
     vertex_ai_adc: '',
   });
+  // v1.1 F-006 多 Key / F-012 健康诊断
+  const [keys, setKeys] = useState([]);
+  const [health, setHealth] = useState(null);
+  const [keyModal, setKeyModal] = useState(false);
+  const [keyForm, setKeyForm] = useState({ key: '', name: '', weight: 1 });
+  const [editingKeyId, setEditingKeyId] = useState(0);
+  const [deleteKeyId, setDeleteKeyId] = useState(0);
+
+  const loadKeys = async () => {
+    try {
+      const res = await API.get(`/api/channel/${channelId}/keys`);
+      if (res.data.success) {
+        setKeys(res.data.data || []);
+      }
+    } catch (error) {
+      showError(error.message);
+    }
+  };
+
+  const loadHealth = async () => {
+    try {
+      const res = await API.get(`/api/channel/${channelId}/health`);
+      if (res.data.success) {
+        setHealth(res.data.data);
+      }
+    } catch (error) {
+      // 健康接口为增强能力，失败不阻塞编辑页
+      console.error(error);
+    }
+  };
+
+  const openAddKey = () => {
+    setEditingKeyId(0);
+    setKeyForm({ key: '', name: '', weight: 1 });
+    setKeyModal(true);
+  };
+
+  const openEditKey = (k) => {
+    setEditingKeyId(k.id);
+    setKeyForm({ key: '', name: k.name, weight: k.weight || 1 });
+    setKeyModal(true);
+  };
+
+  const saveKey = async () => {
+    if (editingKeyId === 0 && keyForm.key === '') {
+      showInfo(t('channel.edit.messages.key_required'));
+      return;
+    }
+    const payload = { ...keyForm };
+    if (editingKeyId === 0) {
+      const res = await API.post(`/api/channel/${channelId}/keys`, payload);
+      if (res.data.success) {
+        showSuccess(t('common.success'));
+        setKeyModal(false);
+        loadKeys().then();
+      } else {
+        showError(res.data.message);
+      }
+    } else {
+      const res = await API.put(`/api/channel/keys/${editingKeyId}`, {
+        name: payload.name,
+        weight: payload.weight,
+      });
+      if (res.data.success) {
+        showSuccess(t('common.success'));
+        setKeyModal(false);
+        loadKeys().then();
+      } else {
+        showError(res.data.message);
+      }
+    }
+  };
+
+  const confirmDeleteKey = async () => {
+    const res = await API.delete(`/api/channel/keys/${deleteKeyId}`);
+    if (res.data.success) {
+      showSuccess(t('common.success'));
+      setDeleteKeyId(0);
+      loadKeys().then();
+    } else {
+      showError(res.data.message);
+    }
+  };
+
+  const recoverKeys = async () => {
+    const res = await API.post(`/api/channel/${channelId}/keys/recover`);
+    if (res.data.success) {
+      showSuccess(t('common.success'));
+      loadKeys().then();
+    } else {
+      showError(res.data.message);
+    }
+  };
+
+  const keyStatusText = (status) => {
+    switch (status) {
+      case 2:
+        return t('channel.edit.keys.status_disabled');
+      case 3:
+        return t('channel.edit.keys.status_quarantined');
+      default:
+        return t('channel.edit.keys.status_enabled');
+    }
+  };
+
+  const formatTime = (ts) => {
+    if (!ts) return '-';
+    return new Date(ts * 1000).toLocaleString();
+  };
   const handleInputChange = (e, { name, value }) => {
     setInputs((inputs) => ({ ...inputs, [name]: value }));
     if (name === 'type') {
@@ -159,6 +279,8 @@ const EditChannel = () => {
   useEffect(() => {
     if (isEdit) {
       loadChannel().then();
+      loadKeys().then();
+      loadHealth().then();
     } else {
       let localModels = getChannelModels(inputs.type);
       setBasicModels(localModels);
@@ -689,6 +811,185 @@ const EditChannel = () => {
               {t('channel.edit.buttons.submit')}
             </Button>
           </Form>
+          {isEdit && (
+            <React.Fragment>
+              <Divider />
+              <Header as='h3'>
+                {t('channel.edit.keys.title')}
+                <Header.Subheader>
+                  {t('channel.edit.keys.subtitle')}
+                </Header.Subheader>
+              </Header>
+              {health && (
+                <Message size='small'>
+                  <Message.Header>
+                    {t('channel.edit.keys.health_title')}
+                  </Message.Header>
+                  <p>
+                    {t('channel.edit.keys.health_score')}:{' '}
+                    <b>{health.health_score ?? '-'}</b>
+                    {'　'}
+                    {t('channel.edit.keys.circuit_state')}:{' '}
+                    <b>{health.circuit?.state ?? '-'}</b>
+                    {'　'}
+                    {t('channel.edit.keys.key_count')}:{' '}
+                    <b>{health.key_count ?? '-'}</b>
+                    {'　'}
+                    {t('channel.edit.keys.last_probe')}:{' '}
+                    <b>{formatTime(health.last_probe_at)}</b>
+                  </p>
+                </Message>
+              )}
+              <div style={{ marginBottom: '10px' }}>
+                <Button primary size='small' onClick={openAddKey}>
+                  <Icon name='plus' />
+                  {t('channel.edit.keys.buttons.add')}
+                </Button>
+                <Button
+                  size='small'
+                  onClick={recoverKeys}
+                  disabled={
+                    !keys.some((k) => k.status === 3)
+                  }
+                >
+                  <Icon name='refresh' />
+                  {t('channel.edit.keys.buttons.recover')}
+                </Button>
+              </div>
+              <Table basic='very' compact>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.HeaderCell>ID</Table.HeaderCell>
+                    <Table.HeaderCell>
+                      {t('channel.edit.keys.name')}
+                    </Table.HeaderCell>
+                    <Table.HeaderCell>
+                      {t('channel.edit.keys.key_hint')}
+                    </Table.HeaderCell>
+                    <Table.HeaderCell>
+                      {t('channel.edit.keys.weight')}
+                    </Table.HeaderCell>
+                    <Table.HeaderCell>
+                      {t('channel.edit.keys.status')}
+                    </Table.HeaderCell>
+                    <Table.HeaderCell>
+                      {t('channel.edit.keys.fail_count')}
+                    </Table.HeaderCell>
+                    <Table.HeaderCell>
+                      {t('channel.edit.keys.last_used')}
+                    </Table.HeaderCell>
+                    <Table.HeaderCell>
+                      {t('channel.edit.keys.actions')}
+                    </Table.HeaderCell>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                  {keys.length === 0 && (
+                    <Table.Row>
+                      <Table.Cell colSpan={8} textAlign='center'>
+                        {t('channel.edit.keys.empty')}
+                      </Table.Cell>
+                    </Table.Row>
+                  )}
+                  {keys.map((k) => (
+                    <Table.Row key={k.id}>
+                      <Table.Cell>{k.id}</Table.Cell>
+                      <Table.Cell>{k.name || '-'}</Table.Cell>
+                      <Table.Cell>{k.key_hint}</Table.Cell>
+                      <Table.Cell>{k.weight || 1}</Table.Cell>
+                      <Table.Cell>{keyStatusText(k.status)}</Table.Cell>
+                      <Table.Cell>{k.fail_count}</Table.Cell>
+                      <Table.Cell>{formatTime(k.last_used_at)}</Table.Cell>
+                      <Table.Cell>
+                        <Button
+                          size='mini'
+                          icon='edit'
+                          onClick={() => openEditKey(k)}
+                        />
+                        <Button
+                          size='mini'
+                          icon='trash'
+                          color='red'
+                          onClick={() => setDeleteKeyId(k.id)}
+                        />
+                      </Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table>
+              <Modal
+                open={keyModal}
+                onClose={() => setKeyModal(false)}
+                size='tiny'
+                closeOnDimmerClick={false}
+              >
+                <Modal.Header>
+                  {editingKeyId > 0
+                    ? t('channel.edit.keys.buttons.edit')
+                    : t('channel.edit.keys.buttons.add')}
+                </Modal.Header>
+                <Modal.Content>
+                  <Form>
+                    {editingKeyId === 0 && (
+                      <Form.Input
+                        label={t('channel.edit.key')}
+                        name='key'
+                        value={keyForm.key}
+                        onChange={(e, { value }) =>
+                          setKeyForm((f) => ({ ...f, key: value }))
+                        }
+                        autoComplete='new-password'
+                      />
+                    )}
+                    <Form.Input
+                      label={t('channel.edit.keys.name')}
+                      name='name'
+                      value={keyForm.name}
+                      onChange={(e, { value }) =>
+                        setKeyForm((f) => ({ ...f, name: value }))
+                      }
+                    />
+                    <Form.Input
+                      label={t('channel.edit.keys.weight')}
+                      name='weight'
+                      type='number'
+                      min='1'
+                      value={keyForm.weight}
+                      onChange={(e, { value }) =>
+                        setKeyForm((f) => ({ ...f, weight: parseInt(value) }))
+                      }
+                    />
+                  </Form>
+                </Modal.Content>
+                <Modal.Actions>
+                  <Button onClick={() => setKeyModal(false)}>
+                    {t('common.cancel')}
+                  </Button>
+                  <Button primary onClick={saveKey}>
+                    {t('common.save')}
+                  </Button>
+                </Modal.Actions>
+              </Modal>
+              <Modal
+                open={deleteKeyId > 0}
+                onClose={() => setDeleteKeyId(0)}
+                size='tiny'
+              >
+                <Modal.Header>{t('common.confirm')}</Modal.Header>
+                <Modal.Content>
+                  <p>{t('common.delete_confirm_message')}</p>
+                </Modal.Content>
+                <Modal.Actions>
+                  <Button onClick={() => setDeleteKeyId(0)}>
+                    {t('common.cancel')}
+                  </Button>
+                  <Button color='red' onClick={confirmDeleteKey}>
+                    {t('common.delete')}
+                  </Button>
+                </Modal.Actions>
+              </Modal>
+            </React.Fragment>
+          )}
         </Card.Content>
       </Card>
     </div>

@@ -16,6 +16,7 @@ const OperationSetting = () => {
     GroupRatio: '',
     CacheHitRatio: '',
     CacheWriteRatio: '',
+    ReasoningRatio: '',
     TopUpLink: '',
     QuotaPerUnit: 0,
     AutomaticDisableChannelEnabled: '',
@@ -37,7 +38,7 @@ const OperationSetting = () => {
     if (success) {
       let newInputs = {};
       data.forEach((item) => {
-        if (item.key === 'ModelRatio' || item.key === 'GroupRatio' || item.key === 'CompletionRatio' || item.key === 'CacheHitRatio' || item.key === 'CacheWriteRatio') {
+        if (item.key === 'ModelRatio' || item.key === 'GroupRatio' || item.key === 'CompletionRatio' || item.key === 'CacheHitRatio' || item.key === 'CacheWriteRatio' || item.key === 'ReasoningRatio') {
           item.value = JSON.stringify(JSON.parse(item.value), null, 2);
         }
         if (item.value === '{}') {
@@ -127,6 +128,13 @@ const OperationSetting = () => {
             return;
           }
           await updateOption('CacheWriteRatio', inputs.CacheWriteRatio);
+        }
+        if (originInputs['ReasoningRatio'] !== inputs.ReasoningRatio) {
+          if (!verifyJSON(inputs.ReasoningRatio)) {
+            showError('推理倍率不是合法的 JSON 字符串');
+            return;
+          }
+          await updateOption('ReasoningRatio', inputs.ReasoningRatio);
         }
         break;
       case 'quota':
@@ -390,6 +398,17 @@ const OperationSetting = () => {
               autoComplete='new-password'
               value={inputs.CacheWriteRatio}
               placeholder='为一个 JSON 文本，键为模型名称，值为缓存写入（写缓存）输入 token 的加价系数（如 Anthropic 为 1.25 表示 1.25 倍），未配置的模型默认按正常输入计费'
+            />
+          </Form.Group>
+          <Form.Group widths='equal'>
+            <Form.TextArea
+              label='推理倍率（ReasoningRatio）'
+              name='ReasoningRatio'
+              onChange={handleInputChange}
+              style={{ minHeight: 250, fontFamily: 'JetBrains Mono, Consolas' }}
+              autoComplete='new-password'
+              value={inputs.ReasoningRatio}
+              placeholder='为一个 JSON 文本，键为模型名称，值为推理（reasoning）输出 token 的倍率，未配置的模型回退到补全倍率（CompletionRatio）'
             />
           </Form.Group>
           <Form.Button onClick={() => {

@@ -65,7 +65,7 @@ func parseTestResponse(resp string) (*openai.TextResponse, string, error) {
 	return &response, stringContent, nil
 }
 
-func testChannel(ctx context.Context, channel *model.Channel, request *relaymodel.GeneralOpenAIRequest) (responseMessage string, err error, openaiErr *relaymodel.Error) {
+func testChannel(ctx context.Context, channel *model.Channel, request *relaymodel.GeneralOpenAIRequest) (responseMessage string, err error, openaiErr *relaymodel.ErrorWithStatusCode) {
 	startTime := time.Now()
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -141,11 +141,11 @@ func testChannel(ctx context.Context, channel *model.Channel, request *relaymode
 		if errorMessage != "" {
 			errorMessage = ", error message: " + errorMessage
 		}
-		return "", fmt.Errorf("http status code: %d%s", resp.StatusCode, errorMessage), &err.Error
+		return "", fmt.Errorf("http status code: %d%s", resp.StatusCode, errorMessage), err
 	}
 	usage, respErr := adaptor.DoResponse(c, resp, meta)
 	if respErr != nil {
-		return "", fmt.Errorf("%s", respErr.Error.Message), &respErr.Error
+		return "", fmt.Errorf("%s", respErr.Error.Message), respErr
 	}
 	if usage == nil {
 		return "", errors.New("usage is nil"), nil
@@ -187,13 +187,40 @@ func TestChannel(c *gin.Context) {
 	modelName := c.Query("model")
 	testRequest := buildTestRequest(modelName)
 	tik := time.Now()
-	responseMessage, err, _ := testChannel(ctx, channel, testRequest)
+	responseMessage, err, openaiErr := testChannel(ctx, channel, testRequest)
 	tok := time.Now()
 	milliseconds := tok.Sub(tik).Milliseconds()
 	if err != nil {
 		milliseconds = 0
 	}
 	go channel.UpdateResponseTime(milliseconds)
+	// F-012 记录探测日志并更新健康分
+	go func() {
+		errClass := ""
+		errMsg := ""
+		if err != nil {
+			if openaiErr != nil {
+				errClass = classifyError(openaiErr, openaiErr.StatusCode)
+			} else {
+				errClass = "network"
+			}
+			errMsg = err.Error()
+		}
+		_ = model.RecordProbe(&model.ChannelProbeLog{
+			ChannelId:    channel.Id,
+			Model:        modelName,
+			Success:      err == nil,
+			LatencyMs:    milliseconds,
+			ErrorClass:   errClass,
+			ErrorMessage: errMsg,
+		})
+		monitor.UpdateChannelHealthScore(channel.Id)
+		// 测试成功则恢复被隔离的 Key 与熔断器
+		if err == nil {
+			_ = model.RecoverChannelKeys(channel.Id)
+			monitor.ResetCircuit(channel.Id)
+		}
+	}()
 	consumedTime := float64(milliseconds) / 1000.0
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
@@ -241,6 +268,11 @@ func testChannels(ctx context.Context, notify bool, scope string) error {
 			tik := time.Now()
 			testRequest := buildTestRequest("")
 			_, err, openaiErr := testChannel(ctx, channel, testRequest)
+			// 兼容 monitor 的 *relaymodel.Error 入参（nil 安全转换）
+			var openAIError *relaymodel.Error
+			if openaiErr != nil {
+				openAIError = &openaiErr.Error
+			}
 			tok := time.Now()
 			milliseconds := tok.Sub(tik).Milliseconds()
 			if isChannelEnabled && milliseconds > disableThreshold {
@@ -251,10 +283,10 @@ func testChannels(ctx context.Context, notify bool, scope string) error {
 					_ = message.Notify(message.ByAll, fmt.Sprintf("渠道 %s （%d）测试超时", channel.Name, channel.Id), "", err.Error())
 				}
 			}
-			if isChannelEnabled && monitor.ShouldDisableChannel(openaiErr, -1) {
+			if isChannelEnabled && monitor.ShouldDisableChannel(openAIError, -1) {
 				monitor.DisableChannel(channel.Id, channel.Name, err.Error())
 			}
-			if !isChannelEnabled && monitor.ShouldEnableChannel(err, openaiErr) {
+			if !isChannelEnabled && monitor.ShouldEnableChannel(err, openAIError) {
 				monitor.EnableChannel(channel.Id, channel.Name)
 			}
 			channel.UpdateResponseTime(milliseconds)

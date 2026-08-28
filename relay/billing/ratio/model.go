@@ -802,6 +802,13 @@ var (
 	"claude-opus-4.5":            1.25,
 	"claude-haiku-4.5":           1.25,
 	}
+
+	reasoningRatioLock sync.RWMutex
+	// ReasoningRatio 推理 token（reasoning_tokens）的计费倍率，单位与 CompletionRatio 一致（相对于模型输入价格）。
+	// 未配置时 GetReasoningRatio 回退为该模型的 CompletionRatio，保持历史计费口径不变
+	// （reasoning_tokens 本就包含在 completion_tokens 中，过去按输出倍率计费）。
+	// 管理员可对推理模型单独配置（例如某些厂商推理 token 按 4x 输入、普通输出按 3x 输入）。
+	ReasoningRatio = map[string]float64{}
 )
 
 var (
@@ -809,6 +816,7 @@ var (
 	DefaultCompletionRatio map[string]float64
 	DefaultCacheHitRatio   map[string]float64
 	DefaultCacheWriteRatio map[string]float64
+	DefaultReasoningRatio  map[string]float64
 )
 
 func init() {
@@ -827,6 +835,10 @@ func init() {
 	DefaultCacheWriteRatio = make(map[string]float64)
 	for k, v := range CacheWriteRatio {
 		DefaultCacheWriteRatio[k] = v
+	}
+	DefaultReasoningRatio = make(map[string]float64)
+	for k, v := range ReasoningRatio {
+		DefaultReasoningRatio[k] = v
 	}
 }
 
@@ -1100,4 +1112,45 @@ func GetCacheWriteRatio(name string, channelType int) float64 {
 		return ratio
 	}
 	return 1.0
+}
+
+func ReasoningRatio2JSONString() string {
+	reasoningRatioLock.RLock()
+	defer reasoningRatioLock.RUnlock()
+	jsonBytes, err := json.Marshal(ReasoningRatio)
+	if err != nil {
+		logger.SysError("error marshalling reasoning ratio: " + err.Error())
+	}
+	return string(jsonBytes)
+}
+
+func UpdateReasoningRatioByJSONString(jsonStr string) error {
+	reasoningRatioLock.Lock()
+	defer reasoningRatioLock.Unlock()
+	ReasoningRatio = make(map[string]float64)
+	return json.Unmarshal([]byte(jsonStr), &ReasoningRatio)
+}
+
+// GetReasoningRatio 返回推理 token 的计费倍率；未配置时回退为该模型的 CompletionRatio，
+// 保证历史口径不变（reasoning_tokens 原本就包含在 completion_tokens 中按输出倍率计费）。
+func GetReasoningRatio(name string, channelType int) float64 {
+	reasoningRatioLock.RLock()
+	defer reasoningRatioLock.RUnlock()
+	if strings.HasPrefix(name, "qwen-") && strings.HasSuffix(name, "-internet") {
+		name = strings.TrimSuffix(name, "-internet")
+	}
+	model := fmt.Sprintf("%s(%d)", name, channelType)
+	if ratio, ok := ReasoningRatio[model]; ok {
+		return ratio
+	}
+	if ratio, ok := DefaultReasoningRatio[model]; ok {
+		return ratio
+	}
+	if ratio, ok := ReasoningRatio[name]; ok {
+		return ratio
+	}
+	if ratio, ok := DefaultReasoningRatio[name]; ok {
+		return ratio
+	}
+	return GetCompletionRatio(name, channelType)
 }

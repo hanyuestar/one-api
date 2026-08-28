@@ -13,8 +13,6 @@
 
 _✨ Open-source OpenAI API management & distribution system with image generation support ✨_
 
-> This repository is maintained based on [songquanpeng/one-api](https://github.com/songquanpeng/one-api). It adds Alibaba Bailian & Volcano Engine image generation support and is pushed to both ghcr.io and Docker Hub.
-
 </div>
 
 <p align="center">
@@ -53,13 +51,23 @@ _✨ Open-source OpenAI API management & distribution system with image generati
 > Docker images of this repository:
 > - GitHub Container Registry: `ghcr.io/hanyuestar/one-api:latest`
 > - Docker Hub: `kyson666/one-api:latest`
->
-> Upstream original image: [justsong/one-api](https://hub.docker.com/repository/docker/justsong/one-api) or [ghcr.io/songquanpeng/one-api](https://github.com/songquanpeng/one-api/pkgs/container/one-api)
 
 > [!WARNING]
 > After the first login with the root user, be sure to change the default password `123456`!
 
 ## Changelog
+
+### v1.1.0 (2026-08-28)
+
+**Enhancements**
+
+- **Smart routing & circuit breaker**: configure channel selection strategy per "group + model" (priority / weighted / latency-first / random), with `*` wildcard matching for both group and model; a channel-level circuit breaker temporarily skips a channel after consecutive upstream failures and auto-recovers after cooldown to prevent cascading.
+- **Virtual models**: aggregate multiple real models into one entry; requests pick the actual model by weight, convenient for model version rollouts and graceful degradation.
+- **Per-channel multi-key load balancing**: configure multiple upstream API keys per channel with weighted random selection; problem keys are automatically quarantined on auth failure and recovered after a successful channel test; keys are encrypted, UI shows masked suffix only.
+- **Prometheus metrics**: new `/metrics` endpoint exposing standard Prometheus-format metrics (requests / latency / circuit state, etc.), toggleable in system settings.
+- **Independent reasoning-token billing**: new "Reasoning Ratio" setting to bill reasoning tokens per model; models without config fall back to the completion ratio.
+- **Channel health diagnostics**: 0-100 health score, circuit state and recent probe records displayed in the channel edit page.
+- **Admin UI enhancements (3 themes)**: new "Smart Routing" tab in system settings (routing policies + virtual models), "Reasoning Ratio" in operation settings, "Key Management" and health status in the channel edit page; synchronized across default / air / berry themes.
 
 ### v1.0.8 (2026-08-21)
 
@@ -222,6 +230,12 @@ _✨ Open-source OpenAI API management & distribution system with image generati
 25. 🆕 **Alibaba Bailian (Tongyi Wanxiang) image generation** — channel type 49, supports wanx-v1 / stable-diffusion series.
 26. 🆕 **Volcano Engine (Seedream) image generation** — channel type 40, supports Seedream 4.0/4.5/5.0 series.
 27. 🆕 **Air theme channel type completion** — added Baidu V2, iFlytek V2, Alibaba Bailian, OpenAI-compatible, Gemini OpenAI.
+28. 🆕 **Smart routing & circuit breaker** — per (group, model) channel selection strategy (priority / weighted / latency / random) with `*` wildcards; breaker skips consecutively failing upstream and auto-recovers.
+29. 🆕 **Virtual models** — aggregate multiple real models into one entry, pick actual model by weight.
+30. 🆕 **Per-channel multi-key load balancing** — multiple upstream keys per channel with weighted distribution; auth-failed keys quarantined and auto-recovered after probe success; keys encrypted.
+31. 🆕 **Prometheus metrics** — `/metrics` endpoint exposing standard Prometheus-format metrics (toggleable in system settings).
+32. 🆕 **Independent reasoning-token billing** — per-model reasoning ratio, falling back to completion ratio.
+33. 🆕 **Channel health diagnostics** — 0-100 health score, circuit state and recent probes visualized in channel edit page.
 
 ## Deployment
 ### Docker Deployment
@@ -240,7 +254,7 @@ Data and logs are saved to `/home/ubuntu/data/one-api` on the host. Please make 
 
 If the startup fails, add `--privileged=true`; see https://github.com/songquanpeng/one-api/issues/482 .
 
-If the images above cannot be pulled, try Docker Compose deployment (below) or the upstream original image.
+If the images above cannot be pulled, try Docker Compose deployment (below).
 
 If your concurrency is high, **be sure** to set `SQL_DSN`; see the [environment variables](#environment-variables) section below.
 
@@ -577,3 +591,5 @@ This project is open-sourced under the MIT license. **On that basis**, attributi
 The same applies to projects derived from this one.
 
 Under the MIT license, users bear the risks and responsibilities of using this project; the developers of this open-source project are not liable.
+
+This image's v1.0.0 was developed based on songquanpeng/one-api v0.6.7, with optimizations and fixes applied; subsequent versions are updated independently.

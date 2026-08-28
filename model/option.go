@@ -72,6 +72,14 @@ func InitOptionMap() {
 	config.OptionMap["CompletionRatio"] = billingratio.CompletionRatio2JSONString()
 	config.OptionMap["CacheHitRatio"] = billingratio.CacheHitRatio2JSONString()
 	config.OptionMap["CacheWriteRatio"] = billingratio.CacheWriteRatio2JSONString()
+	config.OptionMap["ReasoningRatio"] = billingratio.ReasoningRatio2JSONString()
+	// v1.1：智能路由熔断器与 Prometheus 指标开关（F-004/F-010）
+	config.OptionMap["CircuitEnable"] = strconv.FormatBool(config.CircuitEnable)
+	config.OptionMap["CircuitFailureThreshold"] = strconv.Itoa(config.CircuitFailureThreshold)
+	config.OptionMap["CircuitCooldownSeconds"] = strconv.Itoa(config.CircuitCooldownSeconds)
+	config.OptionMap["CircuitHalfOpenSuccesses"] = strconv.Itoa(config.CircuitHalfOpenSuccesses)
+	config.OptionMap["CircuitWindowSeconds"] = strconv.Itoa(config.CircuitWindowSeconds)
+	config.OptionMap["MetricsEnabled"] = strconv.FormatBool(config.MetricsEnabled)
 	config.OptionMap["TopUpLink"] = config.TopUpLink
 	config.OptionMap["QuotaPerUnit"] = strconv.FormatFloat(config.QuotaPerUnit, 'f', -1, 64)
 	config.OptionMap["RetryTimes"] = strconv.Itoa(config.RetryTimes)
@@ -154,6 +162,8 @@ func updateOptionMap(key string, value string) (err error) {
 			config.DisplayInCurrencyEnabled = boolValue
 		case "DisplayTokenStatEnabled":
 			config.DisplayTokenStatEnabled = boolValue
+		case "MetricsEnabled":
+			config.MetricsEnabled = boolValue
 		}
 	}
 	switch key {
@@ -234,6 +244,18 @@ func updateOptionMap(key string, value string) (err error) {
 		err = billingratio.UpdateCacheHitRatioByJSONString(value)
 	case "CacheWriteRatio":
 		err = billingratio.UpdateCacheWriteRatioByJSONString(value)
+	case "ReasoningRatio":
+		err = billingratio.UpdateReasoningRatioByJSONString(value)
+	case "CircuitEnable":
+		config.CircuitEnable = value == "true"
+	case "CircuitFailureThreshold":
+		config.CircuitFailureThreshold, _ = strconv.Atoi(value)
+	case "CircuitCooldownSeconds":
+		config.CircuitCooldownSeconds, _ = strconv.Atoi(value)
+	case "CircuitHalfOpenSuccesses":
+		config.CircuitHalfOpenSuccesses, _ = strconv.Atoi(value)
+	case "CircuitWindowSeconds":
+		config.CircuitWindowSeconds, _ = strconv.Atoi(value)
 	case "TopUpLink":
 		config.TopUpLink = value
 	case "ChannelDisableThreshold":

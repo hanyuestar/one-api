@@ -32,6 +32,7 @@ type Meta struct {
 	OriginModelName string
 	// ActualModelName is the model name after mapping
 	ActualModelName    string
+	VirtualModelName   string // F-005: 命中的虚拟模型名
 	RequestURLPath     string
 	PromptTokens       int // only for DoResponse
 	ForcedSystemPrompt string
@@ -61,6 +62,7 @@ func GetByContext(c *gin.Context) *Meta {
 		Ip:                 c.ClientIP(),
 		ModelMapping:       c.GetStringMapString(ctxkey.ModelMapping),
 		OriginModelName:    c.GetString(ctxkey.RequestModel),
+		VirtualModelName:   c.GetString(ctxkey.VirtualModelName),
 		BaseURL:            c.GetString(ctxkey.BaseURL),
 		APIKey:             strings.TrimPrefix(c.Request.Header.Get("Authorization"), "Bearer "),
 		RequestURLPath:     c.Request.URL.String(),
