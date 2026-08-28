@@ -41,6 +41,15 @@
 - 渠道返回缓存字段（OpenAI `cached_tokens`、DeepSeek `prompt_cache_hit_tokens`、Anthropic `cache_read/cache_creation_input_tokens`）时自动生效；渠道不支持时按正常输入计费兜底。
 - 日志「输入」列会标注缓存命中部分，如 `1000（缓存命中 200）`。
 
+### 智能路由与可观测性增强（v1.1.0）
+
+- **智能路由与熔断**：按「分组 + 模型」配置渠道选择策略（按优先级 / 按权重 / 延迟优先 / 随机），分组与模型均支持 `*` 通配匹配；渠道级熔断器在上游连续失败时自动临时跳过，冷却后自动恢复，防止请求雪崩。入口：设置 → 智能路由 → 路由策略。
+- **虚拟模型**：将多个真实模型聚合为一个入口，请求按权重自动选择实际模型，便于模型版本灰度与降级。入口：设置 → 智能路由 → 虚拟模型。
+- **渠道多 Key 负载均衡**：单个渠道可配置多个上游 API Key，按权重随机分发；认证失败自动隔离问题 Key、渠道测试成功后自动恢复；Key 加密存储，界面仅展示脱敏后缀。入口：渠道编辑页 → 渠道 Key 管理。
+- **Prometheus 监控指标**：`/metrics` 端点输出标准 Prometheus 格式指标（请求量 / 延迟 / 熔断状态等），可在系统设置中开关（默认开启）。
+- **推理 token 独立计费**：新增「推理倍率」设置项，按模型为推理（reasoning）token 单独配置倍率，未配置的模型自动回退到输出倍率。入口：设置 → 运营设置 → 倍率设置。
+- **渠道健康诊断**：渠道支持 0-100 健康分、熔断状态与最近探测记录展示，渠道编辑页可视化。
+
 ### 日志与分析增强（v1.0.7）
 
 - **日志模块全面增强**：三套主题（default/air/berry）日志页新增顶部摘要卡（总消耗额度 / 总 Token / 请求数 / 平均首字延迟），新增「用时」「首字」「分组」「IP」列；行展开可查看请求详情（Request ID、缓存命中/写入、首字延迟、总耗时、结构化计费明细）。
@@ -99,5 +108,5 @@ docker compose up -d
 ## 相关链接
 
 - 上游原始项目：[songquanpeng/one-api](https://github.com/songquanpeng/one-api)
-- 发布版本：[v1.0.7](https://github.com/hanyuestar/one-api/releases/tag/v1.0.7)（[查看更新日志](https://github.com/hanyuestar/one-api#%E6%9B%B4%E6%96%B0%E6%97%A5%E5%BF%97)）
+- 发布版本：[v1.1.0](https://github.com/hanyuestar/one-api/releases/tag/v1.1.0)（[查看更新日志](https://github.com/hanyuestar/one-api#%E6%9B%B4%E6%96%B0%E6%97%A5%E5%BF%97)）
 - Docker 镜像：[GitHub Packages](https://github.com/hanyuestar/one-api/pkgs/container/one-api) | [Docker Hub](https://hub.docker.com/r/kyson666/one-api)
