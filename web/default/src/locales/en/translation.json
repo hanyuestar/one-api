@@ -156,9 +156,9 @@
         "tencent": "Enter in format: AppId|SecretId|SecretKey"
       },
       "keys": {
-        "title": "Channel Keys (F-006)",
+        "title": "Channel Keys",
         "subtitle": "Configure multiple upstream keys per channel for load balancing; keys are encrypted, only masked suffix shown",
-        "health_title": "Channel Health (F-012)",
+        "health_title": "Channel Health",
         "health_score": "Health",
         "circuit_state": "Circuit",
         "key_count": "Keys",
@@ -627,7 +627,7 @@
         }
       },
       "circuit": {
-        "title": "Circuit Breaker & Metrics (F-004 / F-010)",
+        "title": "Circuit Breaker & Metrics",
         "subtitle": "Channel circuit breaker and Prometheus metrics endpoint switches; take effect immediately after save",
         "enable": "Enable channel circuit breaker",
         "enable_desc": "Temporarily skip a channel after consecutive upstream failures; auto recovers after cooldown to prevent cascading",
@@ -789,7 +789,7 @@
         "delete_confirm_message": "Are you sure you want to delete this item?"
       },
       "strategy": {
-        "title": "Routing Policies (F-004)",
+        "title": "Routing Policies",
         "subtitle": "Configure channel selection strategy per (group, model); supports * wildcard",
         "group": "Group",
         "model": "Model",
@@ -808,7 +808,7 @@
         }
       },
       "virtual": {
-        "title": "Virtual Models (F-005)",
+        "title": "Virtual Models",
         "subtitle": "Aggregate multiple real models into one entry, pick actual model by weight at runtime",
         "name": "Name",
         "description": "Description",

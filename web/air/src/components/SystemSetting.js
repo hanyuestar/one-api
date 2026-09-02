@@ -552,7 +552,7 @@ const SystemSetting = () => {
             保存 Turnstile 设置
           </Form.Button>
           <Divider />
-          <Typography.Title heading={4} style={{ marginBottom: 0 }}>智能路由熔断与指标（F-004 / F-010）</Typography.Title>
+          <Typography.Title heading={4} style={{ marginBottom: 0 }}>智能路由熔断与指标</Typography.Title>
           <Typography.Text type="tertiary" size="small">渠道熔断器与 Prometheus 指标端点开关，保存后即时生效</Typography.Text>
           <Form.Group inline>
             <Form.Field>

@@ -156,9 +156,9 @@
         "tencent": "按照如下格式输入：AppId|SecretId|SecretKey"
       },
       "keys": {
-        "title": "渠道 Key 管理（F-006）",
+        "title": "渠道 Key 管理",
         "subtitle": "为渠道配置多个上游 Key 实现负载均衡；Key 加密存储，仅展示脱敏后缀",
-        "health_title": "渠道健康状态（F-012）",
+        "health_title": "渠道健康状态",
         "health_score": "健康分",
         "circuit_state": "熔断状态",
         "key_count": "Key 数量",
@@ -625,7 +625,7 @@
         }
       },
       "circuit": {
-        "title": "智能路由熔断与指标（F-004 / F-010）",
+        "title": "智能路由熔断与指标",
         "subtitle": "渠道熔断器与 Prometheus 指标端点开关，保存后即时生效",
         "enable": "启用渠道熔断",
         "enable_desc": "上游连续失败时临时跳过该渠道，冷却后自动恢复，防止请求雪崩",
@@ -785,7 +785,7 @@
         "delete_confirm_message": "确定要删除该项吗？"
       },
       "strategy": {
-        "title": "路由策略（F-004）",
+        "title": "路由策略",
         "subtitle": "按 (分组, 模型) 配置渠道选择策略，支持 * 通配",
         "group": "分组",
         "model": "模型",
@@ -804,7 +804,7 @@
         }
       },
       "virtual": {
-        "title": "虚拟模型（F-005）",
+        "title": "虚拟模型",
         "subtitle": "将多个真实模型聚合为一个入口，运行时按权重选择实际模型",
         "name": "名称",
         "description": "描述",

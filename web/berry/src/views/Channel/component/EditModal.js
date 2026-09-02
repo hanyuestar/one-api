@@ -745,14 +745,14 @@ const EditModal = ({ open, channelId, onCancel, onOk }) => {
                 <>
                   <Divider sx={{ my: 2 }} />
                   <Typography variant="h5" gutterBottom>
-                    渠道 Key 管理（F-006）
+                    渠道 Key 管理
                   </Typography>
                   <Typography variant="body2" color="textSecondary" gutterBottom>
                     为渠道配置多个上游 Key 实现负载均衡；Key 加密存储，仅展示脱敏后缀
                   </Typography>
                   {health && (
                     <Alert severity="info" sx={{ mb: 2 }}>
-                      渠道健康状态（F-012）：健康分 <b>{health.health_score ?? '-'}</b>　
+                      渠道健康状态：健康分 <b>{health.health_score ?? '-'}</b>　
                       熔断状态 <b>{health.circuit?.state ?? '-'}</b>　
                       Key 数量 <b>{health.key_count ?? '-'}</b>　
                       最近探测 <b>{formatTime(health.last_probe_at)}</b>

@@ -265,7 +265,7 @@ const RoutingSetting = () => {
     <div>
       <Form loading={loading}>
         <Typography.Title heading={4} style={{ marginBottom: 0 }}>
-          路由策略（F-004）
+          路由策略
         </Typography.Title>
         <Typography.Text type='tertiary' size='small'>
           按 (分组, 模型) 配置渠道选择策略，支持 * 通配
@@ -286,7 +286,7 @@ const RoutingSetting = () => {
         />
         <Divider margin='24px' />
         <Typography.Title heading={4} style={{ marginBottom: 0 }}>
-          虚拟模型（F-005）
+          虚拟模型
         </Typography.Title>
         <Typography.Text type='tertiary' size='small'>
           将多个真实模型聚合为一个入口，运行时按权重选择实际模型

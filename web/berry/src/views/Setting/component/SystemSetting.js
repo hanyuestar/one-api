@@ -907,7 +907,7 @@ const SystemSetting = () => {
           </Grid>
         </SubCard>
         <SubCard
-          title="智能路由熔断与指标（F-004 / F-010）"
+          title="智能路由熔断与指标"
           subTitle="渠道熔断器与 Prometheus 指标端点开关，保存后即时生效"
         >
           <Grid container spacing={{ xs: 3, sm: 2, md: 4 }}>

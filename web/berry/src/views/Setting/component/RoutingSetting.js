@@ -303,7 +303,7 @@ const RoutingSetting = () => {
 
   return (
     <>
-      <SubCard title="路由策略（F-004）">
+      <SubCard title="路由策略">
         <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
           按 (分组, 模型) 配置渠道选择策略，支持 * 通配
         </Typography>
@@ -315,7 +315,7 @@ const RoutingSetting = () => {
         {PolicyTable}
       </SubCard>
       <Divider sx={{ my: 2 }} />
-      <SubCard title="虚拟模型（F-005）">
+      <SubCard title="虚拟模型">
         <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
           将多个真实模型聚合为一个入口，运行时按权重选择实际模型
         </Typography>
