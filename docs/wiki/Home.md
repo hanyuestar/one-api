@@ -41,6 +41,13 @@
 - 渠道返回缓存字段（OpenAI `cached_tokens`、DeepSeek `prompt_cache_hit_tokens`、Anthropic `cache_read/cache_creation_input_tokens`）时自动生效；渠道不支持时按正常输入计费兜底。
 - 日志「输入」列会标注缓存命中部分，如 `1000（缓存命中 200）`。
 
+### 前端安全加固与移动端适配（v1.1.1）
+
+- **前端存储型 XSS 净化（三主题）**：新增统一净化模块，所有 `dangerouslySetInnerHTML` 与 `marked` 渲染输出均经 DOMPurify 白名单净化；并补齐从 localStorage 缓存（首页内容 / 关于 / 公告 / 页脚）重新渲染前的二次净化，防止被污染的客户端存储绕过净化。
+- **后端 CORS 任意源带凭证缺陷修复**：新增环境变量 `CORS_ALLOW_ORIGINS`（逗号分隔源白名单）——配置了则精确匹配并允许凭证，未配置则允许所有源但 `AllowCredentials=false`，符合 W3C「`*` 与 credentials 不可共存」规范。
+- **三主题移动端适配（统一断点 ≤768px）**：数据表格卡片化、弹窗全宽、表单单列（输入字号 16px 防 iOS 聚焦缩放）、按钮触摸尺寸、防横向滚动、iframe 改 80vh 加 `sandbox`；桌面端（>768px）布局与交互完全保持原样。
+- **Docker 构建链路修复**：修复 `web/default` 依赖 peer 冲突导致镜像内 `npm install` 报 ERESOLVE 的问题，`Dockerfile` 与 `web/build.sh` 三主题依赖安装统一加 `--legacy-peer-deps`。
+
 ### 智能路由与可观测性增强（v1.1.0）
 
 - **智能路由与熔断**：按「分组 + 模型」配置渠道选择策略（按优先级 / 按权重 / 延迟优先 / 随机），分组与模型均支持 `*` 通配匹配；渠道级熔断器在上游连续失败时自动临时跳过，冷却后自动恢复，防止请求雪崩。入口：设置 → 智能路由 → 路由策略。
@@ -62,6 +69,7 @@
 
 | 版本 | 修复内容 |
 |------|---------|
+| v1.1.1 | 修复后端 CORS「任意源 + 带凭证」缺陷（等价于任意网站可携带用户 Cookie 跨域请求，CSRF / 数据泄露风险）；修复前端存储型 XSS 注入点；修复 web/default 依赖 peer 冲突导致镜像内 `npm install` 报 ERESOLVE 构建失败；三主题移动端适配（统一断点 ≤768px） |
 | v1.0.8 | 修复并发 map panic、PostgreSQL 首字延迟类型转换、前端版本号传递、流式异步计费因请求取消丢失、SQLite/MySQL 均值四舍五入、deepl 响应体关闭、图片日志计费明细；统计接口支持按渠道筛选；air 数据看板菜单常驻；首次登录强制改密；三主题日志横排与 air UI 统一 |
 | v1.0.7 | 日志模块增强与 TTFT 首字延迟统计；新增计费明细反查与模型分析看板；修正缓存命中展示与真实计费口径不一致的问题 |
 | v1.0.6 | 修复 Anthropic/Bedrock Claude 缓存计费少计约 60%；修复普通用户经 proxy 路由越权指定渠道；修复配额预扣并发竞态；令牌 Key 改用 crypto/rand；修复会话类型断言 panic；Air 主题恢复渠道「分组」列；清理 /chat 死路由 |
@@ -108,5 +116,5 @@ docker compose up -d
 ## 相关链接
 
 - 上游原始项目：[songquanpeng/one-api](https://github.com/songquanpeng/one-api)
-- 发布版本：[v1.1.0](https://github.com/hanyuestar/one-api/releases/tag/v1.1.0)（[查看更新日志](https://github.com/hanyuestar/one-api#%E6%9B%B4%E6%96%B0%E6%97%A5%E5%BF%97)）
+- 发布版本：[v1.1.1](https://github.com/hanyuestar/one-api/releases/tag/v1.1.1)（[查看更新日志](https://github.com/hanyuestar/one-api#%E6%9B%B4%E6%96%B0%E6%97%A5%E5%BF%97)）
 - Docker 镜像：[GitHub Packages](https://github.com/hanyuestar/one-api/pkgs/container/one-api) | [Docker Hub](https://hub.docker.com/r/kyson666/one-api)

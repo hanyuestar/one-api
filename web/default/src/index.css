@@ -1,11 +1,15 @@
+/* ============================================================
+   One API - Default 主题（Semantic UI React）全局样式
+   桌面端样式 + 三档移动端响应式适配（断点与 air/berry 一致：<=768 移动）
+   ============================================================ */
+
 body {
     margin: 0;
-    padding-top: 55px;
-    overflow-y: scroll;
     font-family: Lato, 'Helvetica Neue', Arial, Helvetica, "Microsoft YaHei", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     scrollbar-width: none;
+    overflow-x: hidden;
 }
 
 body::-webkit-scrollbar {
@@ -28,7 +32,7 @@ code {
     font-size: 1.1em;
 }
 
-@media only screen and (max-width: 600px) {
+@media only screen and (max-width: 768px) {
     .hide-on-mobile {
         display: none !important;
     }
@@ -42,7 +46,7 @@ code {
     padding: 0 10px !important;
   }
 
-  .ui.card, 
+  .ui.card,
   .ui.cards,
   .ui.segment {
     margin-left: 0 !important;
@@ -114,4 +118,196 @@ code {
   .stat-value {
     font-size: 0.9em !important;
   }
+}
+
+/* ============================================================
+   移动端响应式适配 (max-width: 768px) —— Semantic UI 类名体系
+   ============================================================ */
+@media only screen and (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+
+    /* ---------- 顶部导航：紧凑 ---------- */
+    .ui.menu {
+        flex-wrap: wrap;
+    }
+
+    .ui.menu .item {
+        min-height: 44px;
+    }
+
+    /* 移动端展开的垂直菜单全宽 */
+    .ui.vertical.menu {
+        width: 100% !important;
+    }
+
+    /* ---------- 表格：卡片式布局 ---------- */
+    /* 重置 LogsTable 内联 minWidth:1500px，避免横向溢出 */
+    .ui.table[style*="min-width"] {
+        min-width: 0 !important;
+    }
+
+    .ui.table {
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    .ui.table thead {
+        display: none !important;
+    }
+
+    .ui.table tbody tr {
+        display: block !important;
+        width: 100% !important;
+        box-sizing: border-box;
+        margin-bottom: 10px;
+        background: var(--card-bg, #fff);
+        border: 1px solid rgba(34, 36, 38, 0.1) !important;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        padding: 6px 0;
+    }
+
+    .ui.table tbody td {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+        text-align: left !important;
+        border-bottom: 1px solid rgba(34, 36, 38, 0.06) !important;
+        padding: 7px 14px !important;
+        white-space: normal !important;
+        word-break: break-word;
+    }
+
+    .ui.table tbody tr td:last-child {
+        border-bottom: none !important;
+    }
+
+    /* 表格内展开行（colSpan 行）也保持块级、全宽 */
+    .ui.table tbody tr td[colspan] {
+        padding: 10px 14px !important;
+    }
+
+    /* ---------- 表单：单列、全宽 ---------- */
+    .ui.form .fields {
+        flex-direction: column !important;
+    }
+
+    .ui.form .fields .field,
+    .ui.form .field {
+        width: 100% !important;
+        margin-bottom: 12px;
+    }
+
+    .ui.form input,
+    .ui.form textarea,
+    .ui.form select,
+    .ui.form .ui.dropdown {
+        font-size: 16px !important; /* 防止 iOS 聚焦缩放 */
+        min-height: 44px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .ui.form textarea {
+        min-height: 100px;
+    }
+
+    /* ---------- 按钮：触摸尺寸、自动换行 ---------- */
+    .ui.button {
+        min-height: 42px;
+        font-size: 14px;
+    }
+
+    .ui.buttons {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    /* ---------- Modal：全宽 ---------- */
+    .ui.modal {
+        width: calc(100vw - 24px) !important;
+        max-width: calc(100vw - 24px) !important;
+        margin: 12px auto !important;
+        left: auto !important;
+        right: auto !important;
+        position: relative !important;
+        top: auto !important;
+        transform: none !important;
+    }
+
+    .ui.modal .content {
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* ---------- Grid：stackable 兜底全宽 ---------- */
+    .ui.grid.stackable .column,
+    .ui.grid .column {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    /* ---------- Card：紧凑 ---------- */
+    .ui.card .content {
+        padding: 14px;
+    }
+
+    /* ---------- 输入控件全局防 iOS 缩放 ---------- */
+    input, select, textarea {
+        font-size: 16px;
+    }
+
+    /* ---------- 图片/媒体不溢出 ---------- */
+    img, video, canvas, svg {
+        max-width: 100%;
+    }
+
+    /* ---------- 登录/注册等居中卡片 ---------- */
+    .ui.grid[text-align] .column[style*="max-width"] {
+        width: calc(100% - 24px) !important;
+        max-width: 450px !important;
+        margin: 0 auto !important;
+    }
+
+    /* ---------- Toast 全宽 ---------- */
+    .Toastify__toast-container {
+        width: calc(100vw - 32px);
+        left: 12px !important;
+        right: 12px !important;
+    }
+}
+
+/* ============================================================
+   小屏手机适配 (max-width: 480px)
+   ============================================================ */
+@media only screen and (max-width: 480px) {
+    body {
+        font-size: 13px;
+    }
+
+    .ui.button {
+        min-height: 40px;
+        font-size: 13px;
+    }
+
+    .ui.table tbody td {
+        padding: 6px 12px !important;
+        font-size: 13px;
+    }
+
+    .ui.card .content {
+        padding: 12px;
+    }
+}
+
+/* ---------- 桌面端工具类 ---------- */
+@media only screen and (min-width: 769px) {
+    .show-on-mobile {
+        display: none !important;
+    }
 }

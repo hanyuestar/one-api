@@ -7,7 +7,7 @@ import '../index.css';
 
 import fireworks from 'react-fireworks';
 
-import { IconHelpCircle, IconKey, IconUser } from '@douyinfe/semi-icons';
+import { IconHelpCircle, IconKey, IconUser, IconMenu } from '@douyinfe/semi-icons';
 import { Avatar, Dropdown, Layout, Nav, Switch } from '@douyinfe/semi-ui';
 import { stringToColor } from '../helpers/render';
 
@@ -21,7 +21,7 @@ let headerButtons = [
   }
 ];
 
-const HeaderBar = () => {
+const HeaderBar = ({ isMobile = false, onMenuClick = () => {} }) => {
   const [userState, userDispatch] = useContext(UserContext);
   let navigate = useNavigate();
 
@@ -74,13 +74,13 @@ const HeaderBar = () => {
     }
     setDark(model);
   };
+
   return (
     <>
       <Layout>
-        <div style={{ width: '100%' }}>
+        <div style={{ width: '100%' }} className="header-bar-wrapper">
           <Nav
             mode={'horizontal'}
-            // bodyStyle={{ height: 100 }}
             renderWrapper={({ itemElement, isSubNav, isInSubNav, props }) => {
               const routerMap = {
                 about: '/about',
@@ -97,14 +97,34 @@ const HeaderBar = () => {
               );
             }}
             selectedKeys={[]}
-            // items={headerButtons}
             onSelect={key => {
 
             }}
             footer={
               <>
+                {/* 移动端：汉堡菜单按钮 */}
+                {isMobile && (
+                  <button
+                    onClick={onMenuClick}
+                    aria-label="打开菜单"
+                    className="mobile-menu-button"
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '8px 12px',
+                      marginRight: 4,
+                      borderRadius: 4,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'var(--semi-color-text-0)',
+                    }}
+                  >
+                    <IconMenu size="large" />
+                  </button>
+                )}
                 {isNewYear &&
-                  // happy new year
                   <Dropdown
                     position="bottomRight"
                     render={
@@ -116,8 +136,18 @@ const HeaderBar = () => {
                     <Nav.Item itemKey={'new-year'} text={'🏮'} />
                   </Dropdown>
                 }
-                <Nav.Item itemKey={'about'} icon={<IconHelpCircle />} />
-                <Switch checkedText="🌞" size={'large'} checked={dark} uncheckedText="🌙" onChange={switchMode} />
+                {/* 非移动端显示"关于"导航项；移动端移入抽屉 */}
+                {!isMobile && (
+                  <Nav.Item itemKey={'about'} icon={<IconHelpCircle />} />
+                )}
+                {/* 主题切换开关：移动端缩小尺寸 */}
+                <Switch
+                  checkedText="🌞"
+                  size={isMobile ? 'default' : 'large'}
+                  checked={dark}
+                  uncheckedText="🌙"
+                  onChange={switchMode}
+                />
                 {userState.user ?
                   <>
                     <Dropdown
@@ -131,13 +161,14 @@ const HeaderBar = () => {
                       <Avatar size="small" color={stringToColor(userState.user.username)} style={{ margin: 4 }}>
                         {userState.user.username[0]}
                       </Avatar>
-                      <span>{userState.user.username}</span>
+                      {/* 移动端隐藏用户名，只显示头像 */}
+                      {!isMobile && <span>{userState.user.username}</span>}
                     </Dropdown>
                   </>
                   :
                   <>
-                    <Nav.Item itemKey={'login'} text={'登录'} icon={<IconKey />} />
-                    <Nav.Item itemKey={'register'} text={'注册'} icon={<IconUser />} />
+                    <Nav.Item itemKey={'login'} text={isMobile ? '' : '登录'} icon={<IconKey />} />
+                    <Nav.Item itemKey={'register'} text={isMobile ? '' : '注册'} icon={<IconUser />} />
                   </>
                 }
               </>

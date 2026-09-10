@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from 'semantic-ui-react';
-import { API, showError } from '../../helpers';
+import { API, showError, sanitizeMarkdown, sanitizeHTML, safeIframeSrc } from '../../helpers';
 import { marked } from 'marked';
 
 const About = () => {
@@ -10,13 +10,17 @@ const About = () => {
   const [aboutLoaded, setAboutLoaded] = useState(false);
 
   const displayAbout = async () => {
-    setAbout(localStorage.getItem('about') || '');
+    // 从 localStorage 读取的缓存也必须净化，防止旧缓存或被污染存储绕过净化
+    const cached = localStorage.getItem('about');
+    if (cached) {
+      setAbout(cached.startsWith('https://') ? cached : sanitizeHTML(cached));
+    }
     const res = await API.get('/api/about');
     const { success, message, data } = res.data;
     if (success) {
       let aboutContent = data;
       if (!data.startsWith('https://')) {
-        aboutContent = marked.parse(data);
+        aboutContent = sanitizeMarkdown(marked.parse(data));
       }
       setAbout(aboutContent);
       localStorage.setItem('about', aboutContent);
@@ -50,8 +54,9 @@ const About = () => {
         <>
           {about.startsWith('https://') ? (
             <iframe
-              src={about}
-              style={{ width: '100%', height: '100vh', border: 'none' }}
+              src={safeIframeSrc(about)}
+              sandbox='allow-scripts allow-same-origin allow-forms'
+              style={{ width: '100%', height: '80vh', border: 'none' }}
             />
           ) : (
             <div className='dashboard-container'>

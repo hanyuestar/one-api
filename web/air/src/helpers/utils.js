@@ -2,9 +2,10 @@ import { Toast } from '@douyinfe/semi-ui';
 import { toastConstants } from '../constants';
 import React from 'react';
 import {toast} from "react-toastify";
+import { sanitizeHTML } from './sanitize';
 
 const HTMLToastContent = ({ htmlContent }) => {
-  return <div dangerouslySetInnerHTML={{ __html: htmlContent }} />;
+  return <div dangerouslySetInnerHTML={{ __html: sanitizeHTML(htmlContent) }} />;
 };
 export default HTMLToastContent;
 export function isAdmin() {
@@ -49,7 +50,7 @@ export async function copy(text) {
 }
 
 export function isMobile() {
-  return window.innerWidth <= 600;
+  return window.innerWidth <= 768;
 }
 
 let showErrorOptions = { autoClose: toastConstants.ERROR_TIMEOUT };

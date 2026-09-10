@@ -58,83 +58,53 @@ const TopUp = () => {
 
     const preTopUp = async (payment) => {
         if (!enableOnlineTopUp) {
-            showError('管理员未开启在线充值！');
+            showError('超级管理员未开启在线充值！');
             return;
-        }
-        if (amount === 0) {
-            await getAmount();
         }
         if (topUpCount < minTopUp) {
             showInfo('充值数量不能小于' + minTopUp);
             return;
         }
-        setPayWay(payment)
+        setPayWay(payment);
         setOpen(true);
-    }
+    };
 
     const onlineTopUp = async () => {
-        if (amount === 0) {
-            await getAmount();
-        }
-        if (topUpCount < minTopUp) {
-            showInfo('充值数量不能小于' + minTopUp);
-            return;
-        }
         setOpen(false);
         try {
-            const res = await API.post('/api/user/pay', {
-                amount: parseInt(topUpCount),
-                top_up_code: topUpCode,
-                payment_method: payWay
+            const res = await API.post('/api/user/topup/online', {
+                amount: topUpCount,
+                payWay: payWay,
+                topUpCode: topUpCode
             });
-            if (res !== undefined) {
-                const {message, data} = res.data;
-                // showInfo(message);
-                if (message === 'success') {
-
-                    let params = data
-                    let url = res.data.url
-                    let form = document.createElement('form')
-                    form.action = url
-                    form.method = 'POST'
-                    // 判断是否为safari浏览器
-                    let isSafari = navigator.userAgent.indexOf("Safari") > -1 && navigator.userAgent.indexOf("Chrome") < 1;
-                    if (!isSafari) {
-                        form.target = '_blank'
-                    }
-                    for (let key in params) {
-                        let input = document.createElement('input')
-                        input.type = 'hidden'
-                        input.name = key
-                        input.value = params[key]
-                        form.appendChild(input)
-                    }
-                    document.body.appendChild(form)
-                    form.submit()
-                    document.body.removeChild(form)
-                } else {
-                    showError(data);
-                    // setTopUpCount(parseInt(res.data.count));
-                    // setAmount(parseInt(data));
+            const {success, message, data} = res.data;
+            if (success) {
+                if (payWay === 'zfb') {
+                    window.open(data, '_blank');
+                } else if (payWay === 'wx') {
+                    Modal.success({title: '请使用微信扫码支付', content: <img src={data} style={{width: '100%'}} />, centered: true});
                 }
             } else {
-                showError(res);
+                showError(message);
             }
         } catch (err) {
-            console.log(err);
-        } finally {
+            showError('请求失败');
         }
-    }
+    };
 
     const getUserQuota = async () => {
-        let res = await API.get(`/api/user/self`);
-        const {success, message, data} = res.data;
-        if (success) {
-            setUserQuota(data.quota);
-        } else {
-            showError(message);
+        try {
+            const res = await API.get('/api/user/self');
+            const {success, message, data} = res.data;
+            if (success) {
+                setUserQuota(data.quota);
+            } else {
+                showError(message);
+            }
+        } catch (err) {
+            showError('请求失败');
         }
-    }
+    };
 
     useEffect(() => {
         let status = localStorage.getItem('status');
@@ -154,7 +124,6 @@ const TopUp = () => {
     }, []);
 
     const renderAmount = () => {
-        // console.log(amount);
         return amount + '元';
     }
 
@@ -169,13 +138,10 @@ const TopUp = () => {
             });
             if (res !== undefined) {
                 const {message, data} = res.data;
-                // showInfo(message);
                 if (message === 'success') {
                     setAmount(parseFloat(data));
                 } else {
                     showError(data);
-                    // setTopUpCount(parseInt(res.data.count));
-                    // setAmount(parseInt(data));
                 }
             } else {
                 showError(res);
@@ -210,9 +176,9 @@ const TopUp = () => {
                         <p>实付金额：{renderAmount()}</p>
                         <p>是否确认充值？</p>
                     </Modal>
-                    <div style={{marginTop: 20, display: 'flex', justifyContent: 'center'}}>
+                    <div style={{marginTop: 20, display: 'flex', justifyContent: 'center', padding: '0 8px'}}>
                         <Card
-                            style={{width: '500px', padding: '20px'}}
+                            style={{width: '100%', maxWidth: '500px', padding: '20px'}}
                         >
                             <Title level={3} style={{textAlign: 'center'}}>余额 {renderQuota(userQuota)}</Title>
                             <div style={{marginTop: 20}}>
@@ -230,7 +196,7 @@ const TopUp = () => {
                                             setRedemptionCode(value);
                                         }}
                                     />
-                                    <Space>
+                                    <Space wrap>
                                         {
                                             topUpLink ?
                                                 <Button type={'primary'} theme={'solid'} onClick={openTopUpLink}>
@@ -244,63 +210,6 @@ const TopUp = () => {
                                     </Space>
                                 </Form>
                             </div>
-                            {/* <div style={{marginTop: 20}}>
-                                <Divider>
-                                    在线充值
-                                </Divider>
-                                <Form>
-                                    <Form.Input
-                                        disabled={!enableOnlineTopUp}
-                                        field={'redemptionCount'}
-                                        label={'实付金额：' + renderAmount()}
-                                        placeholder={'充值数量，最低' + minTopUp + '$'}
-                                        name='redemptionCount'
-                                        type={'number'}
-                                        value={topUpCount}
-                                        suffix={'$'}
-                                        min={minTopUp}
-                                        defaultValue={minTopUp}
-                                        max={100000}
-                                        onChange={async (value) => {
-                                            if (value < 1) {
-                                                value = 1;
-                                            }
-                                            if (value > 100000) {
-                                                value = 100000;
-                                            }
-                                            setTopUpCount(value);
-                                            await getAmount(value);
-                                        }}
-                                    />
-                                    <Space>
-                                        <Button type={'primary'} theme={'solid'} onClick={
-                                            async () => {
-                                                preTopUp('zfb')
-                                            }
-                                        }>
-                                            支付宝
-                                        </Button>
-                                        <Button style={{backgroundColor: 'rgba(var(--semi-green-5), 1)'}}
-                                                type={'primary'}
-                                                theme={'solid'} onClick={
-                                            async () => {
-                                                preTopUp('wx')
-                                            }
-                                        }>
-                                            微信
-                                        </Button>
-                                    </Space>
-                                </Form>
-                            </div> */}
-                            {/*<div style={{ display: 'flex', justifyContent: 'right' }}>*/}
-                            {/*    <Text>*/}
-                            {/*        <Link onClick={*/}
-                            {/*            async () => {*/}
-                            {/*                window.location.href = '/topup/history'*/}
-                            {/*            }*/}
-                            {/*        }>充值记录</Link>*/}
-                            {/*    </Text>*/}
-                            {/*</div>*/}
                         </Card>
                     </div>
 

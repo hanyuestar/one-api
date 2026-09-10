@@ -9,13 +9,13 @@ WORKDIR /web
 
 # 三步串行安装（每层独立 Docker 缓存，避免并行 & 在 Alpine ash 中不稳定）
 COPY web/default/package*.json ./default/
-RUN npm install --prefix /web/default --no-audit --no-fund
+RUN npm install --prefix /web/default --no-audit --no-fund --legacy-peer-deps
 
 COPY web/berry/package*.json ./berry/
-RUN npm install --prefix /web/berry --no-audit --no-fund
+RUN npm install --prefix /web/berry --no-audit --no-fund --legacy-peer-deps
 
 COPY web/air/package*.json ./air/
-RUN npm install --prefix /web/air --no-audit --no-fund
+RUN npm install --prefix /web/air --no-audit --no-fund --legacy-peer-deps
 
 # 复制源码并构建
 COPY web/default ./default

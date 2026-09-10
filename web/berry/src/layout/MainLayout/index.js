@@ -39,16 +39,19 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
     marginLeft: open ? 0 : -(drawerWidth - 20),
     width: `calc(100% - ${drawerWidth}px)`
   },
+  // md 以下侧边栏为 temporary 覆盖抽屉、不占据文档流，主内容区应全宽，
+  // 不再减去 drawerWidth，否则内容被挤到左侧、右侧留出大片空白
   [theme.breakpoints.down('md')]: {
-    marginLeft: '20px',
-    width: `calc(100% - ${drawerWidth}px)`,
+    marginLeft: '16px',
+    marginRight: '16px',
+    width: 'auto',
     padding: '16px'
   },
   [theme.breakpoints.down('sm')]: {
     marginLeft: '10px',
-    width: `calc(100% - ${drawerWidth}px)`,
-    padding: '16px',
-    marginRight: '10px'
+    marginRight: '10px',
+    width: 'auto',
+    padding: '12px'
   }
 }));
 

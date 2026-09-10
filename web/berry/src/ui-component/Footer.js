@@ -2,6 +2,7 @@
 import { Link, Container, Box } from '@mui/material';
 import React from 'react';
 import { useSelector } from 'react-redux';
+import { sanitizeHTML } from 'utils/sanitize';
 
 // ==============================|| FOOTER - AUTHENTICATION 2 & 3 ||============================== //
 
@@ -12,7 +13,7 @@ const Footer = () => {
     <Container sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '64px' }}>
       <Box sx={{ textAlign: 'center' }}>
         {siteInfo.footer_html ? (
-          <div className="custom-footer" dangerouslySetInnerHTML={{ __html: siteInfo.footer_html }}></div>
+          <div className="custom-footer" dangerouslySetInnerHTML={{ __html: sanitizeHTML(siteInfo.footer_html) }}></div>
         ) : (
           <>
             <Link href="https://github.com/hanyuestar/one-api" target="_blank">

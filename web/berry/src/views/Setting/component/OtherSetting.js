@@ -18,6 +18,7 @@ import Grid from '@mui/material/Unstable_Grid2';
 import { showError, showSuccess } from 'utils/common'; //,
 import { API } from 'utils/api';
 import { marked } from 'marked';
+import { sanitizeMarkdown } from 'utils/sanitize';
 
 const OtherSetting = () => {
   let [inputs, setInputs] = useState({
@@ -117,7 +118,7 @@ const OtherSetting = () => {
     } else {
       setUpdateData({
         tag_name: tag_name,
-        content: marked.parse(body)
+        content: sanitizeMarkdown(marked.parse(body))
       });
       setShowUpdateModal(true);
     }

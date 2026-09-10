@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Form } from 'semantic-ui-react';
 import { Button, Divider, Modal, Typography, Banner } from '@douyinfe/semi-ui';
-import { API, showError, showSuccess } from '../helpers';
+import { API, showError, showSuccess, sanitizeMarkdown } from '../helpers';
 import { marked } from 'marked';
 import { Link } from 'react-router-dom';
 
@@ -104,7 +104,7 @@ const OtherSetting = () => {
     } else {
       setUpdateData({
         tag_name: tag_name,
-        content: marked.parse(body)
+        content: sanitizeMarkdown(marked.parse(body))
       });
       setShowUpdateModal(true);
     }

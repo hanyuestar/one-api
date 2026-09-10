@@ -1,0 +1,198 @@
+// ============================================================
+// One API - Berry 主题（MUI Material-UI）移动端响应式适配
+// 断点与 air/default 一致：<=768px 移动端
+// MUI 布局/导航/认证页本身已响应式，此处补齐：表格卡片化、弹窗全宽、
+// 表单/按钮触摸尺寸、iOS 防缩放、内容防溢出等
+// ============================================================
+
+@media only screen and (max-width: 768px) {
+  // ---------- 全局：防止横向溢出 ----------
+  body {
+    overflow-x: hidden;
+  }
+
+  img,
+  video,
+  canvas,
+  svg {
+    max-width: 100%;
+  }
+
+  // iOS 输入框聚焦防缩放（输入字号需 >=16px）
+  input,
+  select,
+  textarea,
+  .MuiInputBase-input {
+    font-size: 16px !important;
+  }
+
+  // ---------- 主内容区：Breadcrumbs 防溢出 ----------
+  .MuiBreadcrumbs-root {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+
+  // ---------- 表格：卡片式布局 ----------
+  // 重置 <Table sx={{minWidth:800/1500/650}}> 产生的固定最小宽度
+  .MuiTableContainer-root {
+    overflow-x: visible !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .MuiTable-root {
+    min-width: 0 !important;
+  }
+
+  // 隐藏表头
+  .MuiTableHead-root {
+    display: none !important;
+  }
+
+  // 每行渲染为一张卡片
+  .MuiTableBody-root .MuiTableRow-root {
+    display: block !important;
+    width: 100% !important;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+    background: var(--mui-palette-background-paper, #fff);
+    border: 1px solid var(--mui-palette-divider, rgba(0, 0, 0, 0.12));
+    border-radius: 10px;
+    padding: 4px 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  }
+
+  .MuiTableBody-root .MuiTableCell-root {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+    text-align: left !important;
+    border-bottom: 1px solid var(--mui-palette-divider, rgba(0, 0, 0, 0.06)) !important;
+    padding: 8px 16px !important;
+    white-space: normal !important;
+    word-break: break-word;
+  }
+
+  .MuiTableBody-root .MuiTableRow-root .MuiTableCell-root:last-child {
+    border-bottom: none !important;
+  }
+
+  // 表格分页器紧凑显示
+  .MuiTablePagination-root {
+    overflow-x: auto;
+  }
+
+  .MuiTablePagination-toolbar {
+    flex-wrap: wrap;
+    gap: 4px;
+    padding-left: 8px !important;
+  }
+
+  // ---------- Dialog：全宽 ----------
+  .MuiDialog-paper {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    margin: 12px !important;
+  }
+
+  .MuiDialogContent-root {
+    max-height: calc(100vh - 180px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  // ---------- 按钮：触摸尺寸 ----------
+  .MuiButton-root {
+    min-height: 40px;
+  }
+
+  .MuiButtonGroup-root {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+
+  // ---------- 表单控件全宽、防溢出 ----------
+  // 内容区（Stack/表单/弹窗/卡片内）的表单控件移动端占满全宽，避免日期选择器等横向溢出
+  .MuiStack-root .MuiFormControl-root,
+  form .MuiFormControl-root,
+  .MuiDialogContent-root .MuiFormControl-root,
+  .MuiCardContent-root .MuiFormControl-root {
+    width: 100% !important;
+    max-width: 100%;
+  }
+
+  .MuiFormControl-root {
+    max-width: 100%;
+  }
+
+  // x-date-pickers 弹层/输入框不超出屏幕
+  .MuiStack-root .MuiTextField-root,
+  .MuiStack-root .MuiInputBase-root {
+    width: 100%;
+  }
+
+  .MuiOutlinedInput-root,
+  .MuiFilledInput-root,
+  .MuiInput-root {
+    max-width: 100%;
+  }
+
+  // ---------- Stack / Box 行内布局自动换行兜底 ----------
+  .MuiStack-root {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  // ---------- Tabs 横向滚动 ----------
+  .MuiTabs-scroller {
+    overflow-x: auto !important;
+    scrollbar-width: none;
+  }
+
+  .MuiTabs-scroller::-webkit-scrollbar {
+    display: none;
+  }
+
+  .MuiTab-root {
+    flex-shrink: 0;
+    min-height: 44px;
+  }
+
+  // ---------- Card 紧凑 ----------
+  .MuiCardContent-root {
+    padding: 14px !important;
+  }
+
+  // ---------- AppBar 工具条紧凑 ----------
+  .MuiToolbar-root {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    min-height: 56px !important;
+  }
+
+  // ---------- notistack Snackbar 全宽 ----------
+  .SnackbarContainer-root,
+  .notistack-Snackbar {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    left: 12px !important;
+    right: 12px !important;
+  }
+}
+
+// ============================================================
+// 小屏手机 (max-width: 480px)
+// ============================================================
+@media only screen and (max-width: 480px) {
+  .MuiCardContent-root {
+    padding: 12px !important;
+  }
+
+  .MuiTableBody-root .MuiTableCell-root {
+    padding: 7px 12px !important;
+  }
+
+  .MuiButton-root {
+    min-height: 38px;
+  }
+}

@@ -13,40 +13,67 @@ import 'react-toastify/dist/ReactToastify.css';
 import {StatusProvider} from './context/Status';
 import {Layout} from "@douyinfe/semi-ui";
 import SiderBar from "./components/SiderBar";
+import { useResponsive, useMobileSidebar, getContentPadding } from './hooks/useResponsive';
 
 // initialization
 initVChartSemiTheme({
     isWatchingThemeSwitch: true,
 });
 
+const RootLayout = () => {
+    const { isMobile, isTablet } = useResponsive();
+    const { sidebarVisible, showSidebar, hideSidebar } = useMobileSidebar();
+    const contentPadding = getContentPadding(isMobile, isTablet);
+
+    const {Sider, Content, Header} = Layout;
+
+    return (
+        <Layout className="app-layout">
+            {/* 桌面端：固定侧边栏；移动端：抽屉式导航（由 SiderBar 内部处理） */}
+            {!isMobile && (
+                <Sider className="app-sider">
+                    <SiderBar />
+                </Sider>
+            )}
+            {/* 移动端抽屉导航 */}
+            {isMobile && (
+                <SiderBar
+                    visible={sidebarVisible}
+                    onClose={hideSidebar}
+                    isMobile={true}
+                />
+            )}
+            <Layout className="app-main-layout">
+                <Header className="app-header">
+                    <HeaderBar
+                        isMobile={isMobile}
+                        onMenuClick={showSidebar}
+                    />
+                </Header>
+                <Content
+                    className="app-content"
+                    style={{
+                        padding: contentPadding,
+                    }}
+                >
+                    <App/>
+                </Content>
+                <Layout.Footer className="app-footer">
+                    <Footer></Footer>
+                </Layout.Footer>
+            </Layout>
+            <ToastContainer/>
+        </Layout>
+    );
+};
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
-const {Sider, Content, Header} = Layout;
 root.render(
     <React.StrictMode>
         <StatusProvider>
             <UserProvider>
                 <BrowserRouter>
-                    <Layout>
-                        <Sider>
-                            <SiderBar/>
-                        </Sider>
-                        <Layout>
-                            <Header>
-                                <HeaderBar/>
-                            </Header>
-                            <Content
-                                style={{
-                                    padding: '24px',
-                                }}
-                            >
-                                <App/>
-                            </Content>
-                            <Layout.Footer>
-                                <Footer></Footer>
-                            </Layout.Footer>
-                        </Layout>
-                        <ToastContainer/>
-                    </Layout>
+                    <RootLayout />
                 </BrowserRouter>
             </UserProvider>
         </StatusProvider>

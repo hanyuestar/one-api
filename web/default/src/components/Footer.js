@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Container, Segment } from 'semantic-ui-react';
-import { getFooterHTML, getSystemName } from '../helpers';
+import { getFooterHTML, getSystemName, sanitizeHTML } from '../helpers';
 
 const Footer = () => {
   const { t } = useTranslation();
   const systemName = getSystemName();
-  const [footer, setFooter] = useState(getFooterHTML());
+  // 初始值也必须净化，防止 localStorage 被污染时首次渲染注入未净化 HTML
+  const [footer, setFooter] = useState(() => sanitizeHTML(getFooterHTML()));
   let remainCheckTimes = 5;
 
   const loadFooter = () => {
     let footer_html = localStorage.getItem('footer_html');
     if (footer_html) {
-      setFooter(footer_html);
+      setFooter(sanitizeHTML(footer_html));
     }
   };
 

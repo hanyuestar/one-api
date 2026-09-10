@@ -1,6 +1,7 @@
 import {enqueueSnackbar} from 'notistack';
 import {snackbarConstants} from 'constants/SnackbarConstants';
 import {API} from './api';
+import {sanitizeHTML} from './sanitize';
 
 export function getSystemName() {
     let system_name = localStorage.getItem('system_name');
@@ -9,12 +10,13 @@ export function getSystemName() {
 }
 
 export function isMobile() {
-    return window.innerWidth <= 600;
+    // 移动端断点与全局 scss 及其他主题保持一致：<=768 为移动端
+    return window.innerWidth <= 768;
 }
 
 // eslint-disable-next-line
 export function SnackbarHTMLContent({htmlContent}) {
-    return <div dangerouslySetInnerHTML={{__html: htmlContent}}/>;
+    return <div dangerouslySetInnerHTML={{__html: sanitizeHTML(htmlContent)}}/>;
 }
 
 export function getSnackbarOptions(variant) {

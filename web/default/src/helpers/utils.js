@@ -2,9 +2,10 @@ import {toast} from 'react-toastify';
 import {toastConstants} from '../constants';
 import React from 'react';
 import {API} from './api';
+import {sanitizeHTML} from './sanitize';
 
 const HTMLToastContent = ({ htmlContent }) => {
-  return <div dangerouslySetInnerHTML={{ __html: htmlContent }} />;
+  return <div dangerouslySetInnerHTML={{ __html: sanitizeHTML(htmlContent) }} />;
 };
 export default HTMLToastContent;
 
@@ -49,8 +50,9 @@ export async function copy(text) {
   return okay;
 }
 
+// 移动端断点与 index.css 媒体查询(max-width:768px)及其他主题保持一致：<=768 为移动端
 export function isMobile() {
-  return window.innerWidth <= 600;
+  return window.innerWidth <= 768;
 }
 
 let showErrorOptions = { autoClose: toastConstants.ERROR_TIMEOUT };

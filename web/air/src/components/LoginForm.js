@@ -129,8 +129,8 @@ const LoginForm = () => {
         <Layout.Header>
         </Layout.Header>
         <Layout.Content>
-          <div style={{ justifyContent: 'center', display: 'flex', marginTop: 120 }}>
-            <div style={{ width: 500 }}>
+          <div style={{ justifyContent: 'center', display: 'flex', marginTop: '5vh', padding: '0 16px' }}>
+              <div style={{ width: '100%', maxWidth: 460 }}>
               <Card>
                 <Title heading={2} style={{ textAlign: 'center' }}>
                   用户登录
@@ -157,7 +157,7 @@ const LoginForm = () => {
                     登录
                   </Button>
                 </Form>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 20 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 20, flexWrap: 'wrap', gap: 8 }}>
                   <Text>
                     没有账号请先 <Link to="/register">注册账号</Link>
                   </Text>
@@ -170,7 +170,7 @@ const LoginForm = () => {
                     <Divider margin="12px" align="center">
                       第三方登录
                     </Divider>
-                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: 20 }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: 20, flexWrap: 'wrap', gap: 12 }}>
                       {status.github_oauth ? (
                         <Button
                           type="primary"
@@ -212,7 +212,7 @@ const LoginForm = () => {
                   centered={true}
                 >
                   <div style={{ display: 'flex', alignItem: 'center', flexDirection: 'column' }}>
-                    <img src={status.wechat_qrcode} />
+                    <img src={status.wechat_qrcode} style={{ maxWidth: '100%' }} />
                   </div>
                   <div style={{ textAlign: 'center' }}>
                     <p>

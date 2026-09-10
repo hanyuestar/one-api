@@ -173,3 +173,6 @@ var CircuitWindowSeconds = env.Int("CIRCUIT_WINDOW_SECONDS", 60)
 
 // F-010 可观测性：Prometheus 指标开关
 var MetricsEnabled = env.Bool("METRICS_ENABLED", true)
+
+// CORS 安全配置：允许的跨域源（逗号分隔）。为空时默认允许所有源但禁止携带凭证，防止任意域带凭证请求。
+var CORSAllowOrigins = env.String("CORS_ALLOW_ORIGINS", "")

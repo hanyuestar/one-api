@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { UserContext } from '../context/User';
 import { StatusContext } from '../context/Status';
 
-import { API, getLogo, getSystemName, isAdmin, isMobile, showError } from '../helpers';
+import { API, getLogo, getSystemName, isAdmin, isMobile as checkIsMobile, showError } from '../helpers';
 import '../index.css';
 
 import {
@@ -16,16 +16,15 @@ import {
   IconKey,
   IconLayers,
   IconSetting,
-  IconUser
+  IconUser,
+  IconClose,
 } from '@douyinfe/semi-icons';
-import { Layout, Nav } from '@douyinfe/semi-ui';
+import { Layout, Nav, SideSheet } from '@douyinfe/semi-ui';
 
-// HeaderBar Buttons
-
-const SiderBar = () => {
+const SiderBar = ({ visible = false, onClose = () => {}, isMobile = false }) => {
   const [userState, userDispatch] = useContext(UserContext);
   const [statusState, statusDispatch] = useContext(StatusContext);
-  const defaultIsCollapsed = isMobile() || localStorage.getItem('default_collapse_sidebar') === 'true';
+  const defaultIsCollapsed = checkIsMobile() || localStorage.getItem('default_collapse_sidebar') === 'true';
 
   let navigate = useNavigate();
   const [selectedKeys, setSelectedKeys] = useState(['home']);
@@ -99,12 +98,6 @@ const SiderBar = () => {
       to: '/setting',
       icon: <IconSetting />
     }
-    // {
-    //     text: '关于',
-    //     itemKey: 'about',
-    //     to: '/about',
-    //     icon: <IconAt/>
-    // }
   ], [localStorage.getItem('enable_drawing'), isAdmin()]);
 
   const loadStatus = async () => {
@@ -130,62 +123,130 @@ const SiderBar = () => {
 
   useEffect(() => {
     loadStatus().then(() => {
-      setIsCollapsed(isMobile() || localStorage.getItem('default_collapse_sidebar') === 'true');
+      setIsCollapsed(checkIsMobile() || localStorage.getItem('default_collapse_sidebar') === 'true');
     });
   }, []);
 
+  // 移动端导航点击后关闭抽屉
+  const handleNavSelect = (key) => {
+    setSelectedKeys([key.itemKey]);
+    if (isMobile && onClose) {
+      // 延迟关闭，让路由跳转先执行
+      setTimeout(() => onClose(), 150);
+    }
+  };
+
+  const navContent = (
+    <Nav
+      style={{ maxWidth: isMobile ? 280 : 200, height: '100%' }}
+      defaultIsCollapsed={checkIsMobile() || localStorage.getItem('default_collapse_sidebar') === 'true'}
+      isCollapsed={isMobile ? false : isCollapsed}
+      onCollapseChange={collapsed => {
+        setIsCollapsed(collapsed);
+      }}
+      selectedKeys={selectedKeys}
+      renderWrapper={({ itemElement, isSubNav, isInSubNav, props }) => {
+        const routerMap = {
+          home: '/',
+          channel: '/channel',
+          token: '/token',
+          redemption: '/redemption',
+          topup: '/topup',
+          user: '/user',
+          log: '/log',
+          midjourney: '/midjourney',
+          setting: '/setting',
+          about: '/about',
+          detail: '/detail'
+        };
+        return (
+          <Link
+            style={{ textDecoration: 'none' }}
+            to={routerMap[props.itemKey]}
+          >
+            {itemElement}
+          </Link>
+        );
+      }}
+      items={headerButtons}
+      onSelect={handleNavSelect}
+      // 移动端 SideSheet 头部已显示 logo 和系统名，Nav 不再重复显示
+      header={isMobile ? null : {
+        logo: <img src={logo} alt="logo" style={{ marginRight: '0.75em', maxHeight: 32 }} />,
+        text: systemName
+      }}
+    >
+      {!isMobile && (
+        <Nav.Footer collapseButton={true}>
+        </Nav.Footer>
+      )}
+    </Nav>
+  );
+
+  // 移动端：SideSheet 抽屉式导航
+  if (isMobile) {
+    return (
+      <SideSheet
+        title={null}
+        visible={visible}
+        onCancel={onClose}
+        placement="left"
+        width={280}
+        closeOnEsc={true}
+        maskClosable={true}
+        bodyStyle={{ padding: 0 }}
+        headerStyle={{ display: 'none' }}
+        maskStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.45)' }}
+      >
+        <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          {/* 抽屉头部：logo + 关闭按钮 */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '12px 16px',
+            borderBottom: '1px solid var(--semi-color-border)',
+            minHeight: 56,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden' }}>
+              <img src={logo} alt="logo" style={{ height: 28, width: 28, objectFit: 'contain' }} />
+              <span style={{ fontWeight: 600, fontSize: 16, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {systemName}
+              </span>
+            </div>
+            <button
+              onClick={onClose}
+              aria-label="关闭菜单"
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 8,
+                borderRadius: 4,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--semi-color-text-1)',
+              }}
+            >
+              <IconClose size="large" />
+            </button>
+          </div>
+          {/* 导航内容 */}
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            {navContent}
+          </div>
+        </div>
+      </SideSheet>
+    );
+  }
+
+  // 桌面端：固定侧边栏
   return (
     <>
       <Layout>
         <div style={{ height: '100%' }}>
-          <Nav
-            // bodyStyle={{ maxWidth: 200 }}
-            style={{ maxWidth: 200 }}
-            defaultIsCollapsed={isMobile() || localStorage.getItem('default_collapse_sidebar') === 'true'}
-            isCollapsed={isCollapsed}
-            onCollapseChange={collapsed => {
-              setIsCollapsed(collapsed);
-            }}
-            selectedKeys={selectedKeys}
-            renderWrapper={({ itemElement, isSubNav, isInSubNav, props }) => {
-              const routerMap = {
-                home: '/',
-                channel: '/channel',
-                token: '/token',
-                redemption: '/redemption',
-                topup: '/topup',
-                user: '/user',
-                log: '/log',
-                midjourney: '/midjourney',
-                setting: '/setting',
-                about: '/about',
-                detail: '/detail'
-              };
-              return (
-                <Link
-                  style={{ textDecoration: 'none' }}
-                  to={routerMap[props.itemKey]}
-                >
-                  {itemElement}
-                </Link>
-              );
-            }}
-            items={headerButtons}
-            onSelect={key => {
-              setSelectedKeys([key.itemKey]);
-            }}
-            header={{
-              logo: <img src={logo} alt="logo" style={{ marginRight: '0.75em' }} />,
-              text: systemName
-            }}
-            // footer={{
-            //   text: '© 2021 NekoAPI',
-            // }}
-          >
-
-            <Nav.Footer collapseButton={true}>
-            </Nav.Footer>
-          </Nav>
+          {navContent}
         </div>
       </Layout>
     </>

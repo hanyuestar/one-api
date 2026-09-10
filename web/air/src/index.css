@@ -1,42 +1,90 @@
+/* ============================================================
+   One API - Air Theme 全局样式
+   包含：基础重置、桌面端样式、移动端响应式适配
+   ============================================================ */
+
+/* ---------- 基础重置 ---------- */
 body {
     margin: 0;
-    padding-top: 55px;
-    overflow-y: scroll;
     font-family: Lato, 'Helvetica Neue', Arial, Helvetica, "Microsoft YaHei", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    scrollbar-width: none;
     color: var(--semi-color-text-0) !important;
-    background-color: var( --semi-color-bg-0) !important;
-    height: 100%;
+    background-color: var(--semi-color-bg-0) !important;
+    min-height: 100vh;
+    overflow-x: hidden;
 }
 
 #root {
+    min-height: 100vh;
+}
+
+code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+/* ---------- 布局容器 ---------- */
+.app-layout {
+    min-height: 100vh;
+}
+
+.app-sider {
+    overflow: hidden;
+}
+
+.app-main-layout {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--semi-color-bg-1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.app-content {
+    flex: 1;
+    min-height: 0;
+    overflow-x: hidden;
+}
+
+.app-footer {
+    background: transparent;
+    padding: 0;
+}
+
+/* ---------- 头部导航 ---------- */
+.header-bar-wrapper .semi-navigation-horizontal {
+    padding: 0 8px;
+}
+
+.header-bar-wrapper .semi-navigation-horizontal .semi-navigation-footer {
+    gap: 4px;
+}
+
+.mobile-menu-button:hover {
+    background: var(--semi-color-fill-1);
+}
+
+.mobile-menu-button:active {
+    background: var(--semi-color-fill-2);
+}
+
+/* ---------- 侧边导航 ---------- */
+.semi-navigation-vertical {
     height: 100%;
+    overflow: hidden;
 }
 
-@media only screen and (max-width: 767px) {
-    .semi-table-tbody, .semi-table-row, .semi-table-row-cell {
-        display: block!important;
-        width: auto!important;
-        padding: 2px!important;
-    }
-    .semi-table-row-cell {
-        border-bottom: 0!important;
-    }
-    .semi-table-tbody>.semi-table-row {
-        border-bottom: 1px solid rgba(0,0,0,.1);
-    }
-    .semi-space {
-        /*display: block!important;*/
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        row-gap: 3px;
-        column-gap: 10px;
-    }
+.semi-navigation-item {
+    margin-bottom: 0;
 }
 
+/* ---------- 表格样式 ---------- */
 .semi-table-tbody > .semi-table-row > .semi-table-row-cell {
     padding: 16px 14px;
 }
@@ -47,10 +95,6 @@ body {
     }
 }
 
-.semi-layout {
-    height: 100%;
-}
-
 .tableShow {
     display: revert;
 }
@@ -59,32 +103,7 @@ body {
     display: none !important;
 }
 
-body::-webkit-scrollbar {
-    display: none;
-}
-
-code {
-    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
-}
-
-.semi-navigation-vertical {
-    /*display: flex;*/
-    /*flex-direction: column;*/
-}
-
-.semi-navigation-item {
-    margin-bottom: 0;
-}
-
-.semi-navigation-vertical {
-    /*flex: 0 0 auto;*/
-    /*display: flex;*/
-    /*flex-direction: column;*/
-    /*width: 100%;*/
-    height: 100%;
-    overflow: hidden;
-}
-
+/* ---------- 内容区 ---------- */
 .main-content {
     padding: 4px;
     height: 100%;
@@ -98,19 +117,317 @@ code {
     font-size: 1.1em;
 }
 
-@media only screen and (max-width: 600px) {
+/* ---------- 隐藏滚动条 ---------- */
+body::-webkit-scrollbar {
+    width: 0;
+    display: none;
+}
+
+/* ============================================================
+   移动端响应式适配 (max-width: 768px)
+   ============================================================ */
+@media only screen and (max-width: 768px) {
+    /* ---------- 基础 ---------- */
+    body {
+        font-size: 14px;
+    }
+
+    /* ---------- 头部 ---------- */
+    .app-header {
+        padding: 0;
+    }
+
+    .header-bar-wrapper .semi-navigation-horizontal {
+        padding: 0 4px;
+        height: 52px;
+        line-height: 52px;
+    }
+
+    .header-bar-wrapper .semi-navigation-horizontal .semi-navigation-item {
+        padding: 0 8px;
+    }
+
+    /* ---------- 表格：卡片式布局 ---------- */
+    .semi-table-wrapper {
+        overflow-x: visible !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* 重置 scroll={{x}} 产生的固定 min-width，避免卡片被拉伸 */
+    .semi-table-container {
+        min-width: 0 !important;
+        overflow-x: visible !important;
+    }
+
+    .semi-table-tbody,
+    .semi-table-row,
+    .semi-table-row-cell {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 6px 12px !important;
+        box-sizing: border-box;
+    }
+
+    .semi-table-row-cell {
+        border-bottom: 0 !important;
+        min-height: auto;
+    }
+
+    /* 表格行作为卡片 */
+    .semi-table-tbody > .semi-table-row {
+        border-bottom: 1px solid var(--semi-color-border);
+        margin-bottom: 8px;
+        background: var(--semi-color-bg-1);
+        border-radius: 8px;
+        padding: 8px 0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    /* 隐藏表头 */
+    .semi-table-thead {
+        display: none !important;
+    }
+
+    /* 表格操作按钮区域 */
+    .semi-table-row-cell:last-child {
+        padding-bottom: 12px !important;
+    }
+
+    /* ---------- Semi Form 搜索表单：纵向排列、全宽 ---------- */
+    .semi-form {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .semi-form-field {
+        width: 100% !important;
+        margin-right: 0 !important;
+        margin-bottom: 12px;
+    }
+
+    /* 固定宽度的表单项（width:176/272 等）在移动端全宽 */
+    .semi-form-field .semi-input-wrapper,
+    .semi-form-field .semi-datepicker,
+    .semi-form-field .semi-select,
+    .semi-form-field .semi-input-number,
+    .semi-form-field .semi-cascader {
+        width: 100% !important;
+    }
+
+    .semi-form-field .semi-datepicker-range-input,
+    .semi-form-field .semi-datepicker-range {
+        width: 100% !important;
+    }
+
+    .semi-form-section {
+        margin-bottom: 8px;
+    }
+
+    /* ---------- Space 组件：自动换行 ---------- */
+    .semi-space {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        row-gap: 6px;
+        column-gap: 8px;
+    }
+
+    /* ---------- Semantic UI 表单：移动端单列 ---------- */
+    .ui.form .fields {
+        flex-direction: column !important;
+    }
+
+    .ui.form .fields .field {
+        width: 100% !important;
+        margin-bottom: 12px;
+    }
+
+    .ui.form .field > label {
+        font-size: 14px;
+    }
+
+    .ui.form input,
+    .ui.form textarea,
+    .ui.form select {
+        font-size: 16px !important; /* 防止 iOS 缩放 */
+        min-height: 44px;
+    }
+
+    .ui.form textarea {
+        min-height: 100px;
+    }
+
+    /* ---------- 按钮：触摸尺寸 ---------- */
+    .semi-button {
+        min-height: 40px;
+        min-width: 44px;
+        font-size: 14px;
+    }
+
+    .semi-button-content {
+        padding: 0 14px;
+    }
+
+    /* 按钮组自动换行 */
+    .semi-button-group {
+        flex-wrap: wrap;
+    }
+
+    /* ---------- Modal：全宽 ---------- */
+    .semi-modal-content {
+        width: calc(100vw - 32px) !important;
+        max-width: calc(100vw - 32px) !important;
+        margin: 16px auto !important;
+    }
+
+    .semi-modal-body {
+        padding: 16px;
+        max-height: calc(100vh - 160px);
+        overflow-y: auto;
+    }
+
+    .semi-modal-header {
+        padding: 16px 16px 12px;
+    }
+
+    .semi-modal-footer {
+        padding: 12px 16px 16px;
+    }
+
+    /* ---------- Tabs：可滚动 ---------- */
+    .semi-tabs-bar {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .semi-tabs-bar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .semi-tabs-tab {
+        flex-shrink: 0;
+        padding: 8px 14px;
+        font-size: 14px;
+    }
+
+    /* ---------- Card：紧凑间距 ---------- */
+    .semi-card-body {
+        padding: 14px;
+    }
+
+    .semi-card-header {
+        padding: 12px 14px;
+    }
+
+    /* ---------- Row/Col：全宽 ---------- */
+    .semi-col {
+        padding: 4px 0 !important;
+    }
+
+    /* ---------- 下拉菜单：触摸尺寸 ---------- */
+    .semi-dropdown-item {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        font-size: 15px;
+    }
+
+    /* ---------- 头像 ---------- */
+    .semi-avatar {
+        flex-shrink: 0;
+    }
+
+    /* ---------- 工具类：移动端隐藏 ---------- */
     .hide-on-mobile {
         display: none !important;
     }
+
+    .show-on-mobile {
+        display: initial !important;
+    }
+
+    /* ---------- Toast 位置 ---------- */
+    .Toastify__toast-container {
+        width: calc(100vw - 32px);
+        left: 16px !important;
+        right: 16px !important;
+    }
+
+    /* ---------- 输入框：防止 iOS 缩放 ---------- */
+    input, select, textarea {
+        font-size: 16px;
+    }
+
+    /* ---------- SideSheet 抽屉导航阴影 ---------- */
+    .semi-sidesheet-content {
+        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ---------- 图表容器：防止溢出 ---------- */
+    [id$="_pie"], [id$="_data"], [id^="model_"] {
+        max-width: 100%;
+        overflow: hidden;
+    }
 }
 
+/* ============================================================
+   小屏手机适配 (max-width: 480px)
+   ============================================================ */
+@media only screen and (max-width: 480px) {
+    body {
+        font-size: 13px;
+    }
 
-/* 隐藏浏览器默认的滚动条 */
-body {
-    overflow: hidden;
+    .semi-button {
+        min-height: 38px;
+        font-size: 13px;
+    }
+
+    .semi-button-content {
+        padding: 0 10px;
+    }
+
+    .semi-card-body {
+        padding: 12px;
+    }
+
+    .semi-table-tbody > .semi-table-row {
+        padding: 6px 0;
+    }
+
+    .semi-table-row-cell {
+        padding: 4px 10px !important;
+        font-size: 13px;
+    }
+
+    /* 标题字号缩小 */
+    .semi-typography-title-h1 { font-size: 22px; }
+    .semi-typography-title-h2 { font-size: 20px; }
+    .semi-typography-title-h3 { font-size: 18px; }
+    .semi-typography-title-h4 { font-size: 16px; }
+    .semi-typography-title-h5 { font-size: 15px; }
+    .semi-typography-title-h6 { font-size: 14px; }
 }
 
-/* 自定义滚动条样式 */
-body::-webkit-scrollbar {
-    width: 0;  /* 隐藏滚动条的宽度 */
+/* ============================================================
+   平板适配 (769px - 991px)
+   ============================================================ */
+@media only screen and (min-width: 769px) and (max-width: 991px) {
+    .semi-table-tbody > .semi-table-row > .semi-table-row-cell {
+        padding: 12px 10px;
+    }
+
+    .semi-button-content {
+        padding: 0 12px;
+    }
+}
+
+/* ---------- 桌面端显示/隐藏工具类 ---------- */
+@media only screen and (min-width: 769px) {
+    .show-on-mobile {
+        display: none !important;
+    }
 }

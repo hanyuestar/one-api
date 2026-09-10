@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Card, Col, Row } from '@douyinfe/semi-ui';
-import { API, showError, showNotice, timestamp2string } from '../../helpers';
+import { API, showError, showNotice, timestamp2string, sanitizeMarkdown, sanitizeHTML, safeIframeSrc } from '../../helpers';
 import { StatusContext } from '../../context/Status';
 import { marked } from 'marked';
 
@@ -15,7 +15,7 @@ const Home = () => {
     if (success) {
       let oldNotice = localStorage.getItem('notice');
       if (data !== oldNotice && data !== '') {
-        const htmlNotice = marked(data);
+        const htmlNotice = sanitizeMarkdown(marked(data));
         showNotice(htmlNotice, true);
         localStorage.setItem('notice', data);
       }
@@ -25,13 +25,18 @@ const Home = () => {
   };
 
   const displayHomePageContent = async () => {
-    setHomePageContent(localStorage.getItem('home_page_content') || '');
+    // 从 localStorage 读取的缓存也必须净化，防止旧缓存或被污染的存储绕过净化
+    const cached = localStorage.getItem('home_page_content');
+    if (cached) {
+      // https:// 开头是 iframe URL，原样保留（渲染时由 safeIframeSrc 校验）；其余按 HTML 净化
+      setHomePageContent(cached.startsWith('https://') ? cached : sanitizeHTML(cached));
+    }
     const res = await API.get('/api/home_page_content');
     const { success, message, data } = res.data;
     if (success) {
       let content = data;
       if (!data.startsWith('https://')) {
-        content = marked.parse(data);
+        content = sanitizeMarkdown(marked.parse(data));
       }
       setHomePageContent(content);
       localStorage.setItem('home_page_content', content);
@@ -62,8 +67,8 @@ const Home = () => {
               title='系统状况'
               bodyStyle={{ padding: '10px 20px' }}
             >
-              <Row gutter={16}>
-                <Col span={12}>
+              <Row gutter={[16, 16]}>
+                <Col xs={24} sm={24} md={12}>
                   <Card
                     title='系统信息'
                     headerExtraContent={<span
@@ -82,7 +87,7 @@ const Home = () => {
                     <p>启动时间：{getStartTimeString()}</p>
                   </Card>
                 </Col>
-                <Col span={12}>
+                <Col xs={24} sm={24} md={12}>
                   <Card
                     title='系统配置'
                     headerExtraContent={<span
@@ -103,11 +108,6 @@ const Home = () => {
                       Turnstile 用户校验：
                       {statusState?.status?.turnstile_check === true ? '已启用' : '未启用'}
                     </p>
-                    {/*<p>*/}
-                    {/*  Telegram 身份验证：*/}
-                    {/*  {statusState?.status?.telegram_oauth === true*/}
-                    {/*    ? '已启用' : '未启用'}*/}
-                    {/*</p>*/}
                   </Card>
                 </Col>
               </Row>
@@ -117,7 +117,7 @@ const Home = () => {
           : <>
             {
               homePageContent.startsWith('https://') ?
-                <iframe src={homePageContent} style={{ width: '100%', height: '100vh', border: 'none' }} /> :
+                <iframe src={safeIframeSrc(homePageContent)} style={{ width: '100%', height: '80vh', border: 'none' }} sandbox="allow-scripts allow-same-origin allow-forms" /> :
                 <div style={{ fontSize: 'larger' }} dangerouslySetInnerHTML={{ __html: homePageContent }}></div>
             }
           </>

@@ -127,3 +127,6 @@
     transform: translateX(10px);
   }
 }
+
+// 移动端响应式适配（三主题统一断点 <=768px）
+@import 'mobile.scss';

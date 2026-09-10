@@ -57,6 +57,18 @@ _✨ 开源 OpenAI 接口管理 & 分发系统，支持生图接口 ✨_
 
 ## 更新日志
 
+### v1.1.1（2026-09-10）
+
+**安全修复**
+
+- **前端存储型 XSS 净化（三主题）**：新增统一净化模块（`sanitize.js`），所有 `dangerouslySetInnerHTML` 与 `marked` 渲染输出均经 DOMPurify 白名单净化；并补齐从 localStorage 缓存（首页内容 / 关于 / 公告 / 页脚）重新渲染前的一次净化，防止被污染的客户端存储绕过净化。拦截 `script`/`on*` 事件 / `javascript:` 伪协议等。
+- **后端 CORS 任意源带凭证缺陷**：旧逻辑同时允许所有源与携带凭证，等价于任意网站可携带用户 Cookie 跨域请求（CSRF / 数据泄露）。新增环境变量 `CORS_ALLOW_ORIGINS`（逗号分隔源白名单）——配置了则精确匹配并允许凭证，未配置则允许所有源但 `AllowCredentials=false`，符合 W3C「`*` 与 credentials 不可共存」规范。
+
+**功能优化**
+
+- **三主题移动端适配（统一断点 ≤768px）**：数据表格卡片化、弹窗全宽、表单单列（输入字号 16px 防 iOS 聚焦缩放）、按钮触摸尺寸 ≥40px、全局 `overflow-x:hidden` 防横向滚动、iframe 改 80vh 加 `sandbox`；JS 侧 `isMobile()` 口径统一为 `<=768` 与 CSS 对齐。桌面端（>768px）布局与交互完全保持原样。
+- **Docker 构建链路修复**：修复 `web/default` 因 `i18next@24` 与 `react-scripts@5` 的 TypeScript peer 冲突导致镜像内 `npm install` 报 ERESOLVE 的问题——`Dockerfile` 与 `web/build.sh` 三主题依赖安装统一加 `--legacy-peer-deps`（社区标准规避，不改变打包结果）。
+
 ### v1.1.0（2026-08-28）
 
 **功能优化**

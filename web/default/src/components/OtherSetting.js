@@ -10,7 +10,7 @@ import {
   Modal,
 } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
-import { API, showError, showSuccess, verifyJSON } from '../helpers';
+import { API, showError, showSuccess, verifyJSON, sanitizeMarkdown } from '../helpers';
 import { marked } from 'marked';
 
 const OtherSetting = () => {
@@ -108,7 +108,7 @@ const OtherSetting = () => {
     } else {
       setUpdateData({
         tag_name: tag_name,
-        content: marked.parse(body),
+        content: sanitizeMarkdown(marked.parse(body)),
       });
       setShowUpdateModal(true);
     }
