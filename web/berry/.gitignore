@@ -22,4 +22,5 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .idea
+# package-lock.json 已纳入版本控制：保证镜像 / 发布构建的依赖树可复现
 yarn.lock
