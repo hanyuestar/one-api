@@ -38,7 +38,7 @@ jobs:
           CI: ""
         run: |
           cd web/default
-          npm install
+          npm install --legacy-peer-deps
           REACT_APP_VERSION=$(git describe --tags) npm run build
           cd ../..
       - name: Set up Go
