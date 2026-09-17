@@ -599,9 +599,7 @@
         "qrcode_placeholder": "Enter an image URL",
         "buttons": {
           "save": "Save WeChat Server Settings"
-        },
-        "scan_tip": "Scan QR code to follow WeChat Official Account, enter 'code' to get verification code (valid for 3 minutes)",
-        "code_placeholder": "Verification code"
+        }
       },
       "turnstile": {
         "title": "Turnstile Configuration",
@@ -761,9 +759,7 @@
         },
         "about": {
           "title": "About System",
-          "description": "You can set about content in settings page, supports HTML & Markdown",
-          "repository": "Project Repository:",
-          "loading_failed": "Failed to load about content..."
+          "placeholder": "Enter new about content here, supports Markdown & HTML code. If a link is entered, it will be used as the src attribute of an iframe, allowing you to set any webpage as the About page."
         },
         "footer": {
           "title": "Footer",

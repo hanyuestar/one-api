@@ -57,6 +57,32 @@ _✨ Open-source OpenAI API management & distribution system with image generati
 
 ## Changelog
 
+### v1.1.2 (2026-09-17)
+
+**Docs & Configuration**
+
+- **Deployment config reference completed**: `.env.example` now documents the CORS allow-list (`CORS_ALLOW_ORIGINS`), the channel multi-key encryption key (`CHANNEL_KEY_ENCRYPTION_KEY`), circuit-breaker parameters, the Prometheus metrics switch (`METRICS_ENABLED`), plus upstream timeout / proxy and global API & web rate limits, each with its meaning and default value.
+- **Localization fixes**: fixed the About-content input placeholder showing a raw key name in the English UI, and removed 5 redundant keys from the English locale.
+- **Documentation**: the English and Japanese READMEs now include the v1.1.1 and v1.1.2 changelogs; the wiki "Model Pricing" page gained a Reasoning Ratio section, and the "Docker Deployment" page lists the new environment variables.
+
+**Engineering**
+
+- **CI frontend build gate**: a new matrix job builds all three admin UI themes, so frontend dependency-resolution breakage is caught at commit / pull-request time instead of at release time.
+- **Build environment unified**: release workflows upgraded from Node 16 to Node 20 (matching the container image), the Go version constraint tightened to 1.22, and CI now also runs on pull requests.
+- **Cleanup**: removed leftover debug output from the admin UI.
+
+### v1.1.1 (2026-09-10)
+
+**Security Fixes**
+
+- **Frontend XSS protection**: all rich text (homepage / about / notice / footer) and Markdown rendering in the admin UI is HTML-sanitized, blocking script injection and malicious link protocols.
+- **CORS hardening**: fixed a previous "allow any origin with credentials" misconfiguration. A CORS allow-list was added — when configured, only the listed origins may send credentials; when left empty, cross-origin requests are allowed but credentials are not.
+
+**Improvements**
+
+- **Mobile adaptation**: the admin UI adapts to small screens (tables become cards, modals go full-width, forms become single-column, inputs avoid focus zoom, no horizontal scrolling); the desktop layout is unchanged.
+- **Image build stability**: frontend dependency versions are now pinned, fixing release image build failures caused by inconsistent dependency resolution across build environments.
+
 ### v1.1.0 (2026-08-28)
 
 **Enhancements**

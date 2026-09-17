@@ -58,9 +58,6 @@ const HeaderBar = ({ isMobile = false, onMenuClick = () => {} }) => {
     if (themeMode === 'dark') {
       switchMode(true);
     }
-    if (isNewYear) {
-      console.log('Happy New Year!');
-    }
   }, []);
 
   const switchMode = (model) => {

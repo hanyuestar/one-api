@@ -15,6 +15,13 @@ on:
   push:
     branches:
       - 'main'
+  pull_request:
+    branches:
+      - 'main'
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   unit_tests:
@@ -38,8 +45,38 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
+  # Frontend build gate for all three themes.
+  # Kept in sync with the Dockerfile: `npm ci` + `--legacy-peer-deps`.
+  # Purpose: surface frontend dependency-resolution breakage (e.g. ajv / ajv-keywords
+  # hoisting differences between npm versions) at push / PR time instead of at tag
+  # release time, where it would block the published image.
+  frontend_build:
+    name: "Frontend build (${{ matrix.theme }})"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        theme: [default, air, berry]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci --prefix web/${{ matrix.theme }} --no-audit --no-fund --legacy-peer-deps
+
+      - name: Build
+        env:
+          CI: ""
+          DISABLE_ESLINT_PLUGIN: "true"
+        run: npm run build --prefix web/${{ matrix.theme }}
+
   commit_lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: wagoid/commitlint-github-action@v6

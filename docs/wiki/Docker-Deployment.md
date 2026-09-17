@@ -71,6 +71,19 @@ docker run -d --name one-api -p 3000:3000 -v $(pwd)/data:/data one-api:custom
 | `NODE_TYPE` | 不设置（主节点） | 多机部署时设为 `slave` |
 | `SYNC_FREQUENCY` | `60` | 多机同步间隔（秒） |
 | `FRONTEND_BASE_URL` | 不设置 | 多机部署时前端地址 |
+| `CORS_ALLOW_ORIGINS` | 空 | 跨域来源白名单（逗号分隔）。留空 = 允许所有来源但不携带凭证；配置后仅白名单内的来源可携带凭证 |
+| `CHANNEL_KEY_ENCRYPTION_KEY` | 不设置 | 渠道多 Key 加密主密钥（32 字节，base64 / hex，或任意字符串经 SHA256 派生）。不配置时渠道 Key 明文存储 |
+| `METRICS_ENABLED` | `true` | 是否开放 `GET /metrics` Prometheus 指标端点 |
+| `CIRCUIT_ENABLE` | `true` | 渠道熔断总开关；关闭后上游连续失败也不会临时跳过渠道 |
+| `CIRCUIT_FAILURE_THRESHOLD` | `5` | 统计窗口内连续失败多少次触发熔断 |
+| `CIRCUIT_COOLDOWN_SECONDS` | `30` | 熔断冷却时间（秒），结束后进入半开探测 |
+| `RELAY_TIMEOUT` | `0` | 上游请求超时（秒），0 表示使用默认 |
+| `RELAY_PROXY` | 不设置 | 访问上游模型接口所用的代理地址 |
+| `GLOBAL_API_RATE_LIMIT` | `480` | 全局 API 限流（次/分钟） |
+| `GLOBAL_WEB_RATE_LIMIT` | `240` | 全局网页限流（次/分钟） |
+| `LOG_LEVEL` | `info` | 日志级别：debug / info / warn / error |
+
+> 完整清单与逐项说明见仓库根目录的 `.env.example`（含含义、默认值与示例）。
 
 MySQL 凭据：
 

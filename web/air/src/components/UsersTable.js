@@ -151,7 +151,6 @@ const UsersTable = () => {
   };
 
   const removeRecord = key => {
-    console.log(key);
     let newDataSource = [...users];
     if (key != null) {
       let idx = newDataSource.findIndex(data => data.id === key);

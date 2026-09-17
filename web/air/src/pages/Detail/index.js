@@ -219,7 +219,6 @@ const Detail = (props) => {
             setModelDataPieChart(pieChart);
             pieChart.renderAsync();
         }
-        console.log('init vchart');
         await loadQuotaData(lineChart, pieChart)
     }
 

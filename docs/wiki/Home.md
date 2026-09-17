@@ -41,6 +41,12 @@
 - 渠道返回缓存字段（OpenAI `cached_tokens`、DeepSeek `prompt_cache_hit_tokens`、Anthropic `cache_read/cache_creation_input_tokens`）时自动生效；渠道不支持时按正常输入计费兜底。
 - 日志「输入」列会标注缓存命中部分，如 `1000（缓存命中 200）`。
 
+### 配置与文档完善（v1.1.2）
+
+- **新增环境变量说明**：`.env.example` 补齐跨域来源白名单（`CORS_ALLOW_ORIGINS`）、渠道多 Key 加密主密钥（`CHANNEL_KEY_ENCRYPTION_KEY`）、渠道熔断参数、Prometheus 指标开关（`METRICS_ENABLED`），以及上游请求超时 / 代理、全局限流等常用配置项，均标注含义与默认值。
+- **多语言修正**：修复英文界面下「关于内容」输入框提示显示为内部键名的问题，并清理英文语言包中 5 处冗余文案键。
+- **构建环境与校验**：发布流程统一使用 Node 20 与 Go 1.22；持续集成新增管理界面全部主题的前端构建校验，前端依赖异常在提交阶段即可发现。
+
 ### 前端安全加固与移动端适配（v1.1.1）
 
 - **前端 XSS 防护**：管理界面所有富文本（首页内容 / 关于 / 公告 / 页脚）与 Markdown 渲染均经过 HTML 净化，拦截脚本注入与恶意链接协议，防止跨站脚本攻击；并补齐客户端缓存重新渲染前的二次净化，避免被污染的本地缓存绕过防护。
@@ -69,6 +75,7 @@
 
 | 版本 | 修复内容 |
 |------|---------|
+| v1.1.2 | 修复英文界面「关于内容」输入框提示未翻译（显示为内部键名）；清理英文语言包 5 处冗余文案键 |
 | v1.1.1 | 修复后端跨域「允许任意来源并携带用户凭证」缺陷（凭证可被恶意网站冒用，存在 CSRF / 数据泄露风险）；修复前端跨站脚本（XSS）注入点；管理界面移动端适配；修复发布镜像构建失败（依赖解析在不同构建环境下不一致） |
 | v1.0.8 | 修复并发 map panic、PostgreSQL 首字延迟类型转换、前端版本号传递、流式异步计费因请求取消丢失、SQLite/MySQL 均值四舍五入、deepl 响应体关闭、图片日志计费明细；统计接口支持按渠道筛选；air 数据看板菜单常驻；首次登录强制改密；全部主题日志横排与 air UI 统一 |
 | v1.0.7 | 日志模块增强与 TTFT 首字延迟统计；新增计费明细反查与模型分析看板；修正缓存命中展示与真实计费口径不一致的问题 |
@@ -116,5 +123,5 @@ docker compose up -d
 ## 相关链接
 
 - 上游原始项目：[songquanpeng/one-api](https://github.com/songquanpeng/one-api)
-- 发布版本：[v1.1.1](https://github.com/hanyuestar/one-api/releases/tag/v1.1.1)（[查看更新日志](https://github.com/hanyuestar/one-api#%E6%9B%B4%E6%96%B0%E6%97%A5%E5%BF%97)）
+- 发布版本：[v1.1.2](https://github.com/hanyuestar/one-api/releases/tag/v1.1.2)（[查看更新日志](https://github.com/hanyuestar/one-api#%E6%9B%B4%E6%96%B0%E6%97%A5%E5%BF%97)）
 - Docker 镜像：[GitHub Packages](https://github.com/hanyuestar/one-api/pkgs/container/one-api) | [Docker Hub](https://hub.docker.com/r/kyson666/one-api)

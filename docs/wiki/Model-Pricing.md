@@ -120,6 +120,14 @@ one-api 用「倍率」来统一度量不同模型的消耗。基准是：
 
 部分模型的 input 和 output 价格比例不一致。`CompletionRatio` 记录的是 output 价格 ÷ input 价格的比例，用于精确计算抵扣额度。如果某个模型的 output 价比 input 贵得多，它的 CompletionRatio 就会更大。
 
+## 关于推理倍率（ReasoningRatio）
+
+部分具备思考 / 推理能力的模型会返回独立的推理（reasoning）token。本 fork 支持为推理 token 单独配置倍率：
+
+- **推理倍率（ReasoningRatio）**：按模型配置推理 token 的计费倍率。入口：后台 → 设置 → 运营设置 → 倍率设置；与模型倍率同为 JSON 格式（key 为模型名，value 为倍率数值）。
+- **未配置自动回退**：未在推理倍率中配置的模型，其推理 token 回退按补全倍率（`CompletionRatio`）计费，因此不配置也不会漏计费。
+- **计费口径**：输出 token 中被识别为推理 token 的部分按 `推理 token × reasoningRatio` 计费，其余输出 token 仍按 `× completionRatio` 计费。
+
 ## 关于缓存命中 / 写入倍率
 
 除基础模型倍率外，本 fork 还支持对输入 token 中的「缓存命中」和「缓存写入」部分单独计费：

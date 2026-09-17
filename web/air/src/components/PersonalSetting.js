@@ -67,11 +67,7 @@ const PersonalSetting = () => {
         setTurnstileSiteKey(status.turnstile_site_key);
       }
     }
-    getUserData().then(
-      (res) => {
-        console.log(userState);
-      }
-    );
+    getUserData().then();
     loadModels().then();
     getAffLink().then();
     setTransferAmount(getQuotaPerUnit());
@@ -132,7 +128,6 @@ const PersonalSetting = () => {
     const { success, message, data } = res.data;
     if (success) {
       setModels(data);
-      console.log(data);
     } else {
       showError(message);
     }

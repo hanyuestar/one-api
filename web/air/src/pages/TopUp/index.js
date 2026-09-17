@@ -147,7 +147,7 @@ const TopUp = () => {
                 showError(res);
             }
         } catch (err) {
-            console.log(err);
+            console.error(err);
         } finally {
         }
     }
